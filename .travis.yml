@@ -22,7 +22,7 @@ jobs:
         - tox -e flake8
     - stage: sonar
       dist: trusty
-      language: java
+      language: python
       addons:
         sonarcloud:
           organization: "python-consul"
