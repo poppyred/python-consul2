@@ -16,8 +16,7 @@ class TestHTTPClient(object):
     def test_uri(self):
         http = consul.std.HTTPClient()
         assert http.uri('/v1/kv') == 'http://127.0.0.1:8500/v1/kv'
-        assert http.uri('/v1/kv', params={'index': 1}) == \
-               'http://127.0.0.1:8500/v1/kv?index=1'
+        assert http.uri('/v1/kv', params={'index': 1}) == 'http://127.0.0.1:8500/v1/kv?index=1'
 
 
 class TestConsul(object):
@@ -192,7 +191,7 @@ class TestConsul(object):
         c = consul.Consul(port=consul_port)
 
         def verify_and_dereg_check(check_id):
-            assert set(c.agent.checks().keys()) == set([check_id])
+            assert set(c.agent.checks().keys()) == {check_id}
             assert c.agent.check.deregister(check_id) is True
             assert set(c.agent.checks().keys()) == set([])
 
@@ -290,10 +289,10 @@ class TestConsul(object):
         index, nodes = c.health.service('foo1')
         assert set([
             check['ServiceID'] for node in nodes
-            for check in node['Checks']]) == set(['foo1', ''])
+            for check in node['Checks']]) == {'foo1', ''}
         assert set([
             check['CheckID'] for node in nodes
-            for check in node['Checks']]) == set(['foo', 'serfHealth'])
+            for check in node['Checks']]) == {'foo', 'serfHealth'}
 
         # Clean up tasks
         assert c.agent.check.deregister('foo') is True
@@ -394,14 +393,12 @@ class TestConsul(object):
 
     def test_agent_self(self, consul_port):
         c = consul.Consul(port=consul_port)
-        assert set(c.agent.self().keys()) == set(['Member', 'Stats', 'Config',
-                                                  'Coord', 'DebugConfig',
-                                                  'Meta'])
+        assert set(c.agent.self().keys()) == {'Member', 'Stats', 'Config', 'Coord', 'DebugConfig', 'Meta'}
 
     def test_agent_services(self, consul_port):
         c = consul.Consul(port=consul_port)
         assert c.agent.service.register('foo') is True
-        assert set(c.agent.services().keys()) == set(['foo'])
+        assert set(c.agent.services().keys()) == {'foo'}
         assert c.agent.service.deregister('foo') is True
         assert set(c.agent.services().keys()) == set()
 
@@ -453,7 +450,7 @@ class TestConsul(object):
         # test catalog.node
         pytest.raises(consul.ConsulException, c.catalog.node, 'n1', dc='dc2')
         _, node = c.catalog.node('n1')
-        assert set(node['Services'].keys()) == set(['s1', 's2'])
+        assert set(node['Services'].keys()) == {'s1', 's2'}
         _, node = c.catalog.node('n3')
         assert node is None
 
@@ -461,9 +458,9 @@ class TestConsul(object):
         pytest.raises(
             consul.ConsulException, c.catalog.service, 's1', dc='dc2')
         _, nodes = c.catalog.service('s1')
-        assert set([x['Node'] for x in nodes]) == set(['n1', 'n2'])
+        assert set([x['Node'] for x in nodes]) == {'n1', 'n2'}
         _, nodes = c.catalog.service('s1', tag='master')
-        assert set([x['Node'] for x in nodes]) == set(['n2'])
+        assert set([x['Node'] for x in nodes]) == {'n2'}
 
         # test catalog.deregister
         pytest.raises(
@@ -476,7 +473,7 @@ class TestConsul(object):
         assert [x['Node'] for x in nodes] == ['n1', 'n2']
         # check n2's s1 service was removed though
         _, nodes = c.catalog.service('s1')
-        assert set([x['Node'] for x in nodes]) == set(['n1'])
+        assert set([x['Node'] for x in nodes]) == {'n1'}
 
         # cleanup
         assert c.catalog.deregister('n1') is True
@@ -568,8 +565,7 @@ class TestConsul(object):
 
         # check the nodes show for the /health/state/any endpoint
         index, nodes = c.health.state('any')
-        assert set([node['ServiceID'] for node in nodes]) == set(
-            ['', 'foo:1', 'foo:2'])
+        assert set([node['ServiceID'] for node in nodes]) == {'', 'foo:1', 'foo:2'}
 
         # but that they aren't passing their health check
         index, nodes = c.health.state('passing')
@@ -583,16 +579,14 @@ class TestConsul(object):
 
         # both nodes are now available
         index, nodes = c.health.state('passing')
-        assert set([node['ServiceID'] for node in nodes]) == set(
-            ['', 'foo:1', 'foo:2'])
+        assert set([node['ServiceID'] for node in nodes]) == {'', 'foo:1', 'foo:2'}
 
         # wait until the short ttl node fails
         time.sleep(2200 / 1000.0)
 
         # only one node available
         index, nodes = c.health.state('passing')
-        assert set([node['ServiceID'] for node in nodes]) == set(
-            ['', 'foo:1'])
+        assert set([node['ServiceID'] for node in nodes]) == {'', 'foo:1'}
 
         # ping the failed node's health check
         c.agent.check.ttl_pass('service:foo:2')
@@ -601,8 +595,7 @@ class TestConsul(object):
 
         # check both nodes are available
         index, nodes = c.health.state('passing')
-        assert set([node['ServiceID'] for node in nodes]) == set(
-            ['', 'foo:1', 'foo:2'])
+        assert set([node['ServiceID'] for node in nodes]) == {'', 'foo:1', 'foo:2'}
 
         # deregister the nodes
         c.agent.service.deregister('foo:1')
@@ -718,8 +711,7 @@ class TestConsul(object):
         master_token = acl_consul.token
 
         acls = c.acl.list(token=master_token)
-        assert set([x['ID'] for x in acls]) == \
-               set(['anonymous', master_token])
+        assert set([x['ID'] for x in acls]) == {'anonymous', master_token}
 
         assert c.acl.info('1' * 36) is None
         compare = [c.acl.info(master_token), c.acl.info('anonymous')]
@@ -789,8 +781,7 @@ class TestConsul(object):
         assert c.agent.service.deregister('foo-1') is True
         c.acl.destroy(token, token=master_token)
         acls = c.acl.list(token=master_token)
-        assert set([x['ID'] for x in acls]) == \
-               set(['anonymous', master_token])
+        assert set([x['ID'] for x in acls]) == {'anonymous', master_token}
 
     def test_acl_implicit_token_use(self, acl_consul):
         # configure client to use the master token by default
@@ -798,8 +789,7 @@ class TestConsul(object):
         master_token = acl_consul.token
 
         acls = c.acl.list()
-        assert set([x['ID'] for x in acls]) == \
-               set(['anonymous', master_token])
+        assert set([x['ID'] for x in acls]) == {'anonymous', master_token}
 
         assert c.acl.info('foo') is None
         compare = [c.acl.info(master_token), c.acl.info('anonymous')]
@@ -862,8 +852,7 @@ class TestConsul(object):
         # clean up
         c.acl.destroy(token)
         acls = c.acl.list()
-        assert set([x['ID'] for x in acls]) == \
-               set(['anonymous', master_token])
+        assert set([x['ID'] for x in acls]) == {'anonymous', master_token}
 
     def test_status_leader(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -908,10 +897,8 @@ class TestConsul(object):
 
         # retrieve query using id and name
         queries = c.query.get(query['ID'])
-        assert queries != [] \
-               and len(queries) == 1
-        assert queries[0]['Name'] == query_name \
-               and queries[0]['ID'] == query['ID']
+        assert queries != [] and len(queries) == 1
+        assert queries[0]['Name'] == query_name and queries[0]['ID'] == query['ID']
 
         # explain query
         assert c.query.explain(query_name)['Query']
@@ -923,8 +910,7 @@ class TestConsul(object):
         c = consul.Consul(port=consul_port)
         c.coordinate.nodes()
         c.coordinate.datacenters()
-        assert set(c.coordinate.datacenters()[0].keys()) == \
-               set(['Datacenter', 'Coordinates', 'AreaID'])
+        assert set(c.coordinate.datacenters()[0].keys()) == {'Datacenter', 'Coordinates', 'AreaID'}
 
     def test_operator(self, consul_port):
         c = consul.Consul(port=consul_port)
