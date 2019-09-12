@@ -41,9 +41,9 @@ jobs:
       script: ignore
       deploy:
         provider: pypi
-        user: python-consul-admin
+        user: poppys
         password:
-          secure: "HmLBvgjd5WB8nNBI/KbgvVPKUy1Wsb4TwLL2aEA4IrZHW0/8JHbwwo71zEX+ep+CvqCRTZDMfXtWbckpAJUhjGuqeFqiQGzxwU+SffJsdqy4mVl8NSUJ3WkWItYhPAhnbPYLTOg3QPAEY8KW0RrW1WW3X4wpwEe1+F+o3BDIvvw="
+          secure: "pypi-AgEIcHlwaS5vcmcCJDhmM2FlZWM0LTI5ZDgtNGE5Mi1iNmIzLTEzNTJjZDI4MTUzNQACJXsicGVybWlzc2lvbnMiOiAidXNlciIsICJ2ZXJzaW9uIjogMX0AAAYgrDqv9U4X4c4brB_seoPBscZPh66_5gjrZtoVwuK015U"
         distributions: "sdist bdist_wheel"
         on:
           tags: true
