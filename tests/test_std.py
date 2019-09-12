@@ -16,7 +16,9 @@ class TestHTTPClient(object):
     def test_uri(self):
         http = consul.std.HTTPClient()
         assert http.uri('/v1/kv') == 'http://127.0.0.1:8500/v1/kv'
-        assert http.uri('/v1/kv', params={'index': 1}) == 'http://127.0.0.1:8500/v1/kv?index=1'
+        assert http.uri(
+            '/v1/kv',
+            params={'index': 1}) == 'http://127.0.0.1:8500/v1/kv?index=1'
 
 
 class TestConsul(object):
@@ -393,7 +395,12 @@ class TestConsul(object):
 
     def test_agent_self(self, consul_port):
         c = consul.Consul(port=consul_port)
-        assert set(c.agent.self().keys()) == {'Member', 'Stats', 'Config', 'Coord', 'DebugConfig', 'Meta'}
+        assert set(c.agent.self().keys()) == {'Member',
+                                              'Stats',
+                                              'Config',
+                                              'Coord',
+                                              'DebugConfig',
+                                              'Meta'}
 
     def test_agent_services(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -404,7 +411,9 @@ class TestConsul(object):
 
         # test address param
         assert c.agent.service.register('foo', address='10.10.10.1') is True
-        assert [v['Address'] for k, v in c.agent.services().items() if k == 'foo'][0] == '10.10.10.1'
+        assert [v['Address']
+                for k, v in c.agent.services().items()
+                if k == 'foo'][0] == '10.10.10.1'
         assert c.agent.service.deregister('foo') is True
 
     def test_catalog(self, consul_port):
@@ -563,9 +572,11 @@ class TestConsul(object):
 
         # check the nodes show for the /health/state/any endpoint
         index, nodes = c.health.state('any')
-        assert set([node['ServiceID'] for node in nodes]) == {'', 'foo:1', 'foo:2'}
+        assert set([node['ServiceID']
+                    for node in nodes]) == {'', 'foo:1', 'foo:2'}
 
         # but that they aren't passing their health check
+        # continuation line over-indented for visual indent
         index, nodes = c.health.state('passing')
         assert [node['ServiceID'] for node in nodes] != 'foo'
 
@@ -577,7 +588,8 @@ class TestConsul(object):
 
         # both nodes are now available
         index, nodes = c.health.state('passing')
-        assert set([node['ServiceID'] for node in nodes]) == {'', 'foo:1', 'foo:2'}
+        assert set([node['ServiceID']
+                    for node in nodes]) == {'', 'foo:1', 'foo:2'}
 
         # wait until the short ttl node fails
         time.sleep(2200 / 1000.0)
@@ -593,7 +605,8 @@ class TestConsul(object):
 
         # check both nodes are available
         index, nodes = c.health.state('passing')
-        assert set([node['ServiceID'] for node in nodes]) == {'', 'foo:1', 'foo:2'}
+        assert set([node['ServiceID']
+                    for node in nodes]) == {'', 'foo:1', 'foo:2'}
 
         # deregister the nodes
         c.agent.service.deregister('foo:1')
@@ -896,7 +909,8 @@ class TestConsul(object):
         # retrieve query using id and name
         queries = c.query.get(query['ID'])
         assert queries != [] and len(queries) == 1
-        assert queries[0]['Name'] == query_name and queries[0]['ID'] == query['ID']
+        assert queries[0]['Name'] == query_name and queries[0]['ID'] \
+                                  == query['ID']
 
         # explain query
         assert c.query.explain(query_name)['Query']
@@ -908,7 +922,11 @@ class TestConsul(object):
         c = consul.Consul(port=consul_port)
         c.coordinate.nodes()
         c.coordinate.datacenters()
-        assert set(c.coordinate.datacenters()[0].keys()) == {'Datacenter', 'Coordinates', 'AreaID'}
+        assert set(c.coordinate.datacenters()[0].keys()) == {
+            'Datacenter',
+            'Coordinates',
+            'AreaID'
+        }
 
     def test_operator(self, consul_port):
         c = consul.Consul(port=consul_port)

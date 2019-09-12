@@ -5,7 +5,7 @@ import sys
 
 from setuptools import setup
 from setuptools.command.install import install
-from setuptools.command.test import test as TestCommand
+from setuptools.command.test import test as testcommand
 
 metadata = dict(
     re.findall("__([a-z]+)__ = '([^']+)'", open('consul/__init__.py').read()))
@@ -29,9 +29,9 @@ class Install(install):
         install.run(self)
 
 
-class PyTest(TestCommand):
+class PyTest(testcommand):
     def finalize_options(self):
-        TestCommand.finalize_options(self)
+        testcommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
 
@@ -49,7 +49,10 @@ setup(
     url='https://github.com/poppyred/python-consul2',
     license='MIT',
     description=description,
-    long_description=open('README.rst').read() + '\n\n' + open('CHANGELOG.rst').read(),
+    long_description='{0}\n\n{1}'.format(
+        open('README.rst').read(),# noqa
+        open('CHANGELOG.rst').read()
+    ),
     py_modules=py_modules,
     install_requires=requirements,
     extras_require={
