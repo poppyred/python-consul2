@@ -58,8 +58,8 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Value'] is None
 
-        # check unencoded values raises assert
-        pytest.raises(AssertionError, c.kv.put, 'foo', {1: 2})
+        # check unencoded values raises assert * Python3 don't need
+        # pytest.raises(AssertionError, c.kv.put, 'foo', {1: 2})
 
     def test_kv_put_cas(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -404,9 +404,7 @@ class TestConsul(object):
 
         # test address param
         assert c.agent.service.register('foo', address='10.10.10.1') is True
-        assert [
-                   v['Address'] for k, v in c.agent.services().items()
-                   if k == 'foo'][0] == '10.10.10.1'
+        assert [v['Address'] for k, v in c.agent.services().items() if k == 'foo'][0] == '10.10.10.1'
         assert c.agent.service.deregister('foo') is True
 
     def test_catalog(self, consul_port):

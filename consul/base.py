@@ -603,9 +603,9 @@ class Consul(object):
             """
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
-            assert value is None or \
-                   isinstance(value, (six.string_types, six.binary_type)), \
-                "value should be None or a string / binary data"
+
+            assert "value should be None or a string / binary data", value is None or isinstance(value, (
+                six.string_types, six.binary_type))
 
             params = []
             if cas is not None:

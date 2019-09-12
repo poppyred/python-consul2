@@ -161,7 +161,7 @@ class TestConsul(object):
             # check unencoded values raises assert
             try:
                 yield c.kv.put('foo', {1: 2})
-            except AssertionError:
+            except TypeError:
                 raised = True
             assert raised
 
