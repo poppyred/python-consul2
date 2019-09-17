@@ -27,7 +27,7 @@ jobs:
         sonarcloud:
           organization: "python-consul2"
           token:
-            secure: "lTtnh4/Tm/5vRckFzh5uF/HotBO+lWX/Vx41hc+wS5eFQe9WTsWZlY/hhKtL24rHBdUr3JVBDTBhEtDR5FAv/XwlX2kAOjqcuxOhW0eQP+1NyuMklbV7zGup3T8aNY1vHh0k0mhO5kUwHw3iNLKxO73BvP7/tlrLg+DTeFLtgx8="
+            secure: "ph5YrfxHBRp1wvMwZ4S63ADE8dNhTHiaHv1ur7GSq8ZxPEKM+inrt1P9Mv+iA0NP84SpDfm+/PSL96OLlxz0RonvLJM6F6CXz2CPapuNhsDqQ/fmaWtQ6ejfaqp48j8Us/IxSLeFVqUei+akQLSwlC4eHwF07OJaRMx2hqBsU+vfWJ9tfnD6Uu53iwjMlIo4k4f3bfhXULbR8BwO3YeDOcNWnWG+it7skICbvrlY/Fs3/bKHtn0SAuVEDaY8+I1bdrmW9eeFguPMvanN3w9QER06a+wWtmNwdrs0WGw8TIt5zwEKWwzMHSYzj5bE3ps9vbJ5Qh12iJqoBlx8g3vQePv35deDyy7kHqSOeYkY/5EygLuO9vn/X9jekqgL5s3rLCkQxiaE/lAhn5g8iQYWokeNjQNWQQ2G0ojkeXM1gYHQdEOwnYFDnPi9hpeCqAgu1ZkrCe5M7bPA8Cn3S8yeaO+LqpLLn046zg65kcTcWyCYJxUl4tZT7C3wugMcr/fY8XDTzPc41sx14vmbPvP6Pp/bqBc9E9mBbxPzo5U0vE/Y1nNL0G5jprsBD95wP9UcjCOEo1YZtd3qbh1nGePxgq6j9RligOjjJSPIILcGNPwwAtSu7kr4ft5tpZ+LnFzPuWnRC8se7YVvoGCHicqu9CqtkZ/l348HQod3Swu2VxM="
           branches:
             - master
       install: ignore
