@@ -10,6 +10,9 @@ Status
 ------
 
 |Build Status|
+|License Status|
+|Pypi Status|
+|Pyversions Status|
 
 Example
 -------
@@ -41,6 +44,19 @@ Installation
 .. |Build Status|
    image:: https://travis-ci.org/poppyred/python-consul2.svg?style=flat-square
    :target: https://travis-ci.org/poppyred/python-consul2
+
+.. |License Status|
+   image:: https://img.shields.io/github/license/poppyred/python-consul2
+   :target: https://img.shields.io/github/license/poppyred/python-consul2
+
+.. |Pypi Status|
+   image:: https://img.shields.io/pypi/v/python-consul2
+   :target: https://img.shields.io/pypi/v/python-consul2
+
+.. |Pyversions Status|
+   image:: https://img.shields.io/pypi/pyversions/python-consul2
+   :target: https://img.shields.io/pypi/pyversions/python-consul2
+
 .. |Coverage Status|
    image:: https://img.shields.io/coveralls/cablehead/python-consul.svg?style=flat-square
    :target: https://coveralls.io/r/cablehead/python-consul?branch=master
