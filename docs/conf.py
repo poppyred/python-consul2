@@ -116,8 +116,8 @@ html_sidebars = {
 }
 
 html_theme_options = {
-    'github_user': 'cablehead',
-    'github_repo': 'python-consul',
+    'github_user': 'poppyred',
+    'github_repo': 'python-consul2',
     'logo': 'logo.png',
     'logo_name': True,
 }
