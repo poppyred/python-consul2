@@ -1,18 +1,11 @@
 Python client for `Consul.io <http://www.consul.io/>`_
 ======================================================
 
-Documentation
--------------
-
-`Read the Docs`_
-
-Status
-------
-
 |Build Status|
 |License Status|
 |Pypi Status|
 |Pyversions Status|
+|Docs Status|
 
 Example
 -------
@@ -46,16 +39,21 @@ Installation
    :target: https://travis-ci.org/poppyred/python-consul2
 
 .. |License Status|
-   image:: https://img.shields.io/github/license/poppyred/python-consul2
-   :target: https://img.shields.io/github/license/poppyred/python-consul2
+   image:: https://img.shields.io/pypi/l/python-consul2
+   :target: https://raw.githubusercontent.com/poppyred/python-consul2/master/LICENSE
 
 .. |Pypi Status|
    image:: https://img.shields.io/pypi/v/python-consul2
-   :target: https://img.shields.io/pypi/v/python-consul2
+   :target: https://pypi.org/project/python-consul2/
 
 .. |Pyversions Status|
    image:: https://img.shields.io/pypi/pyversions/python-consul2
-   :target: https://img.shields.io/pypi/pyversions/python-consul2
+   :target: https://pypi.org/project/python-consul2/
+
+.. |Docs Status|
+   image:: https://img.shields.io/readthedocs/python-consul2
+   :target: https://python-consul2.readthedocs.io/
+
 
 .. |Coverage Status|
    image:: https://img.shields.io/coveralls/cablehead/python-consul.svg?style=flat-square
