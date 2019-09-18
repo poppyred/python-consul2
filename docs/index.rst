@@ -230,8 +230,14 @@ Consul.agent
    :members:
    :exclude-members: Service
 
+Consul.agent.Service
+""""""""""""""""""""
+
 .. autoclass:: consul.base::Consul.Agent.Service()
    :members:
+
+Consul.agent.Check
+""""""""""""""""""""
 
 .. autoclass:: consul.base::Consul.Agent.Check()
    :members:

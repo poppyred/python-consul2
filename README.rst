@@ -40,7 +40,7 @@ Installation
 
 .. |License Status|
    image:: https://img.shields.io/pypi/l/python-consul2
-   :target: https://raw.githubusercontent.com/poppyred/python-consul2/master/LICENSE
+   :target: https://github.com/poppyred/python-consul2/blob/master/LICENSE
 
 .. |Pypi Status|
    image:: https://img.shields.io/pypi/v/python-consul2
