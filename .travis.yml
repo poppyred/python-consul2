@@ -5,26 +5,26 @@ services:
 
 matrix:
     include:
-     - python: 2.7
-       env: TOXENV=py27
-     - python: 2.7
-       env: TOXENV=py27-functional
-     - python: 2.7
-       env: TOXENV=update-pycodestyle
-     - python: pypy
-       env: TOXENV=pypy
-     - python: 3.7
-       env: TOXENV=docs
-     - python: 2.7
-       env: TOXENV=coverage,codecov
-     - python: 3.5
-       env: TOXENV=py35
-     - python: 3.5
-       env: TOXENV=py35-functional
-     - python: 3.6
-       env: TOXENV=py36
-     - python: 3.6
-       env: TOXENV=py36-functional
+#     - python: 2.7
+#       env: TOXENV=py27
+#     - python: 2.7
+#       env: TOXENV=py27-functional
+#     - python: 2.7
+#       env: TOXENV=update-pycodestyle
+#     - python: pypy
+#       env: TOXENV=pypy
+#     - python: 3.7
+#       env: TOXENV=docs
+#     - python: 2.7
+#       env: TOXENV=coverage,codecov
+#     - python: 3.5
+#       env: TOXENV=py35
+#     - python: 3.5
+#       env: TOXENV=py35-functional
+#     - python: 3.6
+#       env: TOXENV=py36
+#     - python: 3.6
+#       env: TOXENV=py36-functional
      - python: 3.7
        env: TOXENV=py37
      - python: 3.7
@@ -36,17 +36,17 @@ matrix:
            branches:
              - master
 
-install:
-  - pip install tox
-script:
-  - tox
-addons:
-  sonarcloud:
-    organization: "python-consul2" # the key of the org you chose at step #3
-    token:
-      secure: "ph5YrfxHBRp1wvMwZ4S63ADE8dNhTHiaHv1ur7GSq8ZxPEKM+inrt1P9Mv+iA0NP84SpDfm+/PSL96OLlxz0RonvLJM6F6CXz2CPapuNhsDqQ/fmaWtQ6ejfaqp48j8Us/IxSLeFVqUei+akQLSwlC4eHwF07OJaRMx2hqBsU+vfWJ9tfnD6Uu53iwjMlIo4k4f3bfhXULbR8BwO3YeDOcNWnWG+it7skICbvrlY/Fs3/bKHtn0SAuVEDaY8+I1bdrmW9eeFguPMvanN3w9QER06a+wWtmNwdrs0WGw8TIt5zwEKWwzMHSYzj5bE3ps9vbJ5Qh12iJqoBlx8g3vQePv35deDyy7kHqSOeYkY/5EygLuO9vn/X9jekqgL5s3rLCkQxiaE/lAhn5g8iQYWokeNjQNWQQ2G0ojkeXM1gYHQdEOwnYFDnPi9hpeCqAgu1ZkrCe5M7bPA8Cn3S8yeaO+LqpLLn046zg65kcTcWyCYJxUl4tZT7C3wugMcr/fY8XDTzPc41sx14vmbPvP6Pp/bqBc9E9mBbxPzo5U0vE/Y1nNL0G5jprsBD95wP9UcjCOEo1YZtd3qbh1nGePxgq6j9RligOjjJSPIILcGNPwwAtSu7kr4ft5tpZ+LnFzPuWnRC8se7YVvoGCHicqu9CqtkZ/l348HQod3Swu2VxM="
-    branches:
-      - master
+#install:
+#  - pip install tox
+#script:
+#  - tox
+#addons:
+#  sonarcloud:
+#    organization: "python-consul2" # the key of the org you chose at step #3
+#    token:
+#      secure: "ph5YrfxHBRp1wvMwZ4S63ADE8dNhTHiaHv1ur7GSq8ZxPEKM+inrt1P9Mv+iA0NP84SpDfm+/PSL96OLlxz0RonvLJM6F6CXz2CPapuNhsDqQ/fmaWtQ6ejfaqp48j8Us/IxSLeFVqUei+akQLSwlC4eHwF07OJaRMx2hqBsU+vfWJ9tfnD6Uu53iwjMlIo4k4f3bfhXULbR8BwO3YeDOcNWnWG+it7skICbvrlY/Fs3/bKHtn0SAuVEDaY8+I1bdrmW9eeFguPMvanN3w9QER06a+wWtmNwdrs0WGw8TIt5zwEKWwzMHSYzj5bE3ps9vbJ5Qh12iJqoBlx8g3vQePv35deDyy7kHqSOeYkY/5EygLuO9vn/X9jekqgL5s3rLCkQxiaE/lAhn5g8iQYWokeNjQNWQQ2G0ojkeXM1gYHQdEOwnYFDnPi9hpeCqAgu1ZkrCe5M7bPA8Cn3S8yeaO+LqpLLn046zg65kcTcWyCYJxUl4tZT7C3wugMcr/fY8XDTzPc41sx14vmbPvP6Pp/bqBc9E9mBbxPzo5U0vE/Y1nNL0G5jprsBD95wP9UcjCOEo1YZtd3qbh1nGePxgq6j9RligOjjJSPIILcGNPwwAtSu7kr4ft5tpZ+LnFzPuWnRC8se7YVvoGCHicqu9CqtkZ/l348HQod3Swu2VxM="
+#    branches:
+#      - master
 #jobs:
 #  include:
 ##    - stage: flake
