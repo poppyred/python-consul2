@@ -34,17 +34,17 @@ Installation
 
 ::
 
-    pip install python-consul
+    pip install python-consul2
     
 **Note:** When using python-consul library in environment with proxy server, setting of ``http_proxy``, ``https_proxy`` and ``no_proxy`` environment variables can be required for proper functionality.
 
 .. |Build Status|
    image:: https://travis-ci.org/poppyred/python-consul2.svg?style=flat-square
-   :target: https://travis-ci.org/cablehead/python-consul
+   :target: https://travis-ci.org/poppyred/python-consul2.svg?style=flat-square
 .. |Coverage Status|
    image:: https://img.shields.io/coveralls/cablehead/python-consul.svg?style=flat-square
    :target: https://coveralls.io/r/cablehead/python-consul?branch=master
-.. _Read the Docs: https://python-consul.readthedocs.io/
+.. _Read the Docs: https://python-consul2.readthedocs.io/
 
 Status
 ------
@@ -56,16 +56,15 @@ open an issue and I'll try and add it straight away.
 Mailing List
 ------------
 
-- https://groups.google.com/forum/#!forum/python-consul
+- 373251686@qq.com
 
 Contributing
 ------------
 
-python-consul is currently maintained by:
+python-consul2 is currently maintained by:
 
-- @matusvalo
-- @abn
-- @cablehead
+- @poppyred
+
 
 Please reach out if you're interested in being a maintainer as well. Otherwise,
 open a PR or Issue we'll try and respond as quickly as we're able.
