@@ -33,10 +33,10 @@ install:
 
 jobs:
   include:
-    - stage: flake
-      python: 3.7
-      script:
-        - tox -e flake8
+#    - stage: flake
+#      python: 3.7
+#      script:
+#        - tox -e flake8
     - stage: tox
       script:
         - tox
