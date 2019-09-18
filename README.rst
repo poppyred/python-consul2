@@ -40,7 +40,7 @@ Installation
 
 .. |Build Status|
    image:: https://travis-ci.org/poppyred/python-consul2.svg?style=flat-square
-   :target: https://travis-ci.org/poppyred/python-consul2.svg?style=flat-square
+   :target: https://travis-ci.org/poppyred/python-consul2
 .. |Coverage Status|
    image:: https://img.shields.io/coveralls/cablehead/python-consul.svg?style=flat-square
    :target: https://coveralls.io/r/cablehead/python-consul?branch=master
