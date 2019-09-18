@@ -1,4 +1,4 @@
-__version__ = '0.0.3-dev'
+__version__ = '0.0.3-release'
 
 from consul.base import ACLDisabled
 from consul.base import ACLPermissionDenied
