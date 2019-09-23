@@ -7,6 +7,7 @@ Python client for `Consul.io <http://www.consul.io/>`_
 |Pyversions Status|
 |Docs Status|
 |Coverity Scan Build Status|
+|Coverage Status|
 
 Example
 -------
@@ -61,11 +62,13 @@ Installation
    :target: https://scan.coverity.com/projects/poppyred-python-consul2
 
 
-.. |Coverage Status|
-   image:: https://img.shields.io/coveralls/cablehead/python-consul.svg?style=flat-square
-   :target: https://coveralls.io/r/cablehead/python-consul?branch=master
-.. _Read the Docs: https://python-consul2.readthedocs.io/
+.. |Coverage Status1|
+   image:: https://codecov.io/gh/poppyred/python-consul2/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/poppyred/python-consul2
 
+.. |Coverage Status|
+   image:: https://codecov.io/gh/poppyred/python-consul2/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/poppyred/python-consul2
 Status
 ------
 
