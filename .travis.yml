@@ -20,7 +20,7 @@ script:
 jobs:
   include:
     - stage: sonar
-      dist: trusty
+      dist: xenial
       language: python
       addons:
         sonarcloud:
