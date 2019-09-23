@@ -48,7 +48,9 @@ jobs:
           secure: JVQo2ufR1pJD9AtpNuLsHNKzT7tvpCOQ3bAp3eOm8Hvk0XrInB1G+mChC7cx+gfQ6yAddRI4YjeDBbi2ZO1m/HZecQpizaiPSrkiBkeqwbSWHLwMu0DeC4Tlfy17wfrnqPjyoYlY4pXLhOl32YYnWDGGEn46wPNYcZAPp6UL6GN8jY3HjbYdYZ9xej58/pb8LvqlvCjCA5oXor2QaRLof5tlj8ZflwPW4vx8GSDej9vpXSu3vQFhM3qStLS8ew9yjVPsnIpDSDOVn13xC3hD8Xmk2YOjDEnFfi8RA+cWuoTj0pN7E6fqgCtM3gGuAe3gqj47d0G1segtVJ2qxXvuITV9RJ6zkwzRs/s3xwFSEX+7OXR4UVrwl3heHykggIqHCPHBJIbh3QtniyRCp5kH4VmAH/7q09HCFNVZVfgvN7E8BbaNSoDl6WA0ndEcsv8PJhQYa4LcqR1nbuOPbkx7QxmCEyI6yKfKkMiuOEvrnOU8ONYzvVtKo1MxR+YaLVkKrgwj1V/URUevvRQztiaNiD1yDzaCOAPqfR2VwuB2BsVaVV5SE3Md2IjCmr4vvuj11h1EJ4qOi0BpmCmW+1aWBlsOVEamNbhxFQ7hTl+GtbHOEGb8r6GlO9xDIM0rNOYjm9MU1qjuTfGmqttwAR46xIhNskHRXzN5SVz6SAV0uGw=
         on:
           tags: true
+
     - stage: coverity_scan
+      script: ignore
       addons:
         coverity_scan:
           project:
@@ -60,6 +62,10 @@ jobs:
         only:
           - stable
           - master
-env:
-  global:
-    secure: ahkNyfl9paRur/kONjP8Q8J9sSNDBr2M2ty1FDAjAiZPiZQwHzHhP+P14CMkxjrg9oYVC3fwpk2vDQg7XylidhaCuBr6adSDSUxrBl5ypuUjOoFVEdKq5Po38SbfeKw3/Yr2jA1StpOCKLn2ZYBtBQ67lh5TeyMXtZ2MKtnWQKCnUzmKW4BXV78PpR0xF5JgHOMDCWl95SBmS+BLk0Ecodhlf5ccyJiZdsG/3aHGYLYsP/uxPy1MOVEE9thViswnj63Pl2RvNtIOKQT7LPxXPeG87vGO1+egJY6BlUOIgj81QTIRFO56cxdmmptBGYDIWXTCF9EKD/WvD1keWBkoYRPXbC3dFWfiZapo0GojT+wlUh7IiqE2GMsPZAKPRLg3uvLSUHMai/qXIe2qhZTTaYCpuM717rIxuQ6ziRV7dYDr9mEToOKG5UWTvPza4T1FVtNRAZe4GfN0QgixutZJVdQqh3L8+LKywmmgscE0OVWeLL9XyjFphd6HWURLjTHCHvmzTY7Ksqu7GStm10c0Lf0BxQOQV/NgNjfYez0/REfJc5IT1U1MdRKzk+Y/LCZzrtDSd60AypkQshwGnJCuSusso4aXGHlUi4K1tB1kJEmhDClZwe1S6ZFS99FBPZf98wbnT1Co5dZ0cyWBlrT1AgRhQ+NsP6/Ex/8XGMVU6lk=
+
+    - stage: coverity_scan
+      script:
+        - pip install codecov
+        - codecov
+
+
