@@ -5,7 +5,6 @@ python:
 #  - pypy
 #  - 3.5
 #  - 3.6
-  - flake8
   - 3.7
 
 install:
@@ -22,7 +21,7 @@ jobs:
       python: 3.7
       script:
         - pip install flake8
-        - tox -e flake8
+        - flake8
     - stage: sonar
       dist: trusty
       language: python
