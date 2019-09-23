@@ -7,8 +7,6 @@ python:
   - 3.6
   - 3.7
 
-
-
 install:
   - pip install tox
   - pip install tox-travis
@@ -22,6 +20,7 @@ jobs:
     - stage: sonar
       dist: xenial
       language: python
+      python: 3.7
       addons:
         sonarcloud:
           organization: "python-consul2"
@@ -35,8 +34,10 @@ jobs:
       branches:
         only:
           - master
+
     - stage: deploy
       script: ignore
+      python: 3.7
       deploy:
         provider: pypi
         user: poppys
@@ -44,7 +45,7 @@ jobs:
           secure: "JVQo2ufR1pJD9AtpNuLsHNKzT7tvpCOQ3bAp3eOm8Hvk0XrInB1G+mChC7cx+gfQ6yAddRI4YjeDBbi2ZO1m/HZecQpizaiPSrkiBkeqwbSWHLwMu0DeC4Tlfy17wfrnqPjyoYlY4pXLhOl32YYnWDGGEn46wPNYcZAPp6UL6GN8jY3HjbYdYZ9xej58/pb8LvqlvCjCA5oXor2QaRLof5tlj8ZflwPW4vx8GSDej9vpXSu3vQFhM3qStLS8ew9yjVPsnIpDSDOVn13xC3hD8Xmk2YOjDEnFfi8RA+cWuoTj0pN7E6fqgCtM3gGuAe3gqj47d0G1segtVJ2qxXvuITV9RJ6zkwzRs/s3xwFSEX+7OXR4UVrwl3heHykggIqHCPHBJIbh3QtniyRCp5kH4VmAH/7q09HCFNVZVfgvN7E8BbaNSoDl6WA0ndEcsv8PJhQYa4LcqR1nbuOPbkx7QxmCEyI6yKfKkMiuOEvrnOU8ONYzvVtKo1MxR+YaLVkKrgwj1V/URUevvRQztiaNiD1yDzaCOAPqfR2VwuB2BsVaVV5SE3Md2IjCmr4vvuj11h1EJ4qOi0BpmCmW+1aWBlsOVEamNbhxFQ7hTl+GtbHOEGb8r6GlO9xDIM0rNOYjm9MU1qjuTfGmqttwAR46xIhNskHRXzN5SVz6SAV0uGw="
         on:
           tags: true
-          python: 3.7
+
 
     - stage: coverity_scan
       coverity_scan:
