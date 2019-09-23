@@ -1,10 +1,10 @@
 language: python
 
 python:
-#  - 2.7
-#  - pypy
-#  - 3.5
-#  - 3.6
+  - 2.7
+  - pypy
+  - 3.5
+  - 3.6
   - 3.7
 
 install:
@@ -17,6 +17,11 @@ script:
 
 jobs:
   include:
+    - stage: flake
+      python: 3.7
+      script:
+        - pip install flake8
+        - tox -e flake8
     - stage: sonar
       dist: trusty
       language: python
