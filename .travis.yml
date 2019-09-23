@@ -17,11 +17,6 @@ script:
 
 jobs:
   include:
-    - stage: flake
-      python: 3.7
-      script:
-        - pip install flake8
-        - flake8
     - stage: sonar
       dist: trusty
       language: python
