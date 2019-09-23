@@ -48,16 +48,16 @@ jobs:
 
 
     - stage: coverity_scan
-      coverity_scan:
-        # GitHub project metadata
-        project:
-          name: poppyred/python-consul2
-          version: 0.0.3
-          description: Python Repo Template
+      addons:
+        coverity_scan:
+          # GitHub project metadata
+          project:
+            name: poppyred/python-consul2
+            version: 0.0.3
+            description: Python Repo Template
 
-        branch_pattern: master
-
+          branch_pattern: master
       branches:
-        only:
-          - stable
-          - master
+          only:
+            - stable
+            - master
