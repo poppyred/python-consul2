@@ -10,9 +10,9 @@ python:
 install:
   - pip install tox
   - pip install tox-travis
-
-script:
-  - tox
+#
+#script:
+#  - tox
 
 jobs:
   include:
