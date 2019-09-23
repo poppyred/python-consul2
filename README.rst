@@ -6,6 +6,7 @@ Python client for `Consul.io <http://www.consul.io/>`_
 |Pypi Status|
 |Pyversions Status|
 |Docs Status|
+|Coverity Scan Build Status|
 
 Example
 -------
@@ -53,6 +54,11 @@ Installation
 .. |Docs Status|
    image:: https://img.shields.io/readthedocs/python-consul2
    :target: https://python-consul2.readthedocs.io/
+
+
+.. |Coverity Scan Build Status|
+   image:: https://scan.coverity.com/projects/19244/badge.svg
+   :target: https://scan.coverity.com/projects/poppyred-python-consul2
 
 
 .. |Coverage Status|
