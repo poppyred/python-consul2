@@ -1,6 +1,4 @@
 language: python
-git:
-  lfs_skip_smudge: true
 python:
   - "2.7"
   - "pypy"
