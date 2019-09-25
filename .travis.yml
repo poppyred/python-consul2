@@ -1,7 +1,7 @@
 language: python
 before_install:
   - wget https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
-  - unzip consul_1.6.1_linux_amd64.zip
+#  - unzip consul_1.6.1_linux_amd64.zip
   - mv consul test/consul.osx
 git:
   lfs_skip_smudge: true
