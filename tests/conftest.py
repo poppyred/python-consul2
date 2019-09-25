@@ -62,10 +62,11 @@ def start_consul_instance(acl_master_token=None):
     config = {'ports': ports, 'performance': {'raft_multiplier': 1},
               'enable_script_checks': True}
     if acl_master_token:
-        config['primary_datacenter'] = 'dc1'
+        config['acl_datacenter'] = 'dc1'
         config['acl_master_token'] = acl_master_token
 
     tmpdir = py.path.local(tempfile.mkdtemp())
+    print(tmpdir)
     tmpdir.join('config.json').write(json.dumps(config))
     tmpdir.chdir()
 
@@ -137,7 +138,8 @@ def consul_port(consul_instance):
 
 @pytest.fixture(scope="module")
 def acl_consul_instance():
-    acl_master_token = uuid.uuid4().hex
+    # acl_master_token = uuid.uuid4().hex
+    acl_master_token = str(uuid.uuid4())
     p, port = start_consul_instance(acl_master_token=acl_master_token)
     yield port, acl_master_token
     p.terminate()
