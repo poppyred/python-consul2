@@ -21,6 +21,7 @@ allow_failures:
     - python: 3.8-dev
     - python: nightly
     - python: pypy3
+
 install:
   - pip install tox
   - pip install tox-travis
@@ -70,7 +71,7 @@ jobs:
           - stable
           - master
 
-    - stage: coverity_scan
+    - stage: codecov
       script:
         - pip install codecov
         - codecov
