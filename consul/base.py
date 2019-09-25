@@ -58,7 +58,7 @@ class Check(object):
         if isinstance(args, six.string_types) \
                 or isinstance(args, six.binary_type):
             warnings.warn(
-                "Check.script should take a list of args", DeprecationWarning)
+                  "Check.script should take a list of arg", DeprecationWarning)
             args = ["sh", "-c", args]
         return {'args': args, 'interval': interval}
 
@@ -138,7 +138,7 @@ class Check(object):
         if not script and not http and not ttl:
             return {}
 
-        log.warn(
+        log.warning(
             'DEPRECATED: use consul.Check.script/http/ttl to specify check')
 
         ret = {'check': {}}
