@@ -1,10 +1,12 @@
 language: python
+git:
+  lfs_skip_smudge: true
 python:
-  - 2.7
-  - pypy
-  - 3.5
-  - 3.6
-  - 3.7
+  - "2.7"
+  - "pypy"
+  - "3.5"
+  - "3.6"
+  - "3.7"
   - "3.7-dev"  # 3.7 development branch
   - "3.8-dev"  # 3.8 development branch
   - "nightly"  # nightly build
