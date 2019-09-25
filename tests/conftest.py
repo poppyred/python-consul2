@@ -82,7 +82,7 @@ def start_consul_instance(acl_master_token=None):
     command = command.format(bin=bin).strip()
     command = shlex.split(command)
 
-    with open('/tmp/test', 'w') as devnull:
+    with open('/dev/null', 'w') as devnull:
         p = subprocess.Popen(
             command, stdout=devnull, stderr=devnull)
 
