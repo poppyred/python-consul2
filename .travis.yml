@@ -33,6 +33,8 @@ script:
 jobs:
   include:
     - stage: sonar
+      git:
+        depth: false
       dist: xenial
       language: python
       python: '3.7'
@@ -40,11 +42,12 @@ jobs:
         sonarcloud:
           organization: python-consul2
           token:
-            secure: ph5YrfxHBRp1wvMwZ4S63ADE8dNhTHiaHv1ur7GSq8ZxPEKM+inrt1P9Mv+iA0NP84SpDfm+/PSL96OLlxz0RonvLJM6F6CXz2CPapuNhsDqQ/fmaWtQ6ejfaqp48j8Us/IxSLeFVqUei+akQLSwlC4eHwF07OJaRMx2hqBsU+vfWJ9tfnD6Uu53iwjMlIo4k4f3bfhXULbR8BwO3YeDOcNWnWG+it7skICbvrlY/Fs3/bKHtn0SAuVEDaY8+I1bdrmW9eeFguPMvanN3w9QER06a+wWtmNwdrs0WGw8TIt5zwEKWwzMHSYzj5bE3ps9vbJ5Qh12iJqoBlx8g3vQePv35deDyy7kHqSOeYkY/5EygLuO9vn/X9jekqgL5s3rLCkQxiaE/lAhn5g8iQYWokeNjQNWQQ2G0ojkeXM1gYHQdEOwnYFDnPi9hpeCqAgu1ZkrCe5M7bPA8Cn3S8yeaO+LqpLLn046zg65kcTcWyCYJxUl4tZT7C3wugMcr/fY8XDTzPc41sx14vmbPvP6Pp/bqBc9E9mBbxPzo5U0vE/Y1nNL0G5jprsBD95wP9UcjCOEo1YZtd3qbh1nGePxgq6j9RligOjjJSPIILcGNPwwAtSu7kr4ft5tpZ+LnFzPuWnRC8se7YVvoGCHicqu9CqtkZ/l348HQod3Swu2VxM=
+            secure: "sDDl1BmJbd5viFM67qNeEOKoN57IzVmAKDNBJV/HvwtjzFc9SQPgkM7SyyFBL5TWT5TZ9CIMV8gsS6Knu25pt1L4uEDCLWwGtz/Ha7xNCmmV8JlTc085EDv8wBqoitXiWYp4WJtkxxB3LZRECRFpL72H10QQHOttUs5PGEBLhb1QbkoAFGftnO44CWYygfUlgZCgx+aHfm5vAQM5HSmRrJCYKLMPjtERnsA521sspWOM8wKpJw+EZ+fMdcqL2bGKCfe3gQ7VFa39fQ1IDoZki5Xlu1Mxgwg6OTcbTcIh4JknvLNqAKkKQwk4VkovE5vKNwWgVvL0F81Os/PsLSXgyF2tOz7o3Upp1QeoXleH4Vyj94Z37ktd967oT/c7OierA6QFJey2/tc/PVzcE8B919ud6HPYVblSAaGAg3r4cBVtolFv/kwIUQWvGMxsjPNnci6eQ5vXEFGb16BHgB33zmqPif8kg+8+8cehSi84aFb44ZTDzqW6ew4oOwzIvi9fmYWwX1GzYS3/nK1clJKSX9ypWhW/bqM1e7eHm0lsGM2WSZZ8OORCnx9QVv0BRnigtRwAfeaV1iwDHDNczMdXyOL6im5i9kipiKEZ2DZOz+WJOtw/zBU/ISX7nau20crMCxFdyqgWKEpJOuxZZA++kfXi1MxcBXgSf/FxfT4mMmQ="
           branches:
             - master
       install: ignore
       script:
+        - ls .
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi
       branches:
         only:
