@@ -5,8 +5,10 @@ before_install:
   - unzip consul_1.6.1_linux_amd64.zip
   - mv consul consul.linux64
   - cd ..
+
 git:
   lfs_skip_smudge: true
+
 python:
   - "2.7"
   - "pypy"
