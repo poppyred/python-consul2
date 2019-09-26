@@ -1,105 +1,83 @@
 language: python
 before_install:
   - wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
-  - wget -O tests/consul_1.6.1_darwin_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_darwin_amd64.zip
-  - wget -O tests/consul_1.6.1_linux_386.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_386.zip
-  - wget -O tests/consul_1.6.1_windows_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_windows_amd64.zip
   - cd tests
-  - unzip consul_1.6.1_linux_amd64.zip && mv consul consul.linux64
-  - unzip consul_1.6.1_darwin_amd64.zip && mv consul consul.osx
-  - unzip consul_1.6.1_windows_amd64.zip && mv consul.exe consul64.exe
-
+  - unzip consul_1.6.1_linux_amd64.zip
+  - mv consul consul.linux64
 git:
   lfs_skip_smudge: true
-
+python:
+  - "2.7"
+  - "pypy"
+  - "pypy3"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.7-dev"  # 3.7 development branch
+  - "3.8-dev"  # 3.8 development branch
+  - "nightly"  # nightly build
 matrix:
-  include:
-    - os: linux
-      python: '2.7'
-      env: TOXENV=py27
-      name: 'linux python2.7'
-
-    - os: linux
-      python: '3.5'
-      env: TOXENV=py35
-      name: 'linux python3.5'
-
-    - os: linux
-      python: '3.6'
-      env: TOXENV=py36
-      name: 'linux python3.6'
-
-    - os: linux
-      python: '3.7'
-      env: TOXENV=py37
-      name: 'linux python3.7; if tags will deploy,if master will sonarcloud'
-
-    - os: linux
-      python: 'pypy'
-      env: TOXENV=pypy
-      name: 'linux python:pypy2'
-
-    - os: linux
-      python: 'pypy3'
-      env: TOXENV=pypy3
-      name: 'linux python:pypy3'
-
-    - os: linux
-      python: '3.7-dev'
-      name: 'linux python:3.7-dev'
-    - os: linux
-      python: '3.8-dev'
-      name: 'linux python:3.8-dev'
-    - os: linux
-      python: 'nightly'
-      name: 'linux python:nightly'
-
-    - name: "Python 3.7.4 on macOS"
-      os: osx
-      osx_image: xcode11    # Python 3.7.4 running on macOS 10.14.4
-      language: shell       # 'language: python' is an error on Travis CI macOS
-
-    - name: "Python 3.7.4 on Windows"
-      os: windows           # Windows 10.0.17134 N/A Build 17134
-      language: shell       # 'language: python' is an error on Travis CI Windows
-      before_install:
-        - choco install python
-        - python -m pip install --upgrade pip
-      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
-
   allow_failures:
     - python: 3.7-dev
     - python: 3.8-dev
     - python: nightly
     - python: pypy3
 
-
-
 install:
   - pip install tox
   - pip install tox-travis
-
 script:
   - tox
 
-
-
-deploy:
-  provider: pypi
-  user: poppys
-  password:
-    secure: JVQo2ufR1pJD9AtpNuLsHNKzT7tvpCOQ3bAp3eOm8Hvk0XrInB1G+mChC7cx+gfQ6yAddRI4YjeDBbi2ZO1m/HZecQpizaiPSrkiBkeqwbSWHLwMu0DeC4Tlfy17wfrnqPjyoYlY4pXLhOl32YYnWDGGEn46wPNYcZAPp6UL6GN8jY3HjbYdYZ9xej58/pb8LvqlvCjCA5oXor2QaRLof5tlj8ZflwPW4vx8GSDej9vpXSu3vQFhM3qStLS8ew9yjVPsnIpDSDOVn13xC3hD8Xmk2YOjDEnFfi8RA+cWuoTj0pN7E6fqgCtM3gGuAe3gqj47d0G1segtVJ2qxXvuITV9RJ6zkwzRs/s3xwFSEX+7OXR4UVrwl3heHykggIqHCPHBJIbh3QtniyRCp5kH4VmAH/7q09HCFNVZVfgvN7E8BbaNSoDl6WA0ndEcsv8PJhQYa4LcqR1nbuOPbkx7QxmCEyI6yKfKkMiuOEvrnOU8ONYzvVtKo1MxR+YaLVkKrgwj1V/URUevvRQztiaNiD1yDzaCOAPqfR2VwuB2BsVaVV5SE3Md2IjCmr4vvuj11h1EJ4qOi0BpmCmW+1aWBlsOVEamNbhxFQ7hTl+GtbHOEGb8r6GlO9xDIM0rNOYjm9MU1qjuTfGmqttwAR46xIhNskHRXzN5SVz6SAV0uGw=
-  on:
-    tags: true
-    condition: "$TOXENV == py37 && $TRAVIS_OS_NAME == linux"
-
-
-addons:
+jobs:
+  include:
+    - stage: sonar
+      dist: xenial
+      language: python
+      python: '3.7'
+      addons:
         sonarcloud:
           organization: python-consul2
           token:
             secure: ph5YrfxHBRp1wvMwZ4S63ADE8dNhTHiaHv1ur7GSq8ZxPEKM+inrt1P9Mv+iA0NP84SpDfm+/PSL96OLlxz0RonvLJM6F6CXz2CPapuNhsDqQ/fmaWtQ6ejfaqp48j8Us/IxSLeFVqUei+akQLSwlC4eHwF07OJaRMx2hqBsU+vfWJ9tfnD6Uu53iwjMlIo4k4f3bfhXULbR8BwO3YeDOcNWnWG+it7skICbvrlY/Fs3/bKHtn0SAuVEDaY8+I1bdrmW9eeFguPMvanN3w9QER06a+wWtmNwdrs0WGw8TIt5zwEKWwzMHSYzj5bE3ps9vbJ5Qh12iJqoBlx8g3vQePv35deDyy7kHqSOeYkY/5EygLuO9vn/X9jekqgL5s3rLCkQxiaE/lAhn5g8iQYWokeNjQNWQQ2G0ojkeXM1gYHQdEOwnYFDnPi9hpeCqAgu1ZkrCe5M7bPA8Cn3S8yeaO+LqpLLn046zg65kcTcWyCYJxUl4tZT7C3wugMcr/fY8XDTzPc41sx14vmbPvP6Pp/bqBc9E9mBbxPzo5U0vE/Y1nNL0G5jprsBD95wP9UcjCOEo1YZtd3qbh1nGePxgq6j9RligOjjJSPIILcGNPwwAtSu7kr4ft5tpZ+LnFzPuWnRC8se7YVvoGCHicqu9CqtkZ/l348HQod3Swu2VxM=
           branches:
             - master
-          on:
-            condition: "$TOXENV == py37 && $TRAVIS_OS_NAME == linux"
+      install: ignore
+      script:
+        - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi
+      branches:
+        only:
+          - master
+
+
+    - stage: deploy
+      script: ignore
+      python: '3.7'
+      deploy:
+        provider: pypi
+        user: poppys
+        password:
+          secure: JVQo2ufR1pJD9AtpNuLsHNKzT7tvpCOQ3bAp3eOm8Hvk0XrInB1G+mChC7cx+gfQ6yAddRI4YjeDBbi2ZO1m/HZecQpizaiPSrkiBkeqwbSWHLwMu0DeC4Tlfy17wfrnqPjyoYlY4pXLhOl32YYnWDGGEn46wPNYcZAPp6UL6GN8jY3HjbYdYZ9xej58/pb8LvqlvCjCA5oXor2QaRLof5tlj8ZflwPW4vx8GSDej9vpXSu3vQFhM3qStLS8ew9yjVPsnIpDSDOVn13xC3hD8Xmk2YOjDEnFfi8RA+cWuoTj0pN7E6fqgCtM3gGuAe3gqj47d0G1segtVJ2qxXvuITV9RJ6zkwzRs/s3xwFSEX+7OXR4UVrwl3heHykggIqHCPHBJIbh3QtniyRCp5kH4VmAH/7q09HCFNVZVfgvN7E8BbaNSoDl6WA0ndEcsv8PJhQYa4LcqR1nbuOPbkx7QxmCEyI6yKfKkMiuOEvrnOU8ONYzvVtKo1MxR+YaLVkKrgwj1V/URUevvRQztiaNiD1yDzaCOAPqfR2VwuB2BsVaVV5SE3Md2IjCmr4vvuj11h1EJ4qOi0BpmCmW+1aWBlsOVEamNbhxFQ7hTl+GtbHOEGb8r6GlO9xDIM0rNOYjm9MU1qjuTfGmqttwAR46xIhNskHRXzN5SVz6SAV0uGw=
+        on:
+          tags: true
+
+    - stage: coverity_scan
+      script: ignore
+      addons:
+        coverity_scan:
+          project:
+            name: poppyred/python-consul2
+            version: 3
+            description: Python Repo Template
+          branch_pattern: master
+      branches:
+        only:
+          - stable
+          - master
+
+    - stage: codecov
+      script:
+        - pip install codecov
+        - codecov
+
+
