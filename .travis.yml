@@ -55,8 +55,5 @@ addons:
     branches:
       only:
         - master
-    install: ignore
-    script:
-      - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi
 
 
