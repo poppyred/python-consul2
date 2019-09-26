@@ -1,9 +1,15 @@
 language: python
 before_install:
   - wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
+  - wget -O tests/consul_1.6.1_darwin_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_darwin_amd64.zip
+  - wget -O tests/consul_1.6.1_linux_386.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_386.zip
+  - wget -O tests/consul_1.6.1_windows_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_windows_amd64.zip
   - cd tests
-  - unzip consul_1.6.1_linux_amd64.zip
-  - mv consul consul.linux64
+  - unzip consul_1.6.1_linux_amd64.zip && mv consul consul.linux64
+  - unzip consul_1.6.1_darwin_amd64.zip && mv consul consul.osx
+  - unzip consul_1.6.1_windows_amd64.zip && mv consul consul.windows64
+
+
 git:
   lfs_skip_smudge: true
 python:
@@ -44,6 +50,20 @@ matrix:
     - os: linux
       python: 'nightly'
       env: TOXENV=nightly
+
+    - os: osx
+      python: '2.7'
+      env: TOXENV=py27
+    - os: osx
+      python: '3.5'
+      env: TOXENV=py35
+    - os: osx
+      python: '3.6'
+      env: TOXENV=py36
+    - os: osx
+      python: '3.7'
+      env: TOXENV=py37
+
   allow_failures:
     - python: 3.7-dev
     - python: 3.8-dev
