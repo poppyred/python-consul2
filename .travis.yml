@@ -4,18 +4,19 @@ before_install:
   - cd tests
   - unzip consul_1.6.1_linux_amd64.zip
   - mv consul consul.linux64
+  - cd ..
 git:
   lfs_skip_smudge: true
 python:
   - "2.7"
-#  - "pypy"
-#  - "pypy3"
-#  - "3.5"
-#  - "3.6"
-#  - "3.7"
-#  - "3.7-dev"  # 3.7 development branch
-#  - "3.8-dev"  # 3.8 development branch
-#  - "nightly"  # nightly build
+  - "pypy"
+  - "pypy3"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.7-dev"  # 3.7 development branch
+  - "3.8-dev"  # 3.8 development branch
+  - "nightly"  # nightly build
 
 matrix:
   allow_failures:
