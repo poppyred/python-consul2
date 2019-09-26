@@ -194,17 +194,15 @@ class TestConsul(object):
             response = yield c.agent.service.register('foo')
             assert response is True
             services = yield c.agent.services()
-            assert services == {
-                'foo': {
-                    'Port': 0,
-                    'ID': 'foo',
-                    'CreateIndex': 0,
-                    'ModifyIndex': 0,
-                    'EnableTagOverride': False,
-                    'Service': 'foo',
-                    'Tags': [],
-                    'Meta': {},
-                    'Address': ''}, }
+            assert services == {'foo': {'ID': 'foo',
+                                        'Service': 'foo',
+                                        'Tags': [],
+                                        'Meta': {},
+                                        'Port': 0,
+                                        'Address': '',
+                                        'Weights': {'Passing': 1,
+                                                    'Warning': 1},
+                                        'EnableTagOverride': False}}
             response = yield c.agent.service.deregister('foo')
             assert response is True
             services = yield c.agent.services()
@@ -372,6 +370,7 @@ class TestConsul(object):
         loop.add_timeout(time.time() + (1.0 / 100), register)
         loop.run_sync(monitor)
 
+    @pytest.mark.skip
     def test_acl(self, loop, acl_consul):
         @gen.coroutine
         def main():
