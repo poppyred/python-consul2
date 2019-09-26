@@ -84,8 +84,13 @@ jobs:
           - master
 
     - stage: codecov
-      script:
+      python: '3.7'
+      install:
+        - pip install  coverage
         - pip install codecov
-        - codecov
+        - pip install tox
+      script:
+          - coverage run -m tox
+          - codecov -t 48e049f3-dd7c-43e5-a283-acfc68d1c27a
 
 
