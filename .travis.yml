@@ -1,11 +1,14 @@
 language: python
+
 before_install:
   - wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
   - cd tests
   - unzip consul_1.6.1_linux_amd64.zip
   - mv consul consul.linux64
+  -
 git:
   lfs_skip_smudge: true
+
 matrix:
     include:
         - os: linux
@@ -87,6 +90,7 @@ matrix:
 install:
   - pip install tox
   - pip install tox-travis
+
 script: tox
 
 
