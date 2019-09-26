@@ -13,7 +13,6 @@ def loop():
     return loop
 
 
-
 class TestConsulACL(object):
     def test_acl(self, loop, acl_consul):
         @gen.coroutine
