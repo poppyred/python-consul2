@@ -7,7 +7,7 @@ before_install:
   - cd tests
   - unzip consul_1.6.1_linux_amd64.zip && mv consul consul.linux64
   - unzip consul_1.6.1_darwin_amd64.zip && mv consul consul.osx
-  - unzip consul_1.6.1_windows_amd64.zip && mv consul consul.windows64
+  - unzip consul_1.6.1_windows_amd64.zip && mv consul.exe consul64.exe
 
 
 git:
