@@ -1,7 +1,17 @@
+import pytest
 from tornado import gen
+from tornado import ioloop
 
 import consul
 import consul.tornado
+
+
+@pytest.fixture
+def loop():
+    loop = ioloop.IOLoop()
+    loop.make_current()
+    return loop
+
 
 
 class TestConsulACL(object):

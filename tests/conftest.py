@@ -19,15 +19,19 @@ sys.path.insert(0,
                 os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
                 )
 if sys.version_info[0] < 3:
-    p1 = os.path.join(os.path.dirname(__file__), 'test_aio.py')
-    p2 = os.path.join(os.path.dirname(__file__), 'test_aio_acl.py')
-    collect_ignore.append(p1)
-    collect_ignore.append(p2)
+    p = os.path.join(os.path.dirname(__file__), 'test_aio.py')
+    collect_ignore.append(p)
+    p = os.path.join(os.path.dirname(__file__), 'test_aio_acl.py')
+    collect_ignore.append(p)
 
 if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     p = os.path.join(os.path.dirname(__file__), 'test_twisted.py')
     collect_ignore.append(p)
+    p = os.path.join(os.path.dirname(__file__), 'test_twisted_acl.py')
+    collect_ignore.append(p)
     p = os.path.join(os.path.dirname(__file__), 'test_tornado.py')
+    collect_ignore.append(p)
+    p = os.path.join(os.path.dirname(__file__), 'test_tornado_acl.py')
     collect_ignore.append(p)
 
 
