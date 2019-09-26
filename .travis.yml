@@ -42,23 +42,18 @@ matrix:
       python: 'nightly'
       env: TOXENV=nightly
 
-    - os: osx
-      python: '2.7'
-      env: TOXENV=py27
-    - os: osx
-      python: '3.5'
-      env: TOXENV=py35
-    - os:
-      - linux
-      - windows
-      - osx
-      python: '3.6'
-      env: TOXENV=py36
-    - os: osx
-      python: '3.7'
-      env: TOXENV=py37
+    - name: "Python 3.7.4 on macOS"
+      os: osx
+      osx_image: xcode11    # Python 3.7.4 running on macOS 10.14.4
+      language: shell       # 'language: python' is an error on Travis CI macOS
 
-
+    - name: "Python 3.7.4 on Windows"
+        os: windows           # Windows 10.0.17134 N/A Build 17134
+        language: shell       # 'language: python' is an error on Travis CI Windows
+        before_install:
+          - choco install python
+          - python -m pip install --upgrade pip
+        env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 
   allow_failures:
     - python: 3.7-dev
@@ -69,10 +64,19 @@ matrix:
 install:
   - pip install tox
   - pip install tox-travis
+
 script:
   - tox
 
 
 
+deploy:
+  provider: pypi
+  user: poppys
+  password:
+    secure: JVQo2ufR1pJD9AtpNuLsHNKzT7tvpCOQ3bAp3eOm8Hvk0XrInB1G+mChC7cx+gfQ6yAddRI4YjeDBbi2ZO1m/HZecQpizaiPSrkiBkeqwbSWHLwMu0DeC4Tlfy17wfrnqPjyoYlY4pXLhOl32YYnWDGGEn46wPNYcZAPp6UL6GN8jY3HjbYdYZ9xej58/pb8LvqlvCjCA5oXor2QaRLof5tlj8ZflwPW4vx8GSDej9vpXSu3vQFhM3qStLS8ew9yjVPsnIpDSDOVn13xC3hD8Xmk2YOjDEnFfi8RA+cWuoTj0pN7E6fqgCtM3gGuAe3gqj47d0G1segtVJ2qxXvuITV9RJ6zkwzRs/s3xwFSEX+7OXR4UVrwl3heHykggIqHCPHBJIbh3QtniyRCp5kH4VmAH/7q09HCFNVZVfgvN7E8BbaNSoDl6WA0ndEcsv8PJhQYa4LcqR1nbuOPbkx7QxmCEyI6yKfKkMiuOEvrnOU8ONYzvVtKo1MxR+YaLVkKrgwj1V/URUevvRQztiaNiD1yDzaCOAPqfR2VwuB2BsVaVV5SE3Md2IjCmr4vvuj11h1EJ4qOi0BpmCmW+1aWBlsOVEamNbhxFQ7hTl+GtbHOEGb8r6GlO9xDIM0rNOYjm9MU1qjuTfGmqttwAR46xIhNskHRXzN5SVz6SAV0uGw=
+  on:
+    tags: true
+    condition: "$TOXENV == py27 && $TRAVIS_OS_NAME == linux"
 
 
