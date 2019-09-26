@@ -88,7 +88,7 @@ jobs:
       install:
         - pip install  coverage
         - pip install codecov
-        - pip install tox
+        - pip install tox -e py37
       script:
         - coverage run -m tox
         - codecov -t 48e049f3-dd7c-43e5-a283-acfc68d1c27a
