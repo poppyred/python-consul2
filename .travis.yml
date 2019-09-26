@@ -10,45 +10,53 @@ before_install:
   - mv consul consul.linux64
 
 matrix:
-    include:
-        - os: linux
-          python: '2.7'
-          env: TOXENV=py27
-        - os: linux
-          python: '3.5'
-          env: TOXENV=py35
-        - os: linux
-          python: '3.6'
-          env: TOXENV=py36
-        - os: linux
-          python: '3.7'
-          env: TOXENV=py37
-        - os: linux
-          python: 'pypy'
-          env: TOXENV=pypy
-        - os: linux
-          python: 'pypy3'
-          env: TOXENV=pypy3
-        - os: linux
-          python: '3.7-dev'
-          env: TOXENV=37dev
-        - os: linux
-          python: '3.8-dev'
-          env: TOXENV=38dev
-        - os: linux
-          python: 'nightly'
-          env: TOXENV=nightly
+  include:
+    - os: linux
+      python: '2.7'
+      env: TOXENV=py27
+    - os: linux
+      python: '3.5'
+      env: TOXENV=py35
+    - os: linux
+      python: '3.6'
+      env: TOXENV=py36
+    - os: linux
+      python: '3.7'
+      env: TOXENV=py37
+    - os: linux
+      python: 'pypy'
+      env: TOXENV=pypy
+    - os: linux
+      python: 'pypy3'
+      env: TOXENV=pypy3
+    - os: linux
+      python: '3.7-dev'
+      env: TOXENV=37dev
+    - os: linux
+      python: '3.8-dev'
+      env: TOXENV=38dev
+    - os: linux
+      python: 'nightly'
+      env: TOXENV=nightly
 
 install:
   - pip install tox
   - pip install tox-travis
 
-script: tox
+script:
+  - tox
 
 
-stage: 'codecov'
-  script:
-    - pip install codecov
-    - codecov
+addons:
+  sonarcloud:
+    organization: python-consul2
+    token:
+      secure: ph5YrfxHBRp1wvMwZ4S63ADE8dNhTHiaHv1ur7GSq8ZxPEKM+inrt1P9Mv+iA0NP84SpDfm+/PSL96OLlxz0RonvLJM6F6CXz2CPapuNhsDqQ/fmaWtQ6ejfaqp48j8Us/IxSLeFVqUei+akQLSwlC4eHwF07OJaRMx2hqBsU+vfWJ9tfnD6Uu53iwjMlIo4k4f3bfhXULbR8BwO3YeDOcNWnWG+it7skICbvrlY/Fs3/bKHtn0SAuVEDaY8+I1bdrmW9eeFguPMvanN3w9QER06a+wWtmNwdrs0WGw8TIt5zwEKWwzMHSYzj5bE3ps9vbJ5Qh12iJqoBlx8g3vQePv35deDyy7kHqSOeYkY/5EygLuO9vn/X9jekqgL5s3rLCkQxiaE/lAhn5g8iQYWokeNjQNWQQ2G0ojkeXM1gYHQdEOwnYFDnPi9hpeCqAgu1ZkrCe5M7bPA8Cn3S8yeaO+LqpLLn046zg65kcTcWyCYJxUl4tZT7C3wugMcr/fY8XDTzPc41sx14vmbPvP6Pp/bqBc9E9mBbxPzo5U0vE/Y1nNL0G5jprsBD95wP9UcjCOEo1YZtd3qbh1nGePxgq6j9RligOjjJSPIILcGNPwwAtSu7kr4ft5tpZ+LnFzPuWnRC8se7YVvoGCHicqu9CqtkZ/l348HQod3Swu2VxM=
+    branches:
+      only:
+        - master
+    install: ignore
+    script:
+      - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi
 
 
