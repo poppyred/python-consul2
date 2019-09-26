@@ -15,10 +15,14 @@ import pytest
 import requests
 
 collect_ignore = []
-
+sys.path.insert(0,
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+                )
 if sys.version_info[0] < 3:
-    p = os.path.join(os.path.dirname(__file__), 'test_aio.py')
-    collect_ignore.append(p)
+    p1 = os.path.join(os.path.dirname(__file__), 'test_aio.py')
+    p2 = os.path.join(os.path.dirname(__file__), 'test_aio_acl.py')
+    collect_ignore.append(p1)
+    collect_ignore.append(p2)
 
 if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     p = os.path.join(os.path.dirname(__file__), 'test_twisted.py')
@@ -32,7 +36,7 @@ def get_free_ports(num, host=None):
         host = '127.0.0.1'
     sockets = []
     ret = []
-    for i in range(num):
+    for _ in range(num):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((host, 0))
         ret.append(s.getsockname()[1])
@@ -62,6 +66,7 @@ def start_consul_instance(acl_master_token=None):
         config['acl_master_token'] = acl_master_token
 
     tmpdir = py.path.local(tempfile.mkdtemp())
+    print(tmpdir)
     tmpdir.join('config.json').write(json.dumps(config))
     tmpdir.chdir()
 
@@ -76,7 +81,6 @@ def start_consul_instance(acl_master_token=None):
               ' -config-dir=.'
     command = command.format(bin=bin).strip()
     command = shlex.split(command)
-
     with open('/dev/null', 'w') as devnull:
         p = subprocess.Popen(
             command, stdout=devnull, stderr=devnull)
@@ -104,7 +108,7 @@ def start_consul_instance(acl_master_token=None):
 
     requests.put(base_uri + 'agent/service/deregister/foo')
     # phew
-    time.sleep(2)
+    time.sleep(3)
     return p, ports['http']
 
 
@@ -133,7 +137,8 @@ def consul_port(consul_instance):
 
 @pytest.fixture(scope="module")
 def acl_consul_instance():
-    acl_master_token = uuid.uuid4().hex
+    # acl_master_token = uuid.uuid4().hex
+    acl_master_token = str(uuid.uuid4())
     p, port = start_consul_instance(acl_master_token=acl_master_token)
     yield port, acl_master_token
     p.terminate()
