@@ -37,7 +37,7 @@ Installation
 **Note:** When using python-consul library in environment with proxy server, setting of ``http_proxy``, ``https_proxy`` and ``no_proxy`` environment variables can be required for proper functionality.
 
 .. |Build Status|
-   image:: https://travis-ci.org/poppyred/python-consul2.svg?style=flat-square
+   image:: https://travis-ci.org/poppyred/python-consul2.svg?branch=master&style=flat-square
    :target: https://travis-ci.org/poppyred/python-consul2
 
 .. |License Status|
