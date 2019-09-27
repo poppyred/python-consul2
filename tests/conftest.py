@@ -50,7 +50,7 @@ def get_free_ports(num, host=None):
     return ret
 
 
-def start_consul_instance(acl_master_token=None):
+def start_consul_instance(acl_master_token=None, acl_agent_token=None):
     """
     starts a consul instance. if acl_master_token is None, acl will be disabled
     for this server, otherwise it will be enabled and the master token will be
@@ -63,14 +63,26 @@ def start_consul_instance(acl_master_token=None):
         ['http', 'serf_lan', 'serf_wan', 'server', 'dns'],
         get_free_ports(4) + [-1]))
 
-    config = {'ports': ports, 'performance': {'raft_multiplier': 1},
-              'enable_script_checks': True}
-    if acl_master_token:
-        config['acl_datacenter'] = 'dc1'
-        config['acl_master_token'] = acl_master_token
+    config = dict(ports=ports, performance={'raft_multiplier': 1}, enable_script_checks=True)
+    config['datacenter'] = 'dc1'
+    config['primary_datacenter'] = 'dc1'
+    params = []
+
+    if acl_master_token or acl_agent_token:
+        config['acl'] = {
+            "enabled": True,
+            "default_policy": "deny",
+            "enable_token_persistence": True,
+            "tokens": {
+                "master": acl_master_token,
+                "agent": acl_agent_token
+            }
+        }
+        token = acl_master_token or acl_agent_token
+        if token:
+            params.append(('token', token))
 
     tmpdir = py.path.local(tempfile.mkdtemp())
-    print(tmpdir)
     tmpdir.join('config.json').write(json.dumps(config))
     tmpdir.chdir()
 
@@ -98,14 +110,15 @@ def start_consul_instance(acl_master_token=None):
             response = requests.get(base_uri + 'status/leader')
         except requests.ConnectionError:
             continue
-        print(response.text)
         if response.text.strip() != '""':
             break
 
-    requests.put(base_uri + 'agent/service/register', data='{"name": "foo"}')
+    x = requests.put(base_uri + 'agent/service/register',
+                     params=params,
+                     data='{"name": "foo"}')
 
     while True:
-        response = requests.get(base_uri + 'health/service/foo')
+        response = requests.get(base_uri + 'health/service/foo', params=params)
         if response.text.strip() != '[]':
             break
         time.sleep(0.1)
