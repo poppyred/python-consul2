@@ -2466,7 +2466,3 @@ class Consul(object):
             return self.agent.http.put(CB.json(), "/v1/txn",
                                        params=params,
                                        data=json.dumps(payload))
-
-
-
-
