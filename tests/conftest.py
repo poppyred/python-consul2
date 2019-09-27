@@ -116,8 +116,8 @@ def start_consul_instance(acl_master_token=None, acl_agent_token=None):
             break
 
     requests.put(base_uri + 'agent/service/register',
-                     params=params,
-                     data='{"name": "foo"}')
+                 params=params,
+                 data='{"name": "foo"}')
 
     while True:
         response = requests.get(base_uri + 'health/service/foo', params=params)
