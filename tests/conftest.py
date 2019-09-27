@@ -63,7 +63,9 @@ def start_consul_instance(acl_master_token=None, acl_agent_token=None):
         ['http', 'serf_lan', 'serf_wan', 'server', 'dns'],
         get_free_ports(4) + [-1]))
 
-    config = dict(ports=ports, performance={'raft_multiplier': 1}, enable_script_checks=True)
+    config = dict(ports=ports,
+                  performance={'raft_multiplier': 1},
+                  enable_script_checks=True)
     config['datacenter'] = 'dc1'
     config['primary_datacenter'] = 'dc1'
     params = []
@@ -113,7 +115,7 @@ def start_consul_instance(acl_master_token=None, acl_agent_token=None):
         if response.text.strip() != '""':
             break
 
-    x = requests.put(base_uri + 'agent/service/register',
+    requests.put(base_uri + 'agent/service/register',
                      params=params,
                      data='{"name": "foo"}')
 
