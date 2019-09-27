@@ -17,8 +17,8 @@ python:
   - "3.6"
   - "3.7"
   - "3.7-dev"  # 3.7 development branch
-#  - "3.8-dev"  # 3.8 development branch
-#  - "nightly"  # nightly build
+  - "3.8-dev"  # 3.8 development branch
+  - "nightly"  # nightly build
 
 matrix:
   allow_failures:
@@ -37,7 +37,6 @@ jobs:
   include:
     - stage: sonar
       git:
-        depth: false
         lfs_skip_smudge: true
       dist: xenial
       language: python
@@ -51,7 +50,6 @@ jobs:
             - master
       install: ignore
       script:
-        - ls .
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi
       branches:
         only:
@@ -90,6 +88,7 @@ jobs:
         - pip install codecov
         - pip install tox
       script:
-        - coverage run -m tox -e py37
-        - codecov -t 48e049f3-dd7c-43e5-a283-acfc68d1c27a
+          - coverage run -m tox -e py37
+          - codecov -t 48e049f3-dd7c-43e5-a283-acfc68d1c27a
+
 
