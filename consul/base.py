@@ -58,7 +58,7 @@ class Check(object):
         if isinstance(args, six.string_types) \
                 or isinstance(args, six.binary_type):
             warnings.warn(
-                  "Check.script should take a list of arg", DeprecationWarning)
+                "Check.script should take a list of arg", DeprecationWarning)
             args = ["sh", "-c", args]
         return {'args': args, 'interval': interval}
 
@@ -347,360 +347,182 @@ class Consul(object):
         self.coordinate = Consul.Coordinate(self)
         self.operator = Consul.Operator(self)
 
-    class Event(object):
-        """
-        The event command provides a mechanism to fire a custom user event to
-        an entire datacenter. These events are opaque to Consul, but they can
-        be used to build scripting infrastructure to do automated deploys,
-        restart services, or perform any other orchestration action.
-
-        Unlike most Consul data, which is replicated using consensus, event
-        data is purely peer-to-peer over gossip.
-
-        This means it is not persisted and does not have a total ordering. In
-        practice, this means you cannot rely on the order of message delivery.
-        An advantage however is that events can still be used even in the
-        absence of server nodes or during an outage."""
-
+    class ACL(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def fire(
-                self,
-                name,
-                body="",
-                node=None,
-                service=None,
-                tag=None,
-                token=None):
+        def list(self, token=None):
             """
-            Sends an event to Consul's gossip protocol.
-
-            *name* is the Consul-opaque name of the event. This can be filtered
-            on in calls to list, below
-
-            *body* is the Consul-opaque body to be delivered with the event.
-             From the Consul documentation:
-                The underlying gossip also sets limits on the size of a user
-                event message. It is hard to give an exact number, as it
-                depends on various parameters of the event, but the payload
-                should be kept very small (< 100 bytes). Specifying too large
-                of an event will return an error.
-
-            *node*, *service*, and *tag* are regular expressions which remote
-            agents will filter against to determine if they should store the
-            event
-
-            *token* is an optional `ACL token`_ to apply to this request. If
-            the token's policy is not allowed to fire an event of this *name*
-            an *ACLPermissionDenied* exception will be raised.
+            Lists all the active ACL tokens. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token.  An *ACLPermissionDenied* exception will be raised
+            if a management token is not used.
             """
-            assert not name.startswith('/'), \
-                'keys should not start with a forward slash'
             params = []
-            if node is not None:
-                params.append(('node', node))
-            if service is not None:
-                params.append(('service', service))
-            if tag is not None:
-                params.append(('tag', tag))
             token = token or self.agent.token
             if token:
                 params.append(('token', token))
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/list', params=params)
+
+        def info(self, acl_id, token=None):
+            """
+            Returns the token information for *acl_id*.
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.get(
+                CB.json(one=True), '/v1/acl/info/%s' % acl_id, params=params)
+
+        def create(self,
+                   name=None,
+                   type='client',
+                   rules=None,
+                   acl_id=None,
+                   token=None):
+            """
+            Creates a new ACL token. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token.  An *ACLPermissionDenied* exception will be raised
+            if a management token is not used.
+
+            *name* is an optional name for this token.
+
+            *type* is either 'management' or 'client'. A management token is
+            effectively like a root user, and has the ability to perform any
+            action including creating, modifying, and deleting ACLs. A client
+            token can only perform actions as permitted by *rules*.
+
+            *rules* is an optional `HCL`_ string for this `ACL Token`_ Rule
+            Specification.
+
+            Rules look like this::
+
+                # Default all keys to read-only
+                key "" {
+                  policy = "read"
+                }
+                key "foo/" {
+                  policy = "write"
+                }
+                key "foo/private/" {
+                  # Deny access to the private dir
+                  policy = "deny"
+                }
+
+            Returns the string *acl_id* for the new token.
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+
+            payload = {}
+            if name:
+                payload['Name'] = name
+            if type:
+                assert type in ('client', 'management'), \
+                    'type must be client or management'
+                payload['Type'] = type
+            if rules:
+                assert isinstance(rules, str), \
+                    'Only HCL or JSON encoded strings supported for the moment'
+                payload['Rules'] = rules
+            if acl_id:
+                payload['ID'] = acl_id
+
+            if payload:
+                data = json.dumps(payload)
+            else:
+                data = ''
 
             return self.agent.http.put(
-                CB.json(),
-                '/v1/event/fire/%s' % name, params=params, data=body)
+                CB.json(is_id=True),
+                '/v1/acl/create',
+                params=params,
+                data=data)
 
-        def list(
-                self,
-                name=None,
-                index=None,
-                wait=None):
+        def update(self, acl_id, name=None, type=None, rules=None, token=None):
             """
-            Returns a tuple of (*index*, *events*)
-                Note: Since Consul's event protocol uses gossip, there is no
-                ordering, and instead index maps to the newest event that
-                matches the query.
+            Updates the ACL token *acl_id*. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token. An *ACLPermissionDenied* exception will be raised if
+            a management token is not used.
 
-            *name* is the type of events to list, if None, lists all available.
+            *name* is an optional name for this token.
 
-            *index* is the current event Consul index, suitable for making
-            subsequent calls to wait for changes since this query was last run.
-            Check https://consul.io/docs/agent/http/event.html#event_list for
-            more infos about indexes on events.
+            *type* is either 'management' or 'client'. A management token is
+            effectively like a root user, and has the ability to perform any
+            action including creating, modifying, and deleting ACLs. A client
+            token can only perform actions as permitted by *rules*.
 
-            *wait* the maximum duration to wait (e.g. '10s') to retrieve
-            a given index. This parameter is only applied if *index* is also
-            specified. the wait time by default is 5 minutes.
+            *rules* is an optional `HCL`_ string for this `ACL Token`_ Rule
+            Specification.
 
-            Consul agents only buffer the most recent entries. The current
-            buffer size is 256, but this value could change in the future.
-
-            Each *event* looks like this::
-
-                {
-                      {
-                        "ID": "b54fe110-7af5-cafc-d1fb-afc8ba432b1c",
-                        "Name": "deploy",
-                        "Payload": "1609030",
-                        "NodeFilter": "",
-                        "ServiceFilter": "",
-                        "TagFilter": "",
-                        "Version": 1,
-                        "LTime": 19
-                      },
-                }
+            Returns the string *acl_id* of this token on success.
             """
             params = []
-            if name is not None:
-                params.append(('name', name))
-            if index:
-                params.append(('index', index))
-                if wait:
-                    params.append(('wait', wait))
-            return self.agent.http.get(
-                CB.json(index=True, decode='Payload'),
-                '/v1/event/list', params=params)
-
-    class KV(object):
-        """
-        The KV endpoint is used to expose a simple key/value store. This can be
-        used to store service configurations or other meta data in a simple
-        way.
-        """
-
-        def __init__(self, agent):
-            self.agent = agent
-
-        def get(
-                self,
-                key,
-                index=None,
-                recurse=False,
-                wait=None,
-                token=None,
-                consistency=None,
-                keys=False,
-                separator=None,
-                dc=None):
-            """
-            Returns a tuple of (*index*, *value[s]*)
-
-            *index* is the current Consul index, suitable for making subsequent
-            calls to wait for changes since this query was last run.
-
-            *wait* the maximum duration to wait (e.g. '10s') to retrieve
-            a given index. this parameter is only applied if *index* is also
-            specified. the wait time by default is 5 minutes.
-
-            *token* is an optional `ACL token`_ to apply to this request.
-
-            *keys* is a boolean which, if True, says to return a flat list of
-            keys without values or other metadata. *separator* can be used
-            with *keys* to list keys only up to a given separator character.
-
-            *dc* is the optional datacenter that you wish to communicate with.
-            If None is provided, defaults to the agent's datacenter.
-
-            The *value* returned is for the specified key, or if *recurse* is
-            True a list of *values* for all keys with the given prefix is
-            returned.
-
-            Each *value* looks like this::
-
-                {
-                    "CreateIndex": 100,
-                    "ModifyIndex": 200,
-                    "LockIndex": 200,
-                    "Key": "foo",
-                    "Flags": 0,
-                    "Value": "bar",
-                    "Session": "adf4238a-882b-9ddc-4a9d-5b6758e4159e"
-                }
-
-            Note, if the requested key does not exists *(index, None)* is
-            returned. It's then possible to long poll on the index for when the
-            key is created.
-            """
-            assert not key.startswith('/'), \
-                'keys should not start with a forward slash'
-            params = []
-            if index:
-                params.append(('index', index))
-                if wait:
-                    params.append(('wait', wait))
-            if recurse:
-                params.append(('recurse', '1'))
             token = token or self.agent.token
             if token:
                 params.append(('token', token))
-            dc = dc or self.agent.dc
-            if dc:
-                params.append(('dc', dc))
-            if keys:
-                params.append(('keys', True))
-            if separator:
-                params.append(('separator', separator))
-            consistency = consistency or self.agent.consistency
-            if consistency in ('consistent', 'stale'):
-                params.append((consistency, '1'))
 
-            one = False
-            decode = False
+            payload = {'ID': acl_id}
+            if name:
+                payload['Name'] = name
+            if type:
+                assert type in ('client', 'management'), \
+                    'type must be client or management'
+                payload['Type'] = type
+            if rules:
+                assert isinstance(rules, str), \
+                    'Only HCL or JSON encoded strings supported for the moment'
+                payload['Rules'] = rules
 
-            if not keys:
-                decode = 'Value'
-            if not recurse and not keys:
-                one = True
-            return self.agent.http.get(
-                CB.json(index=True, decode=decode, one=one),
-                '/v1/kv/%s' % key,
+            data = json.dumps(payload)
+
+            return self.agent.http.put(
+                CB.json(is_id=True),
+                '/v1/acl/update',
+                params=params,
+                data=data)
+
+        def clone(self, acl_id, token=None):
+            """
+            Clones the ACL token *acl_id*. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token. An *ACLPermissionDenied* exception will be raised if
+            a management token is not used.
+
+            Returns the string of the newly created *acl_id*.
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.put(
+                CB.json(is_id=True),
+                '/v1/acl/clone/%s' % acl_id,
                 params=params)
 
-        def put(
-                self,
-                key,
-                value,
-                cas=None,
-                flags=None,
-                acquire=None,
-                release=None,
-                token=None,
-                dc=None):
+        def destroy(self, acl_id, token=None):
             """
-            Sets *key* to the given *value*.
+            Destroys the ACL token *acl_id*. This is a privileged endpoint, and
+            requires a management token. *token* will override this client's
+            default token. An *ACLPermissionDenied* exception will be raised if
+            a management token is not used.
 
-            *value* can either be None (useful for marking a key as a
-            directory) or any string type, including binary data (e.g. a
-            msgpack'd data structure)
-
-            The optional *cas* parameter is used to turn the PUT into a
-            Check-And-Set operation. This is very useful as it allows clients
-            to build more complex syncronization primitives on top. If the
-            index is 0, then Consul will only put the key if it does not
-            already exist. If the index is non-zero, then the key is only set
-            if the index matches the ModifyIndex of that key.
-
-            An optional *flags* can be set. This can be used to specify an
-            unsigned value between 0 and 2^64-1.
-
-            *acquire* is an optional session_id. if supplied a lock acquisition
-            will be attempted.
-
-            *release* is an optional session_id. if supplied a lock release
-            will be attempted.
-
-            *token* is an optional `ACL token`_ to apply to this request. If
-            the token's policy is not allowed to write to this key an
-            *ACLPermissionDenied* exception will be raised.
-
-            *dc* is the optional datacenter that you wish to communicate with.
-            If None is provided, defaults to the agent's datacenter.
-
-            The return value is simply either True or False. If False is
-            returned, then the update has not taken place.
+            Returns *True* on success.
             """
-            assert not key.startswith('/'), \
-                'keys should not start with a forward slash'
-
-            assert 'value should be None or a string / binary data', \
-                value is None or\
-                isinstance(value, (six.string_types, six.binary_type))
-
             params = []
-            if cas is not None:
-                params.append(('cas', cas))
-            if flags is not None:
-                params.append(('flags', flags))
-            if acquire:
-                params.append(('acquire', acquire))
-            if release:
-                params.append(('release', release))
             token = token or self.agent.token
             if token:
                 params.append(('token', token))
-            dc = dc or self.agent.dc
-            if dc:
-                params.append(('dc', dc))
             return self.agent.http.put(
-                CB.json(), '/v1/kv/%s' % key, params=params, data=value)
-
-        def delete(self, key, recurse=None, cas=None, token=None, dc=None):
-            """
-            Deletes a single key or if *recurse* is True, all keys sharing a
-            prefix.
-
-            *cas* is an optional flag is used to turn the DELETE into a
-            Check-And-Set operation. This is very useful as a building block
-            for more complex synchronization primitives. Unlike PUT, the index
-            must be greater than 0 for Consul to take any action: a 0 index
-            will not delete the key. If the index is non-zero, the key is only
-            deleted if the index matches the ModifyIndex of that key.
-
-            *token* is an optional `ACL token`_ to apply to this request. If
-            the token's policy is not allowed to delete to this key an
-            *ACLPermissionDenied* exception will be raised.
-
-            *dc* is the optional datacenter that you wish to communicate with.
-            If None is provided, defaults to the agent's datacenter.
-            """
-            assert not key.startswith('/'), \
-                'keys should not start with a forward slash'
-
-            params = []
-            if recurse:
-                params.append(('recurse', '1'))
-            if cas is not None:
-                params.append(('cas', cas))
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
-            dc = dc or self.agent.dc
-            if dc:
-                params.append(('dc', dc))
-
-            return self.agent.http.delete(
-                CB.json(), '/v1/kv/%s' % key, params=params)
-
-    class Txn(object):
-        """
-        The Transactions endpoints manage updates or fetches of multiple keys
-        inside a single, atomic transaction.
-        """
-
-        def __init__(self, agent):
-            self.agent = agent
-
-        def put(self, payload, token=None):
-            """
-            Create a transaction by submitting a list of operations to apply to
-            the KV store inside of a transaction. If any operation fails, the
-            transaction is rolled back and none of the changes are applied.
-
-            *payload* is a list of operations where each operation is a `dict`
-            with a single key value pair, with the key specifying operation the
-            type. An example payload of operation type "KV" is
-            dict::
-
-                {
-                    "KV": {
-                      "Verb": "<verb>",
-                      "Key": "<key>",
-                      "Value": "<Base64-encoded blob of data>",
-                      "Flags": 0,
-                      "Index": 0,
-                      "Session": "<session id>"
-                    }
-                }
-            """
-            params = []
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
-            return self.agent.http.put(CB.json(), "/v1/txn",
-                                       params=params,
-                                       data=json.dumps(payload))
+                CB.json(),
+                '/v1/acl/destroy/%s' % acl_id,
+                params=params)
 
     class Agent(object):
         """
@@ -1507,6 +1329,171 @@ class Consul(object):
                 '/v1/catalog/service/%s' % service,
                 params=params)
 
+    class Config(object):
+        pass
+
+    class Connect(object):
+        pass
+
+    class Coordinate(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def datacenters(self):
+            """
+            Returns the WAN network coordinates for all Consul servers,
+            organized by DCs.
+            """
+            return self.agent.http.get(CB.json(), '/v1/coordinate/datacenters')
+
+        def nodes(self, dc=None, index=None, wait=None, consistency=None):
+            """
+            *dc* is the datacenter that this agent will communicate with. By
+            default the datacenter of the host is used.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+            """
+            params = []
+            if dc:
+                params.append(('dc', dc))
+            if index:
+                params.append(('index', index))
+                if wait:
+                    params.append(('wait', wait))
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params.append((consistency, '1'))
+            return self.agent.http.get(
+                CB.json(index=True), '/v1/coordinate/nodes', params=params)
+
+    class DiscoveryChain(object):
+        pass
+
+    class Event(object):
+        """
+        The event command provides a mechanism to fire a custom user event to
+        an entire datacenter. These events are opaque to Consul, but they can
+        be used to build scripting infrastructure to do automated deploys,
+        restart services, or perform any other orchestration action.
+
+        Unlike most Consul data, which is replicated using consensus, event
+        data is purely peer-to-peer over gossip.
+
+        This means it is not persisted and does not have a total ordering. In
+        practice, this means you cannot rely on the order of message delivery.
+        An advantage however is that events can still be used even in the
+        absence of server nodes or during an outage."""
+
+        def __init__(self, agent):
+            self.agent = agent
+
+        def fire(
+                self,
+                name,
+                body="",
+                node=None,
+                service=None,
+                tag=None,
+                token=None):
+            """
+            Sends an event to Consul's gossip protocol.
+
+            *name* is the Consul-opaque name of the event. This can be filtered
+            on in calls to list, below
+
+            *body* is the Consul-opaque body to be delivered with the event.
+             From the Consul documentation:
+                The underlying gossip also sets limits on the size of a user
+                event message. It is hard to give an exact number, as it
+                depends on various parameters of the event, but the payload
+                should be kept very small (< 100 bytes). Specifying too large
+                of an event will return an error.
+
+            *node*, *service*, and *tag* are regular expressions which remote
+            agents will filter against to determine if they should store the
+            event
+
+            *token* is an optional `ACL token`_ to apply to this request. If
+            the token's policy is not allowed to fire an event of this *name*
+            an *ACLPermissionDenied* exception will be raised.
+            """
+            assert not name.startswith('/'), \
+                'keys should not start with a forward slash'
+            params = []
+            if node is not None:
+                params.append(('node', node))
+            if service is not None:
+                params.append(('service', service))
+            if tag is not None:
+                params.append(('tag', tag))
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+
+            return self.agent.http.put(
+                CB.json(),
+                '/v1/event/fire/%s' % name, params=params, data=body)
+
+        def list(
+                self,
+                name=None,
+                index=None,
+                wait=None):
+            """
+            Returns a tuple of (*index*, *events*)
+                Note: Since Consul's event protocol uses gossip, there is no
+                ordering, and instead index maps to the newest event that
+                matches the query.
+
+            *name* is the type of events to list, if None, lists all available.
+
+            *index* is the current event Consul index, suitable for making
+            subsequent calls to wait for changes since this query was last run.
+            Check https://consul.io/docs/agent/http/event.html#event_list for
+            more infos about indexes on events.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. This parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
+            Consul agents only buffer the most recent entries. The current
+            buffer size is 256, but this value could change in the future.
+
+            Each *event* looks like this::
+
+                {
+                      {
+                        "ID": "b54fe110-7af5-cafc-d1fb-afc8ba432b1c",
+                        "Name": "deploy",
+                        "Payload": "1609030",
+                        "NodeFilter": "",
+                        "ServiceFilter": "",
+                        "TagFilter": "",
+                        "Version": 1,
+                        "LTime": 19
+                      },
+                }
+            """
+            params = []
+            if name is not None:
+                params.append(('name', name))
+            if index:
+                params.append(('index', index))
+                if wait:
+                    params.append(('wait', wait))
+            return self.agent.http.get(
+                CB.json(index=True, decode=True),
+                '/v1/event/list', params=params)
+
     class Health(object):
         # TODO: All of the health endpoints support all consistency modes
         def __init__(self, agent):
@@ -1726,102 +1713,29 @@ class Consul(object):
                 '/v1/health/node/%s' % node,
                 params=params)
 
-    class Session(object):
+    class KV(object):
+        """
+        The KV endpoint is used to expose a simple key/value store. This can be
+        used to store service configurations or other meta data in a simple
+        way.
+        """
+
         def __init__(self, agent):
             self.agent = agent
 
-        def create(
+        def get(
                 self,
-                name=None,
-                node=None,
-                checks=None,
-                lock_delay=15,
-                behavior='release',
-                ttl=None,
+                key,
+                index=None,
+                recurse=False,
+                wait=None,
+                token=None,
+                consistency=None,
+                keys=False,
+                separator=None,
                 dc=None):
             """
-            Creates a new session. There is more documentation for sessions
-            `here <https://consul.io/docs/internals/sessions.html>`_.
-
-            *name* is an optional human readable name for the session.
-
-            *node* is the node to create the session on. if not provided the
-            current agent's node will be used.
-
-            *checks* is a list of checks to associate with the session. if not
-            provided it defaults to the *serfHealth* check. It is highly
-            recommended that, if you override this list, you include the
-            default *serfHealth*.
-
-            *lock_delay* is an integer of seconds.
-
-            *behavior* can be set to either 'release' or 'delete'. This
-            controls the behavior when a session is invalidated. By default,
-            this is 'release', causing any locks that are held to be released.
-            Changing this to 'delete' causes any locks that are held to be
-            deleted. 'delete' is useful for creating ephemeral key/value
-            entries.
-
-            when *ttl* is provided, the session is invalidated if it is not
-            renewed before the TTL expires.  If specified, it is an integer of
-            seconds.  Currently it must be between 10 and 86400 seconds.
-
-            By default the session will be created in the current datacenter
-            but an optional *dc* can be provided.
-
-            Returns the string *session_id* for the session.
-            """
-            params = []
-            dc = dc or self.agent.dc
-            if dc:
-                params.append(('dc', dc))
-            data = {}
-            if name:
-                data['name'] = name
-            if node:
-                data['node'] = node
-            if checks is not None:
-                data['checks'] = checks
-            if lock_delay != 15:
-                data['lockdelay'] = '%ss' % lock_delay
-            assert behavior in ('release', 'delete'), \
-                'behavior must be release or delete'
-            if behavior != 'release':
-                data['behavior'] = behavior
-            if ttl:
-                assert 10 <= ttl <= 86400
-                data['ttl'] = '%ss' % ttl
-            if data:
-                data = json.dumps(data)
-            else:
-                data = ''
-
-            return self.agent.http.put(
-                CB.json(is_id=True),
-                '/v1/session/create',
-                params=params,
-                data=data)
-
-        def destroy(self, session_id, dc=None):
-            """
-            Destroys the session *session_id*
-
-            Returns *True* on success.
-            """
-            params = []
-            dc = dc or self.agent.dc
-            if dc:
-                params.append(('dc', dc))
-            return self.agent.http.put(
-                CB.bool(),
-                '/v1/session/destroy/%s' % session_id,
-                params=params)
-
-        def list(self, index=None, wait=None, consistency=None, dc=None):
-            """
-            Returns a tuple of (*index*, *sessions*) of all active sessions in
-            the *dc* datacenter. *dc* defaults to the current datacenter of
-            this agent.
+            Returns a tuple of (*index*, *value[s]*)
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
@@ -1830,326 +1744,185 @@ class Consul(object):
             a given index. this parameter is only applied if *index* is also
             specified. the wait time by default is 5 minutes.
 
-            *consistency* can be either 'default', 'consistent' or 'stale'. if
-            not specified *consistency* will the consistency level this client
-            was configured with.
+            *token* is an optional `ACL token`_ to apply to this request.
 
-            The response looks like this::
-
-                (index, [
-                    {
-                        "LockDelay": 1.5e+10,
-                        "Checks": [
-                            "serfHealth"
-                        ],
-                        "Node": "foobar",
-                        "ID": "adf4238a-882b-9ddc-4a9d-5b6758e4159e",
-                        "CreateIndex": 1086449
-                    },
-                  ...
-               ])
-            """
-            params = []
-            dc = dc or self.agent.dc
-            if dc:
-                params.append(('dc', dc))
-            if index:
-                params.append(('index', index))
-                if wait:
-                    params.append(('wait', wait))
-            consistency = consistency or self.agent.consistency
-            if consistency in ('consistent', 'stale'):
-                params.append((consistency, '1'))
-            return self.agent.http.get(
-                CB.json(index=True), '/v1/session/list', params=params)
-
-        def node(self, node, index=None, wait=None, consistency=None, dc=None):
-            """
-            Returns a tuple of (*index*, *sessions*) as per *session.list*, but
-            filters the sessions returned to only those active for *node*.
-
-            *index* is the current Consul index, suitable for making subsequent
-            calls to wait for changes since this query was last run.
-
-            *wait* the maximum duration to wait (e.g. '10s') to retrieve
-            a given index. this parameter is only applied if *index* is also
-            specified. the wait time by default is 5 minutes.
-
-            *consistency* can be either 'default', 'consistent' or 'stale'. if
-            not specified *consistency* will the consistency level this client
-            was configured with.
-            """
-            params = []
-            dc = dc or self.agent.dc
-            if dc:
-                params.append(('dc', dc))
-            if index:
-                params.append(('index', index))
-                if wait:
-                    params.append(('wait', wait))
-            consistency = consistency or self.agent.consistency
-            if consistency in ('consistent', 'stale'):
-                params.append((consistency, '1'))
-            return self.agent.http.get(
-                CB.json(index=True),
-                '/v1/session/node/%s' % node, params=params)
-
-        def info(self,
-                 session_id,
-                 index=None,
-                 wait=None,
-                 consistency=None,
-                 dc=None):
-            """
-            Returns a tuple of (*index*, *session*) for the session
-            *session_id* in the *dc* datacenter. *dc* defaults to the current
-            datacenter of this agent.
-
-            *index* is the current Consul index, suitable for making subsequent
-            calls to wait for changes since this query was last run.
-
-            *wait* the maximum duration to wait (e.g. '10s') to retrieve
-            a given index. this parameter is only applied if *index* is also
-            specified. the wait time by default is 5 minutes.
-
-            *consistency* can be either 'default', 'consistent' or 'stale'. if
-            not specified *consistency* will the consistency level this client
-            was configured with.
-            """
-            params = []
-            dc = dc or self.agent.dc
-            if dc:
-                params.append(('dc', dc))
-            if index:
-                params.append(('index', index))
-                if wait:
-                    params.append(('wait', wait))
-            consistency = consistency or self.agent.consistency
-            if consistency in ('consistent', 'stale'):
-                params.append((consistency, '1'))
-            return self.agent.http.get(
-                CB.json(index=True, one=True),
-                '/v1/session/info/%s' % session_id,
-                params=params)
-
-        def renew(self, session_id, dc=None):
-            """
-            This is used with sessions that have a TTL, and it extends the
-            expiration by the TTL.
+            *keys* is a boolean which, if True, says to return a flat list of
+            keys without values or other metadata. *separator* can be used
+            with *keys* to list keys only up to a given separator character.
 
             *dc* is the optional datacenter that you wish to communicate with.
             If None is provided, defaults to the agent's datacenter.
 
-            Returns the session.
+            The *value* returned is for the specified key, or if *recurse* is
+            True a list of *values* for all keys with the given prefix is
+            returned.
+
+            Each *value* looks like this::
+
+                {
+                    "CreateIndex": 100,
+                    "ModifyIndex": 200,
+                    "LockIndex": 200,
+                    "Key": "foo",
+                    "Flags": 0,
+                    "Value": "bar",
+                    "Session": "adf4238a-882b-9ddc-4a9d-5b6758e4159e"
+                }
+
+            Note, if the requested key does not exists *(index, None)* is
+            returned. It's then possible to long poll on the index for when the
+            key is created.
             """
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
             params = []
+            if index:
+                params.append(('index', index))
+                if wait:
+                    params.append(('wait', wait))
+            if recurse:
+                params.append(('recurse', '1'))
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+            if keys:
+                params.append(('keys', True))
+            if separator:
+                params.append(('separator', separator))
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params.append((consistency, '1'))
+
+            one = False
+            decode = False
+
+            if not keys:
+                decode = 'Value'
+            if not recurse and not keys:
+                one = True
+            return self.agent.http.get(
+                CB.json(index=True, decode=decode, one=one),
+                '/v1/kv/%s' % key,
+                params=params)
+
+        def put(
+                self,
+                key,
+                value,
+                cas=None,
+                flags=None,
+                acquire=None,
+                release=None,
+                token=None,
+                dc=None):
+            """
+            Sets *key* to the given *value*.
+
+            *value* can either be None (useful for marking a key as a
+            directory) or any string type, including binary data (e.g. a
+            msgpack'd data structure)
+
+            The optional *cas* parameter is used to turn the PUT into a
+            Check-And-Set operation. This is very useful as it allows clients
+            to build more complex syncronization primitives on top. If the
+            index is 0, then Consul will only put the key if it does not
+            already exist. If the index is non-zero, then the key is only set
+            if the index matches the ModifyIndex of that key.
+
+            An optional *flags* can be set. This can be used to specify an
+            unsigned value between 0 and 2^64-1.
+
+            *acquire* is an optional session_id. if supplied a lock acquisition
+            will be attempted.
+
+            *release* is an optional session_id. if supplied a lock release
+            will be attempted.
+
+            *token* is an optional `ACL token`_ to apply to this request. If
+            the token's policy is not allowed to write to this key an
+            *ACLPermissionDenied* exception will be raised.
+
+            *dc* is the optional datacenter that you wish to communicate with.
+            If None is provided, defaults to the agent's datacenter.
+
+            The return value is simply either True or False. If False is
+            returned, then the update has not taken place.
+            """
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
+
+            assert 'value should be None or a string / binary data', \
+                value is None or \
+                isinstance(value, (six.string_types, six.binary_type))
+
+            params = []
+            if cas is not None:
+                params.append(('cas', cas))
+            if flags is not None:
+                params.append(('flags', flags))
+            if acquire:
+                params.append(('acquire', acquire))
+            if release:
+                params.append(('release', release))
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.put(
-                CB.json(one=True, allow_404=False),
-                '/v1/session/renew/%s' % session_id,
-                params=params)
+                CB.json(), '/v1/kv/%s' % key, params=params, data=value)
 
-    class ACL(object):
+        def delete(self, key, recurse=None, cas=None, token=None, dc=None):
+            """
+            Deletes a single key or if *recurse* is True, all keys sharing a
+            prefix.
+
+            *cas* is an optional flag is used to turn the DELETE into a
+            Check-And-Set operation. This is very useful as a building block
+            for more complex synchronization primitives. Unlike PUT, the index
+            must be greater than 0 for Consul to take any action: a 0 index
+            will not delete the key. If the index is non-zero, the key is only
+            deleted if the index matches the ModifyIndex of that key.
+
+            *token* is an optional `ACL token`_ to apply to this request. If
+            the token's policy is not allowed to delete to this key an
+            *ACLPermissionDenied* exception will be raised.
+
+            *dc* is the optional datacenter that you wish to communicate with.
+            If None is provided, defaults to the agent's datacenter.
+            """
+            assert not key.startswith('/'), \
+                'keys should not start with a forward slash'
+
+            params = []
+            if recurse:
+                params.append(('recurse', '1'))
+            if cas is not None:
+                params.append(('cas', cas))
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+
+            return self.agent.http.delete(
+                CB.json(), '/v1/kv/%s' % key, params=params)
+
+    class Operator(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def list(self, token=None):
+        def raft_config(self):
             """
-            Lists all the active ACL tokens. This is a privileged endpoint, and
-            requires a management token. *token* will override this client's
-            default token.  An *ACLPermissionDenied* exception will be raised
-            if a management token is not used.
+            Returns raft configuration.
             """
-            params = []
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
             return self.agent.http.get(
-                CB.json(), '/v1/acl/list', params=params)
-
-        def info(self, acl_id, token=None):
-            """
-            Returns the token information for *acl_id*.
-            """
-            params = []
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
-            return self.agent.http.get(
-                CB.json(one=True), '/v1/acl/info/%s' % acl_id, params=params)
-
-        def create(self,
-                   name=None,
-                   type='client',
-                   rules=None,
-                   acl_id=None,
-                   token=None):
-            """
-            Creates a new ACL token. This is a privileged endpoint, and
-            requires a management token. *token* will override this client's
-            default token.  An *ACLPermissionDenied* exception will be raised
-            if a management token is not used.
-
-            *name* is an optional name for this token.
-
-            *type* is either 'management' or 'client'. A management token is
-            effectively like a root user, and has the ability to perform any
-            action including creating, modifying, and deleting ACLs. A client
-            token can only perform actions as permitted by *rules*.
-
-            *rules* is an optional `HCL`_ string for this `ACL Token`_ Rule
-            Specification.
-
-            Rules look like this::
-
-                # Default all keys to read-only
-                key "" {
-                  policy = "read"
-                }
-                key "foo/" {
-                  policy = "write"
-                }
-                key "foo/private/" {
-                  # Deny access to the private dir
-                  policy = "deny"
-                }
-
-            Returns the string *acl_id* for the new token.
-            """
-            params = []
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
-
-            payload = {}
-            if name:
-                payload['Name'] = name
-            if type:
-                assert type in ('client', 'management'), \
-                    'type must be client or management'
-                payload['Type'] = type
-            if rules:
-                assert isinstance(rules, str), \
-                    'Only HCL or JSON encoded strings supported for the moment'
-                payload['Rules'] = rules
-            if acl_id:
-                payload['ID'] = acl_id
-
-            if payload:
-                data = json.dumps(payload)
-            else:
-                data = ''
-
-            return self.agent.http.put(
-                CB.json(is_id=True),
-                '/v1/acl/create',
-                params=params,
-                data=data)
-
-        def update(self, acl_id, name=None, type=None, rules=None, token=None):
-            """
-            Updates the ACL token *acl_id*. This is a privileged endpoint, and
-            requires a management token. *token* will override this client's
-            default token. An *ACLPermissionDenied* exception will be raised if
-            a management token is not used.
-
-            *name* is an optional name for this token.
-
-            *type* is either 'management' or 'client'. A management token is
-            effectively like a root user, and has the ability to perform any
-            action including creating, modifying, and deleting ACLs. A client
-            token can only perform actions as permitted by *rules*.
-
-            *rules* is an optional `HCL`_ string for this `ACL Token`_ Rule
-            Specification.
-
-            Returns the string *acl_id* of this token on success.
-            """
-            params = []
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
-
-            payload = {'ID': acl_id}
-            if name:
-                payload['Name'] = name
-            if type:
-                assert type in ('client', 'management'), \
-                    'type must be client or management'
-                payload['Type'] = type
-            if rules:
-                assert isinstance(rules, str), \
-                    'Only HCL or JSON encoded strings supported for the moment'
-                payload['Rules'] = rules
-
-            data = json.dumps(payload)
-
-            return self.agent.http.put(
-                CB.json(is_id=True),
-                '/v1/acl/update',
-                params=params,
-                data=data)
-
-        def clone(self, acl_id, token=None):
-            """
-            Clones the ACL token *acl_id*. This is a privileged endpoint, and
-            requires a management token. *token* will override this client's
-            default token. An *ACLPermissionDenied* exception will be raised if
-            a management token is not used.
-
-            Returns the string of the newly created *acl_id*.
-            """
-            params = []
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
-            return self.agent.http.put(
-                CB.json(is_id=True),
-                '/v1/acl/clone/%s' % acl_id,
-                params=params)
-
-        def destroy(self, acl_id, token=None):
-            """
-            Destroys the ACL token *acl_id*. This is a privileged endpoint, and
-            requires a management token. *token* will override this client's
-            default token. An *ACLPermissionDenied* exception will be raised if
-            a management token is not used.
-
-            Returns *True* on success.
-            """
-            params = []
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
-            return self.agent.http.put(
-                CB.json(),
-                '/v1/acl/destroy/%s' % acl_id,
-                params=params)
-
-    class Status(object):
-        """
-        The Status endpoints are used to get information about the status
-         of the Consul cluster.
-        """
-
-        def __init__(self, agent):
-            self.agent = agent
-
-        def leader(self):
-            """
-            This endpoint is used to get the Raft leader for the datacenter
-            in which the agent is running.
-            """
-            return self.agent.http.get(CB.json(), '/v1/status/leader')
-
-        def peers(self):
-            """
-            This endpoint retrieves the Raft peers for the datacenter in which
-            the the agent is running.
-            """
-            return self.agent.http.get(CB.json(), '/v1/status/peers')
+                CB.json(), '/v1/operator/raft/configuration')
 
     class Query(object):
         def __init__(self, agent):
@@ -2407,21 +2180,147 @@ class Consul(object):
             return self.agent.http.get(
                 CB.json(), '/v1/query/%s/explain' % query, params=params)
 
-    class Coordinate(object):
+    class Session(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def datacenters(self):
+        def create(
+                self,
+                name=None,
+                node=None,
+                checks=None,
+                lock_delay=15,
+                behavior='release',
+                ttl=None,
+                dc=None):
             """
-            Returns the WAN network coordinates for all Consul servers,
-            organized by DCs.
-            """
-            return self.agent.http.get(CB.json(), '/v1/coordinate/datacenters')
+            Creates a new session. There is more documentation for sessions
+            `here <https://consul.io/docs/internals/sessions.html>`_.
 
-        def nodes(self, dc=None, index=None, wait=None, consistency=None):
+            *name* is an optional human readable name for the session.
+
+            *node* is the node to create the session on. if not provided the
+            current agent's node will be used.
+
+            *checks* is a list of checks to associate with the session. if not
+            provided it defaults to the *serfHealth* check. It is highly
+            recommended that, if you override this list, you include the
+            default *serfHealth*.
+
+            *lock_delay* is an integer of seconds.
+
+            *behavior* can be set to either 'release' or 'delete'. This
+            controls the behavior when a session is invalidated. By default,
+            this is 'release', causing any locks that are held to be released.
+            Changing this to 'delete' causes any locks that are held to be
+            deleted. 'delete' is useful for creating ephemeral key/value
+            entries.
+
+            when *ttl* is provided, the session is invalidated if it is not
+            renewed before the TTL expires.  If specified, it is an integer of
+            seconds.  Currently it must be between 10 and 86400 seconds.
+
+            By default the session will be created in the current datacenter
+            but an optional *dc* can be provided.
+
+            Returns the string *session_id* for the session.
             """
-            *dc* is the datacenter that this agent will communicate with. By
-            default the datacenter of the host is used.
+            params = []
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+            data = {}
+            if name:
+                data['name'] = name
+            if node:
+                data['node'] = node
+            if checks is not None:
+                data['checks'] = checks
+            if lock_delay != 15:
+                data['lockdelay'] = '%ss' % lock_delay
+            assert behavior in ('release', 'delete'), \
+                'behavior must be release or delete'
+            if behavior != 'release':
+                data['behavior'] = behavior
+            if ttl:
+                assert 10 <= ttl <= 86400
+                data['ttl'] = '%ss' % ttl
+            if data:
+                data = json.dumps(data)
+            else:
+                data = ''
+
+            return self.agent.http.put(
+                CB.json(is_id=True),
+                '/v1/session/create',
+                params=params,
+                data=data)
+
+        def destroy(self, session_id, dc=None):
+            """
+            Destroys the session *session_id*
+
+            Returns *True* on success.
+            """
+            params = []
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+            return self.agent.http.put(
+                CB.bool(),
+                '/v1/session/destroy/%s' % session_id,
+                params=params)
+
+        def list(self, index=None, wait=None, consistency=None, dc=None):
+            """
+            Returns a tuple of (*index*, *sessions*) of all active sessions in
+            the *dc* datacenter. *dc* defaults to the current datacenter of
+            this agent.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+
+            The response looks like this::
+
+                (index, [
+                    {
+                        "LockDelay": 1.5e+10,
+                        "Checks": [
+                            "serfHealth"
+                        ],
+                        "Node": "foobar",
+                        "ID": "adf4238a-882b-9ddc-4a9d-5b6758e4159e",
+                        "CreateIndex": 1086449
+                    },
+                  pass
+               ])
+            """
+            params = []
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+            if index:
+                params.append(('index', index))
+                if wait:
+                    params.append(('wait', wait))
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params.append((consistency, '1'))
+            return self.agent.http.get(
+                CB.json(index=True), '/v1/session/list', params=params)
+
+        def node(self, node, index=None, wait=None, consistency=None, dc=None):
+            """
+            Returns a tuple of (*index*, *sessions*) as per *session.list*, but
+            filters the sessions returned to only those active for *node*.
 
             *index* is the current Consul index, suitable for making subsequent
             calls to wait for changes since this query was last run.
@@ -2435,6 +2334,7 @@ class Consul(object):
             was configured with.
             """
             params = []
+            dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
             if index:
@@ -2445,15 +2345,128 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
             return self.agent.http.get(
-                CB.json(index=True), '/v1/coordinate/nodes', params=params)
+                CB.json(index=True),
+                '/v1/session/node/%s' % node, params=params)
 
-    class Operator(object):
+        def info(self,
+                 session_id,
+                 index=None,
+                 wait=None,
+                 consistency=None,
+                 dc=None):
+            """
+            Returns a tuple of (*index*, *session*) for the session
+            *session_id* in the *dc* datacenter. *dc* defaults to the current
+            datacenter of this agent.
+
+            *index* is the current Consul index, suitable for making subsequent
+            calls to wait for changes since this query was last run.
+
+            *wait* the maximum duration to wait (e.g. '10s') to retrieve
+            a given index. this parameter is only applied if *index* is also
+            specified. the wait time by default is 5 minutes.
+
+            *consistency* can be either 'default', 'consistent' or 'stale'. if
+            not specified *consistency* will the consistency level this client
+            was configured with.
+            """
+            params = []
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+            if index:
+                params.append(('index', index))
+                if wait:
+                    params.append(('wait', wait))
+            consistency = consistency or self.agent.consistency
+            if consistency in ('consistent', 'stale'):
+                params.append((consistency, '1'))
+            return self.agent.http.get(
+                CB.json(index=True, one=True),
+                '/v1/session/info/%s' % session_id,
+                params=params)
+
+        def renew(self, session_id, dc=None):
+            """
+            This is used with sessions that have a TTL, and it extends the
+            expiration by the TTL.
+
+            *dc* is the optional datacenter that you wish to communicate with.
+            If None is provided, defaults to the agent's datacenter.
+
+            Returns the session.
+            """
+            params = []
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+            return self.agent.http.put(
+                CB.json(one=True, allow_404=False),
+                '/v1/session/renew/%s' % session_id,
+                params=params)
+
+    class Status(object):
+        """
+        The Status endpoints are used to get information about the status
+         of the Consul cluster.
+        """
+
         def __init__(self, agent):
             self.agent = agent
 
-        def raft_config(self):
+        def leader(self):
             """
-            Returns raft configuration.
+            This endpoint is used to get the Raft leader for the datacenter
+            in which the agent is running.
             """
-            return self.agent.http.get(
-                CB.json(), '/v1/operator/raft/configuration')
+            return self.agent.http.get(CB.json(), '/v1/status/leader')
+
+        def peers(self):
+            """
+            This endpoint retrieves the Raft peers for the datacenter in which
+            the the agent is running.
+            """
+            return self.agent.http.get(CB.json(), '/v1/status/peers')
+
+    class Txn(object):
+        """
+        The Transactions endpoints manage updates or fetches of multiple keys
+        inside a single, atomic transaction.
+        """
+
+        def __init__(self, agent):
+            self.agent = agent
+
+        def put(self, payload, token=None):
+            """
+            Create a transaction by submitting a list of operations to apply to
+            the KV store inside of a transaction. If any operation fails, the
+            transaction is rolled back and none of the changes are applied.
+
+            *payload* is a list of operations where each operation is a `dict`
+            with a single key value pair, with the key specifying operation the
+            type. An example payload of operation type "KV" is
+            dict::
+
+                {
+                    "KV": {
+                      "Verb": "<verb>",
+                      "Key": "<key>",
+                      "Value": "<Base64-encoded blob of data>",
+                      "Flags": 0,
+                      "Index": 0,
+                      "Session": "<session id>"
+                    }
+                }
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.put(CB.json(), "/v1/txn",
+                                       params=params,
+                                       data=json.dumps(payload))
+
+
+
+

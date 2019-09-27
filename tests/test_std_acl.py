@@ -67,7 +67,8 @@ class TestConsulACL(object):
         pytest.raises(
             consul.ACLPermissionDenied, c.kv.delete, 'foo', token=token)
 
-        assert c.kv.get('private/foo', token=master_token)[1]['Value'] == six.b('bar')
+        assert c.kv.get('private/foo',
+                        token=master_token)[1]['Value'] == six.b('bar')
         pytest.raises(
             consul.ACLPermissionDenied,
             c.kv.get, 'private/foo', token=token)
@@ -82,7 +83,7 @@ class TestConsulACL(object):
         pytest.raises(
             consul.ACLPermissionDenied,
             c.agent.service.register, "bar-1", token=token)
-        x = c.agent.service.register("foo-1", token=token)
+        c.agent.service.register("foo-1", token=token)
         index, data = c.health.service('foo-1', token=token)
         assert data[0]['Service']['ID'] == "foo-1"
         index, data = c.health.checks('foo-1', token=token)
