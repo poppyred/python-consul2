@@ -235,7 +235,7 @@ class CB(object):
             if is_id:
                 data = data['ID']
             if one:
-                if data == []:
+                if not data:
                     data = None
                 if data is not None:
                     data = data[0]
