@@ -27,6 +27,7 @@ matrix:
     - python: nightly
     - python: pypy3
 
+
 install:
   - pip install tox
   - pip install tox-travis
@@ -67,19 +68,19 @@ jobs:
         on:
           tags: true
 
-    - stage: coverity_scan
-      script: ignore
-      addons:
-        coverity_scan:
-          project:
-            name: poppyred/python-consul2
-            version: 3
-            description: Python Repo Template
-          branch_pattern: master
-      branches:
-        only:
-          - stable
-          - master
+#    - stage: coverity_scan
+#      script: ignore
+#      addons:
+#        coverity_scan:
+#          project:
+#            name: poppyred/python-consul2
+#            version: 3
+#            description: Python Repo Template
+#          branch_pattern: master
+#      branches:
+#        only:
+#          - stable
+#          - master
 
     - stage: codecov
       python: '3.7'
@@ -87,6 +88,6 @@ jobs:
         - pip install coverage pytest codecov pytest-cov  pytest-rerunfailures pytest-twisted twisted treq pyOpenSSL tornado aiohttp
       script:
           - py.test --cov-report=xml --cov=consul tests/
-          - codecov -t 48e049f3-dd7c-43e5-a283-acfc68d1c27a
+          - codecov
 
 
