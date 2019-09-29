@@ -66,9 +66,10 @@ class TestAsyncioConsul(object):
         loop.run_until_complete(main())
 
     def test_kv_missing(self, loop, consul_port):
-        c = consul.aio.Consul(port=consul_port, loop=loop)
 
         async def main():
+            c = consul.aio.Consul(port=consul_port, loop=loop)
+
             fut = asyncio.ensure_future(put(), loop=loop)
             await c.kv.put('index', 'bump')
             index, data = await c.kv.get('foo')
@@ -79,8 +80,11 @@ class TestAsyncioConsul(object):
             await c.close()
 
         async def put():
+            c = consul.aio.Consul(port=consul_port, loop=loop)
+
             await asyncio.sleep(2.0 / 100, loop=loop)
             await c.kv.put('foo', 'bar')
+            await c.close()
 
         loop.run_until_complete(main())
 
@@ -121,9 +125,9 @@ class TestAsyncioConsul(object):
         loop.run_until_complete(main())
 
     def test_kv_subscribe(self, loop, consul_port):
-        c = consul.aio.Consul(port=consul_port, loop=loop)
 
         async def get():
+            c = consul.aio.Consul(port=consul_port, loop=loop)
             fut = asyncio.ensure_future(put(), loop=loop)
             index, data = await c.kv.get('foo')
             assert data is None
@@ -133,9 +137,11 @@ class TestAsyncioConsul(object):
             await c.close()
 
         async def put():
+            c = consul.aio.Consul(port=consul_port, loop=loop)
             await asyncio.sleep(1.0 / 100, loop=loop)
             response = await c.kv.put('foo', 'bar')
             assert response is True
+            await c.close()
 
         loop.run_until_complete(get())
 
@@ -179,10 +185,11 @@ class TestAsyncioConsul(object):
 
         loop.run_until_complete(main())
 
-    async def test_catalog(self, loop, consul_port):
-        c = consul.aio.Consul(port=consul_port, loop=loop)
+    def test_catalog(self, loop, consul_port):
 
         async def nodes():
+            c = consul.aio.Consul(port=consul_port, loop=loop)
+
             fut = asyncio.ensure_future(register(), loop=loop)
             index, nodes = await c.catalog.nodes()
             assert len(nodes) == 1
@@ -199,12 +206,15 @@ class TestAsyncioConsul(object):
             await c.close()
 
         async def register():
+            c = consul.aio.Consul(port=consul_port, loop=loop)
+
             await asyncio.sleep(1.0 / 100, loop=loop)
             response = await c.catalog.register('n1', '10.1.10.11')
             assert response is True
             await asyncio.sleep(50 / 1000.0, loop=loop)
             response = await c.catalog.deregister('n1')
             assert response is True
+            await c.close()
 
         loop.run_until_complete(nodes())
 
@@ -232,6 +242,7 @@ class TestAsyncioConsul(object):
             await asyncio.sleep(50 / 1000.0, loop=loop)
             response = await c.session.destroy(session_id)
             assert response is True
+            await c.close()
 
         loop.run_until_complete(monitor())
 
