@@ -87,8 +87,9 @@ jobs:
         - pip install  coverage
         - pip install codecov
         - pip install tox
+        - pip install pytest-cov
       script:
-          - coverage run -m tox -e py37
+          - py.test --cov-report=xml --cov=consul tests/
           - codecov -t 48e049f3-dd7c-43e5-a283-acfc68d1c27a
 
 
