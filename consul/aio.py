@@ -15,13 +15,6 @@ PY_341 = sys.version_info >= (3, 4, 1)
 class HTTPClient(base.HTTPClient):
     """Asyncio adapter for python consul using aiohttp library"""
 
-    async def __init(self, loop=None):
-        self._loop = loop or asyncio.get_event_loop()
-        connector = aiohttp.TCPConnector(loop=self._loop,
-                                         verify_ssl=self.verify)
-        async with aiohttp.ClientSession(connector=connector) as session:
-            self._session = await session._request()
-
     def __init__(self, *args, loop=None, **kwargs):
         super(HTTPClient, self).__init__(*args, **kwargs)
         self._loop = loop or asyncio.get_event_loop()
