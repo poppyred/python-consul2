@@ -69,6 +69,7 @@ Installation
 .. |Coverage Status|
    image:: https://codecov.io/gh/poppyred/python-consul2/branch/dev/graph/badge.svg
    :target: https://codecov.io/gh/poppyred/python-consul2
+
 Status
 ------
 
