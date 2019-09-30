@@ -1,3 +1,4 @@
+import _thread
 import asyncio
 import base64
 import struct
@@ -5,11 +6,25 @@ import sys
 
 import pytest
 import six
+from requests import get
 
 import consul
 import consul.aio
 
 Check = consul.Check
+
+
+def local_server():
+    routes = web.RouteTableDef()
+
+    @routes.get('/')
+    async def hello(request):
+        return web.Response(text="Hello, world")
+
+    app = web.Application()
+    app.add_routes(routes)
+
+    web.run_app(app)
 
 
 @pytest.fixture
@@ -242,3 +257,26 @@ class TestAsyncioConsul(object):
             assert issubclass(w.category, ResourceWarning)
 
         loop.run_until_complete(main())
+
+
+from aiohttp import web
+
+
+async def hello(request):
+    return web.Response(body=b'Hello, world',status=599)
+
+
+def create_app(loop):
+    app = web.Application(loop=loop)
+    app.router.add_route('GET', '/', hello)
+    return app
+
+
+async def test_hello():
+    try:
+        _thread.start_new_thread(local_server, ())
+    except:
+        print("Error: 无法启动线程")
+    # r=get('http://127.0.0.1:8080')
+    # r
+
