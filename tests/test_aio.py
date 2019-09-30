@@ -29,16 +29,15 @@ class TestAsyncioConsul(object):
     def test_kv(self, loop, consul_port):
         async def main():
             c = consul.aio.Consul(port=consul_port, loop=loop)
-            print(c)
             index, data = await c.kv.get('foo')
 
-            print(index, data)
             assert data is None
             response = await c.kv.put('foo', 'bar')
             assert response is True
+            response = await c.kv.put('foo-2', 'bar')
+            assert response is True
             index, data = await c.kv.get('foo')
             assert data['Value'] == six.b('bar')
-            await c.close()
 
         loop.run_until_complete(main())
 
@@ -50,7 +49,6 @@ class TestAsyncioConsul(object):
             await c.kv.put('foo', struct.pack('i', 1000))
             index, data = await c.kv.get('foo')
             assert struct.unpack('i', data['Value']) == (1000,)
-            await c.close()
 
         asyncio.set_event_loop(loop)
         loop.run_until_complete(main())
@@ -61,12 +59,10 @@ class TestAsyncioConsul(object):
             await c.kv.put('foo', struct.pack('i', 1000))
             index, data = await c.kv.get('foo')
             assert struct.unpack('i', data['Value']) == (1000,)
-            await c.close()
 
         loop.run_until_complete(main())
 
     def test_kv_missing(self, loop, consul_port):
-
         async def main():
             c = consul.aio.Consul(port=consul_port, loop=loop)
 
@@ -77,14 +73,12 @@ class TestAsyncioConsul(object):
             index, data = await c.kv.get('foo', index=index)
             assert data['Value'] == six.b('bar')
             await fut
-            await c.close()
 
         async def put():
             c = consul.aio.Consul(port=consul_port, loop=loop)
 
             await asyncio.sleep(2.0 / 100, loop=loop)
             await c.kv.put('foo', 'bar')
-            await c.close()
 
         loop.run_until_complete(main())
 
@@ -99,7 +93,6 @@ class TestAsyncioConsul(object):
             assert response is True
             index, data = await c.kv.get('foo')
             assert data['Flags'] == 50
-            await c.close()
 
         loop.run_until_complete(main())
 
@@ -120,12 +113,10 @@ class TestAsyncioConsul(object):
             assert response is True
             index, data = await c.kv.get('foo', recurse=True)
             assert data is None
-            await c.close()
 
         loop.run_until_complete(main())
 
     def test_kv_subscribe(self, loop, consul_port):
-
         async def get():
             c = consul.aio.Consul(port=consul_port, loop=loop)
             fut = asyncio.ensure_future(put(), loop=loop)
@@ -134,14 +125,12 @@ class TestAsyncioConsul(object):
             index, data = await c.kv.get('foo', index=index)
             assert data['Value'] == six.b('bar')
             await fut
-            await c.close()
 
         async def put():
             c = consul.aio.Consul(port=consul_port, loop=loop)
             await asyncio.sleep(1.0 / 100, loop=loop)
             response = await c.kv.put('foo', 'bar')
             assert response is True
-            await c.close()
 
         loop.run_until_complete(get())
 
@@ -156,7 +145,6 @@ class TestAsyncioConsul(object):
             d = {"KV": {"Verb": "get", "Key": "asdf"}}
             r = await c.txn.put([d])
             assert r["Results"][0]["KV"]["Value"] == value
-            await c.close()
 
         loop.run_until_complete(main())
 
@@ -181,12 +169,10 @@ class TestAsyncioConsul(object):
             assert response is True
             services = await c.agent.services()
             assert services == {}
-            await c.close()
 
         loop.run_until_complete(main())
 
     def test_catalog(self, loop, consul_port):
-
         async def nodes():
             c = consul.aio.Consul(port=consul_port, loop=loop)
 
@@ -203,7 +189,6 @@ class TestAsyncioConsul(object):
             nodes.remove(current)
             assert [x['Node'] for x in nodes] == []
             await fut
-            await c.close()
 
         async def register():
             c = consul.aio.Consul(port=consul_port, loop=loop)
@@ -214,12 +199,10 @@ class TestAsyncioConsul(object):
             await asyncio.sleep(50 / 1000.0, loop=loop)
             response = await c.catalog.deregister('n1')
             assert response is True
-            await c.close()
 
         loop.run_until_complete(nodes())
 
     def test_session(self, loop, consul_port):
-
         async def monitor():
             c = consul.aio.Consul(port=consul_port, loop=loop)
             fut = asyncio.ensure_future(register(), loop=loop)
@@ -233,7 +216,6 @@ class TestAsyncioConsul(object):
             index, services = await c.session.list(index=index)
             assert services == []
             await fut
-            await c.close()
 
         async def register():
             c = consul.aio.Consul(port=consul_port, loop=loop)
@@ -242,12 +224,10 @@ class TestAsyncioConsul(object):
             await asyncio.sleep(50 / 1000.0, loop=loop)
             response = await c.session.destroy(session_id)
             assert response is True
-            await c.close()
 
         loop.run_until_complete(monitor())
 
-    @pytest.mark.skipif(sys.version_info < (3, 4, 1) or
-                        sys.version_info > (3, 7, 0),
+    @pytest.mark.skipif(sys.version_info < (3, 4, 1),
                         reason="Python <3.4.1 doesnt support __del__ calls "
                                "from GC")
     def test_httpclient__del__method(self, loop, consul_port, recwarn):

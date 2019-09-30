@@ -13,7 +13,8 @@ class HTTPClient(base.HTTPClient):
         super(HTTPClient, self).__init__(*args, **kwargs)
         self.client = httpclient.AsyncHTTPClient()
 
-    def response(self, response):
+    @staticmethod
+    def response(response):
         return base.Response(
             response.code, response.headers, response.body.decode('utf-8'))
 
@@ -52,5 +53,6 @@ class HTTPClient(base.HTTPClient):
 
 
 class Consul(base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
+    @staticmethod
+    def connect(host, port, scheme, verify=True, cert=None):
         return HTTPClient(host, port, scheme, verify=verify, cert=cert)

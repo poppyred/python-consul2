@@ -30,7 +30,7 @@ class TestAsyncioConsulACL(object):
             key "private/" {
                 policy = "deny"
             }
-        """
+            """
             token = await c.acl.create(rules=rules)
 
             try:
@@ -41,6 +41,13 @@ class TestAsyncioConsulACL(object):
 
             destroyed = await c.acl.destroy(token)
             assert destroyed is True
-            await c.close()
+            query_service = 'foo'
+            query_name = 'fooquery'
+            query = await c.query.create(query_service, query_name, token=acl_consul.token)
+
+            # assert response contains query ID
+            assert 'ID' in query \
+                   and query['ID'] is not None \
+                   and str(query['ID']) != ''
 
         loop.run_until_complete(main())

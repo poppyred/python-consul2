@@ -524,6 +524,31 @@ class Consul(object):
                 '/v1/acl/destroy/%s' % acl_id,
                 params=params)
 
+        def login(self, auth_method, bearer_token, meta, token=None):
+            """
+            To use the login process to create tokens in any connected secondary
+            datacenter, ACL replication must be enabled. Login requires the
+            ability to create local tokens which is restricted to the primary
+            datacenter and any secondary datacenters with ACL token replication
+            enabled.
+
+            Returns *True* on success.
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            data = {"AuthMethod": auth_method}
+            data.update({"BearerToken": bearer_token})
+            data.update({"Meta": meta})
+
+            return self.agent.http.post(
+                CB.bool(),
+                '/v1/acl/login',
+                params=params,
+                data=json.dumps(data)
+            )
+
     class Agent(object):
         """
         The Agent endpoints are used to interact with a local Consul agent.
@@ -2043,7 +2068,10 @@ class Consul(object):
             https://www.consul.io/docs/agent/http/query.html
             """
             path = '/v1/query'
-            params = None if dc is None else [('dc', dc)]
+            params = [] if dc is None else [('dc', dc)]
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             data = self._query_data(
                 service, name, session, token, nearestn, datacenters,
                 onlypassing, tags, ttl, regexp
@@ -2072,6 +2100,9 @@ class Consul(object):
             """
             path = '/v1/query/%s' % query_id
             params = None if dc is None else [('dc', dc)]
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             data = self._query_data(
                 service, name, session, token, nearestn, datacenters,
                 onlypassing, tags, ttl, regexp
