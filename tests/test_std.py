@@ -216,6 +216,7 @@ class TestConsul(object):
             'check name',
             Check.script('/bin/true', 10),
             check_id='check_id') is True
+
         verify_and_dereg_check('check_id')
 
         http_addr = "http://127.0.0.1:{0}".format(consul_port)

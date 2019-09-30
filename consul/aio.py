@@ -23,7 +23,7 @@ class HTTPClient(base.HTTPClient):
         connector = aiohttp.TCPConnector(loop=self._loop,
                                          verify_ssl=self.verify)
         async with aiohttp.ClientSession(connector=connector) as session:
-            self._session=session
+            self._session = session
             resp = await session.request(method=method, url=uri, data=data)
             body = await resp.text(encoding='utf-8')
             if resp.status == 599:
@@ -40,7 +40,7 @@ class HTTPClient(base.HTTPClient):
             # if not self._session.closed:
             #     warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
             #                   ResourceWarning)
-            #     self._session.close()
+            # self._session.close()
 
     async def get(self, callback, path, params=None):
         uri = self.uri(path, params)
@@ -71,7 +71,3 @@ class Consul(base.Consul):
     def connect(self, host, port, scheme, verify=True, cert=None):
         return HTTPClient(host, port, scheme, loop=self._loop,
                           verify=verify, cert=None)
-    #
-    # async def close(self):
-    #     """Close all opened http connections"""
-    #     await self.http.close()
