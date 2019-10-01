@@ -468,11 +468,18 @@ class TestConsul(object):
         _, services = c.catalog.services()
         assert services == {'s1': [u'master'], 's2': [], 'consul': []}
 
+        _, services = c.catalog.services(index=current['ModifyIndex'],
+                                         wait='10s')
+        assert services == {'s1': [u'master'], 's2': [], 'consul': []}
+
         # test catalog.node
         pytest.raises(consul.ConsulException, c.catalog.node, 'n1', dc='dc2')
         _, node = c.catalog.node('n1')
         assert set(node['Services'].keys()) == {'s1', 's2'}
         _, node = c.catalog.node('n3')
+        _, node = c.catalog.node('n3',
+                                 index=current['ModifyIndex'],
+                                 wait='10s')
         assert node is None
 
         # test catalog.service
@@ -496,6 +503,14 @@ class TestConsul(object):
         _, nodes = c.catalog.service('s1')
         assert set([x['Node'] for x in nodes]) == {'n1'}
 
+        _, node = c.catalog.service('s2',
+                                    near='s2',
+                                    index=current['ModifyIndex'],
+                                    wait='10s')
+
+        _, nodes = c.catalog.nodes(wait='10s',
+                                   near='n1',
+                                   index=nodes[0]['ModifyIndex'])
         # cleanup
         assert c.catalog.deregister('n1') is True
         assert c.catalog.deregister('n2') is True

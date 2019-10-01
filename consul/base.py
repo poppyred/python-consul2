@@ -1067,21 +1067,23 @@ class Consul(object):
             data = {'node': node}
             params = []
             dc = dc or self.agent.dc
+            token = token or self.agent.token
+
             if dc:
                 data['datacenter'] = dc
             if service_id:
                 data['serviceid'] = service_id
             if check_id:
                 data['checkid'] = check_id
-            token = token or self.agent.token
             if token:
                 data['WriteRequest'] = {'Token': token}
                 params.append(('token', token))
+
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/catalog/deregister',
-                data=json.dumps(data),
-                params=params)
+                params=params,
+                data=json.dumps(data))
 
         def datacenters(self):
             """
@@ -2515,7 +2517,6 @@ class Consul(object):
         The Status endpoints are used to get information about the status
          of the Consul cluster.
         """
-
         def __init__(self, agent):
             self.agent = agent
 
@@ -2564,7 +2565,6 @@ class Consul(object):
                     }
                 }
             """
-
             params = []
             token = token or self.agent.token
             if token:
