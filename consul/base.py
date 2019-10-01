@@ -538,13 +538,17 @@ class Consul(object):
             self.service = Consul.Agent.Service(agent)
             self.check = Consul.Agent.Check(agent)
 
-        def self(self):
+        def self(self, token=None):
             """
             Returns configuration of the local agent and member information.
             """
-            return self.agent.http.get(CB.json(), '/v1/agent/self')
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.get(CB.json(), '/v1/agent/self', params)
 
-        def services(self):
+        def services(self, token=None):
             """
             Returns all the services that are registered with the local agent.
             These services were either provided through configuration files, or
@@ -555,9 +559,13 @@ class Consul(object):
             anti-entropy, so in most situations everything will be in sync
             within a few seconds.
             """
-            return self.agent.http.get(CB.json(), '/v1/agent/services')
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.get(CB.json(), '/v1/agent/services', params)
 
-        def checks(self):
+        def checks(self, token=None):
             """
             Returns all the checks that are registered with the local agent.
             These checks were either provided through configuration files, or
@@ -568,9 +576,13 @@ class Consul(object):
             anti-entropy, so in most situations everything will be in sync
             within a few seconds.
             """
-            return self.agent.http.get(CB.json(), '/v1/agent/checks')
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.get(CB.json(), '/v1/agent/checks', params)
 
-        def members(self, wan=False):
+        def members(self, wan=False, token=None):
             """
             Returns all the members that this agent currently sees. This may
             vary by agent, use the nodes api of Catalog to retrieve a cluster
@@ -581,12 +593,15 @@ class Consul(object):
             default.
             """
             params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             if wan:
                 params.append(('wan', 1))
             return self.agent.http.get(
                 CB.json(), '/v1/agent/members', params=params)
 
-        def maintenance(self, enable, reason=None):
+        def maintenance(self, enable, reason=None, token=None):
             """
             The node maintenance endpoint can place the agent into
             "maintenance mode".
@@ -599,7 +614,9 @@ class Consul(object):
             """
 
             params = []
-
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             params.append(('enable', enable))
             if reason:
                 params.append(('reason', reason))
@@ -607,7 +624,7 @@ class Consul(object):
             return self.agent.http.put(
                 CB.bool(), '/v1/agent/maintenance', params=params)
 
-        def join(self, address, wan=False):
+        def join(self, address, wan=False, token=None):
             """
             This endpoint instructs the agent to attempt to connect to a
             given address.
@@ -620,14 +637,16 @@ class Consul(object):
             """
 
             params = []
-
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             if wan:
                 params.append(('wan', 1))
 
             return self.agent.http.put(
                 CB.bool(), '/v1/agent/join/%s' % address, params=params)
 
-        def force_leave(self, node):
+        def force_leave(self, node, token=None):
             """
             This endpoint instructs the agent to force a node into the left
             state. If a node fails unexpectedly, then it will be in a failed
@@ -638,9 +657,12 @@ class Consul(object):
 
             *node* is the node to change state for.
             """
-
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             return self.agent.http.put(
-                CB.bool(), '/v1/agent/force-leave/%s' % node)
+                CB.bool(), '/v1/agent/force-leave/%s' % node, params)
 
         class Service(object):
             def __init__(self, agent):
@@ -768,9 +790,8 @@ class Consul(object):
                 operators.
                 """
 
-                params = []
+                params = [('enable', enable)]
 
-                params.append(('enable', enable))
                 token = token or self.agent.token
                 if reason:
                     params.append(('reason', reason))
@@ -861,20 +882,29 @@ class Consul(object):
                     params=params,
                     data=json.dumps(payload))
 
-            def deregister(self, check_id):
+            def deregister(self, check_id, token=None):
                 """
                 Remove a check from the local agent.
                 """
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
                 return self.agent.http.put(
                     CB.bool(),
-                    '/v1/agent/check/deregister/%s' % check_id)
+                    path='/v1/agent/check/deregister/%s' % check_id,
+                    params=params,
+                )
 
-            def ttl_pass(self, check_id, notes=None):
+            def ttl_pass(self, check_id, notes=None, token=None):
                 """
                 Mark a ttl based check as passing. Optional notes can be
                 attached to describe the status of the check.
                 """
                 params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
                 if notes:
                     params.append(('note', notes))
 
@@ -883,13 +913,16 @@ class Consul(object):
                     '/v1/agent/check/pass/%s' % check_id,
                     params=params)
 
-            def ttl_fail(self, check_id, notes=None):
+            def ttl_fail(self, check_id, notes=None, token=None):
                 """
                 Mark a ttl based check as failing. Optional notes can be
                 attached to describe why check is failing. The status of the
                 check will be set to critical and the ttl clock will be reset.
                 """
                 params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
                 if notes:
                     params.append(('note', notes))
 
@@ -898,13 +931,16 @@ class Consul(object):
                     '/v1/agent/check/fail/%s' % check_id,
                     params=params)
 
-            def ttl_warn(self, check_id, notes=None):
+            def ttl_warn(self, check_id, notes=None, token=None):
                 """
                 Mark a ttl based check with warning. Optional notes can be
                 attached to describe the warning. The status of the
                 check will be set to warn and the ttl clock will be reset.
                 """
                 params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
                 if notes:
                     params.append(('note', notes))
 
@@ -1029,6 +1065,7 @@ class Consul(object):
             """
             assert not (service_id and check_id)
             data = {'node': node}
+            params = []
             dc = dc or self.agent.dc
             if dc:
                 data['datacenter'] = dc
@@ -1039,8 +1076,12 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 data['WriteRequest'] = {'Token': token}
+                params.append(('token', token))
             return self.agent.http.put(
-                CB.bool(), '/v1/catalog/deregister', data=json.dumps(data))
+                CB.bool(),
+                '/v1/catalog/deregister',
+                data=json.dumps(data),
+                params=params)
 
         def datacenters(self):
             """
@@ -1451,7 +1492,7 @@ class Consul(object):
                 self,
                 name=None,
                 index=None,
-                wait=None):
+                wait=None, token=None):
             """
             Returns a tuple of (*index*, *events*)
                 Note: Since Consul's event protocol uses gossip, there is no
@@ -1488,6 +1529,9 @@ class Consul(object):
                 }
             """
             params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             if name is not None:
                 params.append(('name', name))
             if index:
@@ -1542,6 +1586,9 @@ class Consul(object):
             dictionary formatted as {k1:v1, k2:v2}.
             """
             params = []
+            dc = dc or self.agent.dc
+            token = token or self.agent.token
+
             if index:
                 params.append(('index', index))
                 if wait:
@@ -1550,12 +1597,10 @@ class Consul(object):
                 params.append(('passing', '1'))
             if tag is not None:
                 params.append(('tag', tag))
-            dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
             if near:
                 params.append(('near', near))
-            token = token or self.agent.token
             if token:
                 params.append(('token', token))
             if node_meta:
@@ -1666,11 +1711,12 @@ class Consul(object):
                 if wait:
                     params.append(('wait', wait))
             dc = dc or self.agent.dc
+            token = token or self.agent.token
+
             if dc:
                 params.append(('dc', dc))
             if near:
                 params.append(('near', near))
-            token = token or self.agent.token
             if token:
                 params.append(('token', token))
             if node_meta:
@@ -1863,6 +1909,9 @@ class Consul(object):
                 isinstance(value, (six.string_types, six.binary_type))
 
             params = []
+            token = token or self.agent.token
+            dc = dc or self.agent.dc
+
             if cas is not None:
                 params.append(('cas', cas))
             if flags is not None:
@@ -1871,10 +1920,8 @@ class Consul(object):
                 params.append(('acquire', acquire))
             if release:
                 params.append(('release', release))
-            token = token or self.agent.token
             if token:
                 params.append(('token', token))
-            dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.put(
@@ -1903,14 +1950,15 @@ class Consul(object):
                 'keys should not start with a forward slash'
 
             params = []
+            dc = dc or self.agent.dc
+            token = token or self.agent.token
+
             if recurse:
                 params.append(('recurse', '1'))
             if cas is not None:
                 params.append(('cas', cas))
-            token = token or self.agent.token
             if token:
                 params.append(('token', token))
-            dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
 
@@ -1921,12 +1969,18 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def raft_config(self):
+        def raft_config(self, token=None):
             """
             Returns raft configuration.
             """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
             return self.agent.http.get(
-                CB.json(), '/v1/operator/raft/configuration')
+                CB.json(),
+                '/v1/operator/raft/configuration',
+                params)
 
     class Query(object):
         def __init__(self, agent):
@@ -2202,7 +2256,8 @@ class Consul(object):
                 lock_delay=15,
                 behavior='release',
                 ttl=None,
-                dc=None):
+                dc=None,
+                token=None):
             """
             Creates a new session. There is more documentation for sessions
             `here <https://consul.io/docs/internals/sessions.html>`_.
@@ -2237,8 +2292,12 @@ class Consul(object):
             """
             params = []
             dc = dc or self.agent.dc
+            token = token or self.agent.token
+
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             data = {}
             if name:
                 data['name'] = name
@@ -2266,7 +2325,7 @@ class Consul(object):
                 params=params,
                 data=data)
 
-        def destroy(self, session_id, dc=None):
+        def destroy(self, session_id, dc=None, token=None):
             """
             Destroys the session *session_id*
 
@@ -2274,14 +2333,23 @@ class Consul(object):
             """
             params = []
             dc = dc or self.agent.dc
+            token = token or self.agent.token
+
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/session/destroy/%s' % session_id,
                 params=params)
 
-        def list(self, index=None, wait=None, consistency=None, dc=None):
+        def list(self,
+                 index=None,
+                 wait=None,
+                 consistency=None,
+                 dc=None,
+                 token=None):
             """
             Returns a tuple of (*index*, *sessions*) of all active sessions in
             the *dc* datacenter. *dc* defaults to the current datacenter of
@@ -2315,6 +2383,12 @@ class Consul(object):
             """
             params = []
             dc = dc or self.agent.dc
+            token = token or self.agent.token
+
+            if dc:
+                params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             if dc:
                 params.append(('dc', dc))
             if index:
@@ -2327,7 +2401,13 @@ class Consul(object):
             return self.agent.http.get(
                 CB.json(index=True), '/v1/session/list', params=params)
 
-        def node(self, node, index=None, wait=None, consistency=None, dc=None):
+        def node(self,
+                 node,
+                 index=None,
+                 wait=None,
+                 consistency=None,
+                 dc=None,
+                 token=None):
             """
             Returns a tuple of (*index*, *sessions*) as per *session.list*, but
             filters the sessions returned to only those active for *node*.
@@ -2345,8 +2425,12 @@ class Consul(object):
             """
             params = []
             dc = dc or self.agent.dc
+            token = token or self.agent.token
+
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             if index:
                 params.append(('index', index))
                 if wait:
@@ -2363,7 +2447,8 @@ class Consul(object):
                  index=None,
                  wait=None,
                  consistency=None,
-                 dc=None):
+                 dc=None,
+                 token=None):
             """
             Returns a tuple of (*index*, *session*) for the session
             *session_id* in the *dc* datacenter. *dc* defaults to the current
@@ -2382,8 +2467,12 @@ class Consul(object):
             """
             params = []
             dc = dc or self.agent.dc
+            token = token or self.agent.token
+
             if dc:
                 params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             if index:
                 params.append(('index', index))
                 if wait:
@@ -2396,7 +2485,7 @@ class Consul(object):
                 '/v1/session/info/%s' % session_id,
                 params=params)
 
-        def renew(self, session_id, dc=None):
+        def renew(self, session_id, dc=None, token=None):
             """
             This is used with sessions that have a TTL, and it extends the
             expiration by the TTL.
@@ -2408,6 +2497,12 @@ class Consul(object):
             """
             params = []
             dc = dc or self.agent.dc
+            token = token or self.agent.token
+
+            if dc:
+                params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.put(
@@ -2469,6 +2564,7 @@ class Consul(object):
                     }
                 }
             """
+
             params = []
             token = token or self.agent.token
             if token:
