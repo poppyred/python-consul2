@@ -138,28 +138,28 @@ class Check(object):
         if not script and not http and not ttl:
             return {}
 
-        log.warning(
-            'DEPRECATED: use consul.Check.script/http/ttl to specify check')
+        # log.warning(
+        #     'DEPRECATED: use consul.Check.script/http/ttl to specify check')
 
-        ret = {'check': {}}
+        # ret = {'check': {}}
 
-        if script:
-            assert interval and not (ttl or http)
-            ret['check'] = {'script': script, 'interval': interval}
-        if ttl:
-            assert not (interval or script or http)
-            ret['check'] = {'ttl': ttl}
-        if http:
-            assert interval and not (script or ttl)
-            ret['check'] = {'http': http, 'interval': interval}
-        if timeout:
-            assert http
-            ret['check']['timeout'] = timeout
-
-        if deregister:
-            ret['check']['DeregisterCriticalServiceAfter'] = deregister
-
-        return ret
+        # if script:
+        #     assert interval and not (ttl or http)
+        #     ret['check'] = {'script': script, 'interval': interval}
+        # if ttl:
+        #     assert not (interval or script or http)
+        #     ret['check'] = {'ttl': ttl}
+        # if http:
+        #     assert interval and not (script or ttl)
+        #     ret['check'] = {'http': http, 'interval': interval}
+        # if timeout:
+        #     assert http
+        #     ret['check']['timeout'] = timeout
+        #
+        # if deregister:
+        #     ret['check']['DeregisterCriticalServiceAfter'] = deregister
+        #
+        # return ret
 
 
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
@@ -291,7 +291,8 @@ class Consul(object):
             consistency='default',
             dc=None,
             verify=True,
-            cert=None):
+            cert=None,
+            **kwargs):
         """
         *token* is an optional `ACL token`_. If supplied it will be used by
         default for all requests made with this client session. It's still
@@ -326,7 +327,7 @@ class Consul(object):
         if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
             verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
 
-        self.http = self.connect(host, port, scheme, verify, cert)
+        self.http = self.connect(host, port, scheme, verify, cert, **kwargs)
         self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
         self.scheme = scheme
         self.dc = dc
@@ -523,31 +524,6 @@ class Consul(object):
                 CB.json(),
                 '/v1/acl/destroy/%s' % acl_id,
                 params=params)
-
-        def login(self, auth_method, bearer_token, meta, token=None):
-            """
-            To use the login process to create tokens in any connected secondary
-            datacenter, ACL replication must be enabled. Login requires the
-            ability to create local tokens which is restricted to the primary
-            datacenter and any secondary datacenters with ACL token replication
-            enabled.
-
-            Returns *True* on success.
-            """
-            params = []
-            token = token or self.agent.token
-            if token:
-                params.append(('token', token))
-            data = {"AuthMethod": auth_method}
-            data.update({"BearerToken": bearer_token})
-            data.update({"Meta": meta})
-
-            return self.agent.http.post(
-                CB.bool(),
-                '/v1/acl/login',
-                params=params,
-                data=json.dumps(data)
-            )
 
     class Agent(object):
         """
@@ -1829,7 +1805,7 @@ class Consul(object):
             if not recurse and not keys:
                 one = True
             return self.agent.http.get(
-                CB.json(index=True, decode=decode, one=one),
+                CB.json(index=True, decode=decode, one=one, map=lambda x: x),
                 '/v1/kv/%s' % key,
                 params=params)
 

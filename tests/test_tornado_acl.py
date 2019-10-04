@@ -38,6 +38,16 @@ class TestConsulACL(object):
 
             destroyed = yield c.acl.destroy(token)
             assert destroyed is True
+
+            query_service = 'foo'
+            query_name = 'fooquery'
+            query = yield c.query.create(query_service,
+                                         query_name, token=acl_consul.token)
+
+            # assert response contains query ID
+            assert 'ID' in query \
+                   and query['ID'] is not None \
+                   and str(query['ID']) != ''
             loop.stop()
 
         loop.run_sync(main)

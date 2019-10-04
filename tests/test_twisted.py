@@ -1,13 +1,13 @@
 import base64
 import struct
 
-import pytest
 import pytest_twisted
 import six
 from twisted.internet import defer, reactor
 
 import consul
 import consul.twisted
+from consul.twisted import InsecureContextFactory
 
 Check = consul.Check
 
@@ -269,28 +269,29 @@ class TestConsul(object):
         index, services = yield c.session.list(index=index)
         assert services == []
 
+    def test_get_content(self):
+
+        content = InsecureContextFactory().getContext('localhost', '8000')
+        assert content.get_app_data() is None
+
     @pytest_twisted.inlineCallbacks
-    @pytest.mark.skip
-    def test_acl(self, acl_consul):
-        c = consul.twisted.Consul(
-            port=acl_consul.port, token=acl_consul.token)
+    def test_virify(self, consul_port):
+        c = consul.twisted.Consul(port=consul_port, verify=False)
 
-        rules = """
-            key "" {
-                policy = "read"
-            }
-            key "private/" {
-                policy = "deny"
-            }
-        """
-        token = yield c.acl.create(rules=rules)
+        index, services = yield c.session.list()
+        assert services == []
 
-        raised = False
+    @pytest_twisted.inlineCallbacks
+    def test_context(self, consul_port):
+        c = consul.twisted.Consul(port=0, verify=False)
+        except_consul = False
         try:
-            yield c.acl.list(token=token)
-        except consul.ACLPermissionDenied:
-            raised = True
-        assert raised
+            yield c.session.list()
+        except AttributeError:
+            except_consul = True
+        assert except_consul
 
-        destroyed = yield c.acl.destroy(token)
-        assert destroyed is True
+        c = consul.twisted.Consul(port=consul_port,
+                                  contextFactory=InsecureContextFactory)
+        sess = yield c.agent.services()
+        assert sess == {}
