@@ -13,7 +13,6 @@ import uuid
 import py
 import pytest
 import requests
-from pytest_httpserver import RequestHandler
 
 collect_ignore = []
 sys.path.insert(0,
@@ -171,12 +170,3 @@ def acl_consul(acl_consul_instance):
     yield ACLConsul(port, token)
     clean_consul(port)
 
-
-@pytest.fixture
-def local_server(httpserver):
-    handler = httpserver.expect_request('/v1/agent/services')
-    assert isinstance(handler, RequestHandler)
-    handler.respond_with_data('', status=599)
-    port = httpserver.port
-    LocalServer = collections.namedtuple('LocalServer', ['port'])
-    yield LocalServer(port)
