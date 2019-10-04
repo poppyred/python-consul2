@@ -85,7 +85,7 @@ jobs:
     - stage: codecov
       python: '3.7'
       install:
-        - pip install coverage pytest codecov pytest-cov  pytest-rerunfailures pytest-twisted twisted treq pyOpenSSL tornado aiohttp
+        - pip install coverage pytest codecov pytest-cov  pytest-rerunfailures pytest-twisted twisted treq pytest_httpserver pyOpenSSL tornado aiohttp
       script:
           - py.test --cov-report=xml --cov=consul tests/
           - codecov
