@@ -169,4 +169,3 @@ def acl_consul(acl_consul_instance):
     port, token = acl_consul_instance
     yield ACLConsul(port, token)
     clean_consul(port)
-

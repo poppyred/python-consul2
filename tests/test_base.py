@@ -1,6 +1,7 @@
 import collections
 import json
 import os
+import sys
 
 import pytest
 
@@ -274,13 +275,16 @@ class TestChecks(object):
         assert ch == {'ttl': '1m'}
 
     def test_http_imp(self):
-        pytest.raises(NotImplementedError,
+        error = TypeError
+        if sys.version_info[0] >= 3:
+            error = NotImplementedError
+        pytest.raises(error,
                       consul.base.HTTPClient.get, HTTPClient(), 'b', 'c')
-        pytest.raises(NotImplementedError,
+        pytest.raises(error,
                       consul.base.HTTPClient.post, HTTPClient(), 'b', 'c')
-        pytest.raises(NotImplementedError,
+        pytest.raises(error,
                       consul.base.HTTPClient.put, HTTPClient(), 'b', 'c')
-        pytest.raises(NotImplementedError,
+        pytest.raises(error,
                       consul.base.HTTPClient.delete, HTTPClient(), 'b', 'c')
         pytest.raises(TypeError, consul.base.HTTPClient)
 

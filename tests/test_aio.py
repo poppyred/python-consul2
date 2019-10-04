@@ -23,6 +23,7 @@ def local_server(httpserver):
     LocalServer = collections.namedtuple('LocalServer', ['port'])
     yield LocalServer(port)
 
+
 @pytest.fixture
 def loop(request):
     asyncio.set_event_loop(None)
