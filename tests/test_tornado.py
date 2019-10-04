@@ -369,3 +369,20 @@ class TestConsul(object):
 
         loop.add_timeout(time.time() + (1.0 / 100), register)
         loop.run_sync(monitor)
+
+    def test_root(self, loop, local_server):
+        c = consul.tornado.Consul(port=local_server.port)
+
+        @gen.coroutine
+        def test_timeout():
+            time_out = False
+            yield sleep(loop, 20 / 1000.0)
+
+            try:
+                yield c.agent.services()
+            except consul.Timeout:
+                time_out = True
+            assert time_out
+            loop.stop()
+
+        loop.run_sync(test_timeout)

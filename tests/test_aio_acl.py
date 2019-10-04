@@ -39,11 +39,28 @@ class TestAsyncioConsulACL(object):
                 raised = True
             assert raised
 
+            token = await c.acl.create(rules=rules, name='foo', acl_id='foo-1')
+
+            try:
+                await c.acl.list(token=token)
+            except consul.ACLPermissionDenied:
+                raised = True
+            assert raised
+
+            token = await c.acl.create(type=None)
+
+            try:
+                await c.acl.list(token=token)
+            except consul.ACLPermissionDenied:
+                raised = True
+            assert raised
+
             destroyed = await c.acl.destroy(token)
             assert destroyed is True
             query_service = 'foo'
             query_name = 'fooquery'
-            query = await c.query.create(query_service, query_name, token=acl_consul.token)
+            query = await c.query.create(query_service,
+                                         query_name, token=acl_consul.token)
 
             # assert response contains query ID
             assert 'ID' in query \

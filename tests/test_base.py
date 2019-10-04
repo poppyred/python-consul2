@@ -1,5 +1,6 @@
 import collections
 import json
+import os
 
 import pytest
 
@@ -271,3 +272,26 @@ class TestChecks(object):
     def test_ttl_check(self):
         ch = consul.base.Check.ttl('1m')
         assert ch == {'ttl': '1m'}
+
+    def test_http_imp(self):
+        pytest.raises(NotImplementedError,
+                      consul.base.HTTPClient.get, HTTPClient(), 'b', 'c')
+        pytest.raises(NotImplementedError,
+                      consul.base.HTTPClient.post, HTTPClient(), 'b', 'c')
+        pytest.raises(NotImplementedError,
+                      consul.base.HTTPClient.put, HTTPClient(), 'b', 'c')
+        pytest.raises(NotImplementedError,
+                      consul.base.HTTPClient.delete, HTTPClient(), 'b', 'c')
+        pytest.raises(TypeError, consul.base.HTTPClient)
+
+    def test_env(self):
+        os.environ['CONSUL_HTTP_ADDR'] = 'foo'
+        pytest.raises(consul.ConsulException, consul.base.Consul)
+
+        os.environ['CONSUL_HTTP_ADDR'] = 'localhost:8080'
+        os.environ['CONSUL_HTTP_SSL'] = 'true'
+        os.environ['CONSUL_HTTP_SSL_VERIFY'] = 'true'
+        pytest.raises(AttributeError, consul.base.Consul)
+        os.environ['CONSUL_HTTP_ADDR'] = ''
+        os.environ['CONSUL_HTTP_SSL'] = ''
+        os.environ['CONSUL_HTTP_SSL_VERIFY'] = ''
