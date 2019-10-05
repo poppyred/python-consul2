@@ -52,7 +52,8 @@ class TestConsulACL(object):
         token2 = c.acl.clone(token, token=master_token)
         assert c.acl.info(token2)['Rules'] == rules
 
-        assert c.acl.update(token2, name='Foo', token=master_token) == token2
+        assert c.acl.update(token2, name='Foo', token=master_token,
+                            type='client', rules=rules) == token2
         assert c.acl.info(token2)['Name'] == 'Foo'
 
         assert c.acl.destroy(token2, token=master_token) is True
@@ -167,3 +168,5 @@ class TestConsulACL(object):
         c.acl.destroy(token)
         acls = c.acl.list()
         assert set([x['ID'] for x in acls]) == {master_token}
+
+        assert c.agent.service.maintenance('foo', 'true', "test") is True

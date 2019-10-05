@@ -138,28 +138,28 @@ class Check(object):
         if not script and not http and not ttl:
             return {}
 
-        # log.warning(
-        #     'DEPRECATED: use consul.Check.script/http/ttl to specify check')
+        log.warning(
+            'DEPRECATED: use consul.Check.script/http/ttl to specify check')
 
-        # ret = {'check': {}}
+        ret = {'check': {}}
 
-        # if script:
-        #     assert interval and not (ttl or http)
-        #     ret['check'] = {'script': script, 'interval': interval}
-        # if ttl:
-        #     assert not (interval or script or http)
-        #     ret['check'] = {'ttl': ttl}
-        # if http:
-        #     assert interval and not (script or ttl)
-        #     ret['check'] = {'http': http, 'interval': interval}
-        # if timeout:
-        #     assert http
-        #     ret['check']['timeout'] = timeout
-        #
+        if script:
+            assert interval and not (ttl or http)
+            ret['check'] = {'script': script, 'ttl': interval}
+        if ttl:
+            assert not (interval or script or http)
+            ret['check'] = {'ttl': ttl}
+        if http:
+            assert interval and not (script or ttl)
+            ret['check'] = {'http': http, 'interval': interval}
+        if timeout:
+            assert http
+            ret['check']['timeout'] = timeout
+
         # if deregister:
         #     ret['check']['DeregisterCriticalServiceAfter'] = deregister
-        #
-        # return ret
+
+        return ret
 
 
 Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
@@ -1331,9 +1331,11 @@ class Consul(object):
                 params=params)
 
     class Config(object):
+        # todo
         pass
 
     class Connect(object):
+        # todo
         pass
 
     class Coordinate(object):
@@ -1377,6 +1379,7 @@ class Consul(object):
                 CB.json(index=True), '/v1/coordinate/nodes', params=params)
 
     class DiscoveryChain(object):
+        # todo
         pass
 
     class Event(object):
