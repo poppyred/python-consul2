@@ -422,7 +422,9 @@ class TestConsul(object):
         assert set(c.agent.services().keys()) == set()
 
         # test address param
-        assert c.agent.service.register('foo', address='10.10.10.1', port=8080) is True
+        assert c.agent.service.register('foo',
+                                        address='10.10.10.1',
+                                        port=8080) is True
         assert [v['Address']
                 for k, v in c.agent.services().items()
                 if k == 'foo'][0] == '10.10.10.1'
