@@ -203,9 +203,21 @@ class TestConsul(object):
                 assert checks[check_id]['Output'] == notes
 
         # test setting notes on a check
-        c.agent.check.register('check', Check.ttl('1s'), notes='foo')
-        assert c.agent.checks()['check']['Notes'] == 'foo'
-        c.agent.check.deregister('check')
+        c.agent.check.register('check1', Check.ttl('1s'), notes='foo')
+        c.agent.check.register('check2', script='/usr/bin/true',
+                               interval=1, notes='foo2')
+        c.agent.check.register('check3', ttl=1, notes='foo3')
+        c.agent.check.register('check4', http='http://localhost:8500',
+                               interval=1, notes='foo4')
+        c.agent.check.register('check5', http='http://localhost:8500',
+                               timeout=1, interval=1, notes='foo5')
+        # c.agent.check.register('check5', Check.ttl('1s'), notes='foo5')
+        assert c.agent.checks()['check1']['Notes'] == 'foo'
+        c.agent.check.deregister('check1')
+        c.agent.check.deregister('check2')
+        c.agent.check.deregister('check3')
+        c.agent.check.deregister('check4')
+        c.agent.check.deregister('check5')
 
         assert set(c.agent.checks().keys()) == set([])
         assert c.agent.check.register(
@@ -410,7 +422,7 @@ class TestConsul(object):
         assert set(c.agent.services().keys()) == set()
 
         # test address param
-        assert c.agent.service.register('foo', address='10.10.10.1') is True
+        assert c.agent.service.register('foo', address='10.10.10.1', port=8080) is True
         assert [v['Address']
                 for k, v in c.agent.services().items()
                 if k == 'foo'][0] == '10.10.10.1'
@@ -623,6 +635,14 @@ class TestConsul(object):
         node = c.agent.self()['Config']['NodeName']
         index, checks = c.health.node(node)
         assert node in [check["Node"] for check in checks]
+
+    def test_agent_node_join(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        c.agent.maintenance('true', "test")
+        assert c.agent.join(address='127.0.0.1', wan=True) is True
+        checks_pre = c.agent.checks()
+        assert c.agent.force_leave(
+            node=checks_pre['_node_maintenance']['Node']) is True
 
     def test_health_checks(self, consul_port):
         c = consul.Consul(port=consul_port)
