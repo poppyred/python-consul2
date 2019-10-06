@@ -60,7 +60,11 @@ class TestAsyncioConsulACL(object):
             query_service = 'foo'
             query_name = 'fooquery'
             query = await c.query.create(query_service,
-                                         query_name, token=acl_consul.token)
+                                         query_name,
+                                         token=acl_consul.token)
+            await c.query.update(query['ID'],
+                                 query_name,
+                                 token=acl_consul.token)
 
             # assert response contains query ID
             assert 'ID' in query \
