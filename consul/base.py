@@ -2078,7 +2078,7 @@ class Consul(object):
             all the other setting remains the same as the query create method
             """
             path = '/v1/query/%s' % query_id
-            params = None if dc is None else [('dc', dc)]
+            params = [] if dc is None else [('dc', dc)]
             token = token or self.agent.token
             if token:
                 params.append(('token', token))
