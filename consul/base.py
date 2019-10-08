@@ -949,6 +949,10 @@ class Consul(object):
                     '/v1/agent/check/warn/%s' % check_id,
                     params=params)
 
+        class Connect(object):
+            # todo connect
+            pass
+
     class Catalog(object):
         def __init__(self, agent):
             self.agent = agent
@@ -1512,9 +1516,110 @@ class Consul(object):
 
         def __init__(self, agent):
             self.agent = agent
+            self.certificates = Consul.Connect.Certificates(agent)
+            self.intentions = Consul.Connect.Intentions(agent)
 
         class Certificates:
-            pass
+            """
+            This endpoint returns the current list of trusted CA root
+            certificates in the cluster.
+            todo Certificates
+            """
+
+            def __init__(self, agent):
+                self.agent = agent
+
+            def list(self, token=None):
+                path = '/v1/connect/ca/roots'
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+            def current(self, token=None):
+                """
+                This endpoint returns the current CA configuration.
+                """
+                path = '/v1/connect/ca/configuration'
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+            def put(self, token=None):
+                """
+                This endpoint updates the configuration for the CA. If this results
+                in a new root certificate being used, the Root Rotation process will
+                be triggered.
+
+                *Provider*
+                *Config*
+                dict::
+
+                {
+                    "LeafCertTTL": "72h",
+                    "PrivateKey": "-----BEGIN RSA PRIVATE KEY-----...",
+                    "RootCert": "-----BEGIN CERTIFICATE-----...",
+                    "RotationPeriod": "2160h"
+                 }
+                :return:
+                """
+                path = '/v1/connect/ca/configuration'
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+        class Intentions:
+            """
+            This endpoint returns the current list of trusted CA root
+            certificates in the cluster.
+            todo Intentions
+            """
+
+            def __init__(self, agent):
+                self.agent = agent
+
+            def list(self, token=None):
+                path = '/v1/connect/ca/roots'
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+            def current(self, token=None):
+                """
+                This endpoint returns the current CA configuration.
+                """
+                path = '/v1/connect/ca/configuration'
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+            def put(self, token=None):
+                """
+                This endpoint updates the configuration for the CA. If this results
+                in a new root certificate being used, the Root Rotation process will
+                be triggered.
+
+                *Provider*
+                *Config*
+                dict::
+
+                {
+                    "LeafCertTTL": "72h",
+                    "PrivateKey": "-----BEGIN RSA PRIVATE KEY-----...",
+                    "RootCert": "-----BEGIN CERTIFICATE-----...",
+                    "RotationPeriod": "2160h"
+                 }
+                :return:
+                """
+                path = '/v1/connect/ca/configuration'
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
 
     class Coordinate(object):
         def __init__(self, agent):
@@ -1557,7 +1662,7 @@ class Consul(object):
                 CB.json(index=True), '/v1/coordinate/nodes', params=params)
 
     class DiscoveryChain(object):
-        # todo
+        # todo DiscoveryChain
         pass
 
     class Event(object):
@@ -2118,6 +2223,42 @@ class Consul(object):
                 CB.json(),
                 '/v1/operator/raft/configuration',
                 params)
+
+        class Area:
+            """
+            todo Area
+            """
+            pass
+
+        class Autopilot:
+            """
+            todo Autopilot
+            """
+            pass
+
+        class Keyring:
+            """
+            todo Keyring
+            """
+            pass
+
+        class License:
+            """
+            todo License
+            """
+            pass
+
+        class Raft:
+            """
+            todo Area
+            """
+            pass
+
+        class Segments:
+            """
+            todo Segments
+            """
+            pass
 
     class Query(object):
         def __init__(self, agent):
@@ -2710,3 +2851,5 @@ class Consul(object):
             return self.agent.http.put(CB.json(), "/v1/txn",
                                        params=params,
                                        data=json.dumps(payload))
+
+# todo 寻找所有的未实现api
