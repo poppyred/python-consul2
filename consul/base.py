@@ -2134,7 +2134,9 @@ class Consul(object):
             all the other setting remains the same as the query create method
             """
             path = '/v1/query/%s' % query_id
-            params = [] if dc is None else [('dc', dc)]
+            params = []
+            if dc:
+                params.append(('dc', dc))
             token = token or self.agent.token
             if token:
                 params.append(('token', token))
@@ -2517,6 +2519,7 @@ class Consul(object):
         The Status endpoints are used to get information about the status
          of the Consul cluster.
         """
+
         def __init__(self, agent):
             self.agent = agent
 

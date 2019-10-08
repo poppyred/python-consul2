@@ -103,13 +103,13 @@ class TestConsul(object):
 
     def test_kv_delete(self, consul_port):
         c = consul.Consul(port=consul_port)
-        c.kv.put('foo1', '1')
+        c.kv.put('foo1', '1', dc='dc1')
         c.kv.put('foo2', '2')
         c.kv.put('foo3', '3')
-        index, data = c.kv.get('foo', recurse=True)
+        index, data = c.kv.get('foo', recurse=True, dc='dc1')
         assert [x['Key'] for x in data] == ['foo1', 'foo2', 'foo3']
 
-        assert c.kv.delete('foo2') is True
+        assert c.kv.delete('foo2', dc='dc1') is True
         index, data = c.kv.get('foo', recurse=True)
         assert [x['Key'] for x in data] == ['foo1', 'foo3']
         assert c.kv.delete('foo', recurse=True) is True
@@ -774,13 +774,13 @@ class TestConsul(object):
         c = consul.Consul(port=consul_port)
 
         # check that query list is empty
-        queries = c.query.list()
+        queries = c.query.list(dc='dc1')
         assert queries == []
 
         # create a new named query
         query_service = 'foo'
         query_name = 'fooquery'
-        query = c.query.create(query_service, query_name)
+        query = c.query.create(query_service, query_name, 'dc1')
 
         # assert response contains query ID
         assert 'ID' in query \
@@ -788,20 +788,29 @@ class TestConsul(object):
                and str(query['ID']) != ''
 
         # retrieve query using id and name
-        queries = c.query.get(query['ID'])
+        queries = c.query.get(query['ID'], dc='dc1')
         assert queries != [] and len(queries) == 1
         assert queries[0]['Name'] == query_name and queries[0]['ID'] \
                                   == query['ID']
 
         # explain query
-        assert c.query.explain(query_name)['Query']
+        assert c.query.explain(query_name, dc='dc1')['Query']
+
+        # execute query
+        assert c.query.execute(query_name, dc='dc1')
 
         # delete query
-        assert c.query.delete(query['ID'])
+        assert c.query.delete(query['ID'], dc='dc1')
 
     def test_coordinate(self, consul_port):
         c = consul.Consul(port=consul_port)
-        c.coordinate.nodes()
+        _, nodes = c.catalog.nodes()
+        assert len(nodes) == 1
+        current = nodes[0]
+        c.coordinate.nodes('dc1',
+                           index=current['ModifyIndex'],
+                           wait='1s',
+                           consistency='stale')
         c.coordinate.datacenters()
         assert set(c.coordinate.datacenters()[0].keys()) == {
             'Datacenter',
