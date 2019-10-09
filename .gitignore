@@ -4,7 +4,7 @@
 _trial_temp
 __pycache__
 .pytest_cache
-
+snapshot
 # osx
 *.DS_Store*
 

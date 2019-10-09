@@ -1,4 +1,5 @@
 import base64
+import os
 import struct
 import time
 
@@ -947,3 +948,10 @@ JA==
             intentions[0]['ID']
         )
         assert c.connect.intentions.list() == []
+
+    def test_snapshot(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        current_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), '.'))
+        assert c.snapshot.save(os.path.join(current_path, 'snapshot'))
+        assert c.snapshot.restore(os.path.join(current_path, 'snapshot'))
