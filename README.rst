@@ -69,9 +69,13 @@ Installation
 
 Status
 ------
+This `python-consul <https://github.com/cablehead/python-consul>`_ author may be a little busy, I will maintain a version
+`python-consul2 <https://github.com/poppyred/python-consul2>`_,
+welcome to use. The new consul version was used(v1.6.1). Progressively
+implement all API interfaces in the future
 
 There's a few API endpoints still to go to expose all features available in
-Consul v0.6.0. If you need an endpoint that's not in the documentation, just
+Consul v1.6.1. If you need an endpoint that's not in the documentation, just
 open an issue and I'll try and add it straight away.
 
 Mailing List
