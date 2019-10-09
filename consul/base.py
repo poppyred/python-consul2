@@ -2973,4 +2973,4 @@ class Consul(object):
                                        params=params,
                                        data=json.dumps(payload))
 
-# todo 寻找所有的未实现api from https://www.consul.io/api/
+# todo Look for all unimplemented apis from https://www.consul.io/api/
