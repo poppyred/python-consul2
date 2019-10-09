@@ -125,13 +125,13 @@ class HTTPClient(base.HTTPClient):
 
 class Consul(base.Consul):
     @staticmethod
-    def connect(host,
-                port,
-                scheme,
-                verify=True,
-                cert=None,
-                contextFactory=None,
-                **kwargs):
+    def http_connect(host,
+                     port,
+                     scheme,
+                     verify=True,
+                     cert=None,
+                     contextFactory=None,
+                     **kwargs):
         return HTTPClient(
             contextFactory, host, port, scheme, verify=verify, cert=cert,
             **kwargs)
