@@ -68,20 +68,6 @@ jobs:
         on:
           tags: true
 
-#    - stage: coverity_scan
-#      script: ignore
-#      addons:
-#        coverity_scan:
-#          project:
-#            name: poppyred/python-consul2
-#            version: 3
-#            description: Python Repo Template
-#          branch_pattern: master
-#      branches:
-#        only:
-#          - stable
-#          - master
-
     - stage: codecov
       python: '3.7'
       install:
