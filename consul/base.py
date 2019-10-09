@@ -162,7 +162,8 @@ class Check(object):
         return ret
 
 
-Response = collections.namedtuple('Response', ['code', 'headers', 'body'])
+Response = collections.namedtuple(
+    'Response', ['code', 'headers', 'body', 'content'])
 
 
 #
@@ -244,6 +245,18 @@ class CB(object):
             if index:
                 return response.headers['X-Consul-Index'], data
             return data
+
+        return cb
+
+    @classmethod
+    def binary(klass):
+        """
+        This method simply returns response body, usefull for snapshot
+        """
+
+        def cb(response):
+            CB._status(response)
+            return response.content
 
         return cb
 
@@ -348,6 +361,7 @@ class Consul(object):
         self.catalog = Consul.Catalog(self)
         self.health = Consul.Health(self)
         self.session = Consul.Session(self)
+        self.snapshot = Consul.Snapshot(self)
         self.acl = Consul.ACL(self)
         self.status = Consul.Status(self)
         self.query = Consul.Query(self)
@@ -2910,6 +2924,62 @@ class Consul(object):
                 CB.json(one=True, allow_404=False),
                 '/v1/session/renew/%s' % session_id,
                 params=params)
+
+    class Snapshot(object):
+        def __init__(self, agent):
+            self.agent = agent
+
+        def get(self, dc=None, stale=None, token=None):
+            """
+            *dc* Specifies the datacenter to query. This will default
+             to the datacenter of the agent being queried.
+            *stale* Specifies that any follower may reply. By default
+             requests are forwarded to the leade
+            Returns gzipped snapshot of current consul cluster
+            """
+            params = []
+            dc = dc or self.agent.dc
+            token = token or self.agent.token
+
+            if dc:
+                params.append(('dc', dc))
+            if stale:
+                params.append(('stale', stale))
+            if token:
+                params.append(('token', token))
+            return self.agent.http.get(
+                CB.binary(), '/v1/snapshot', params)
+
+        def put(self, data_binary, dc=None, token=None):
+            params = []
+            dc = dc or self.agent.dc
+            token = token or self.agent.token
+
+            if dc:
+                params.append(('dc', dc))
+            if token:
+                params.append(('token', token))
+            return self.agent.http.put(
+                CB.binary(), '/v1/snapshot', params, data_binary)
+
+        def save(self, file_path):
+            """
+            Backup snapshot in a file
+            """
+            backup_file = open(file_path, 'w+b')
+            backup_file.write(self.get())
+            backup_file.close()
+            return True
+
+        def restore(self, file_path):
+            """
+            Restore from snapshot file
+            """
+            backup_file = open(file_path, 'rb')
+            data_binary = backup_file.read()
+            self.put(data_binary)
+            backup_file.close()
+            return True
 
     class Status(object):
         """

@@ -26,9 +26,10 @@ class HTTPClient(base.HTTPClient):
             self._session = session
             resp = await session.request(method=method, url=uri, data=data)
             body = await resp.text(encoding='utf-8')
+            content = await resp.read()
             if resp.status == 599:
                 raise base.Timeout
-            r = base.Response(resp.status, resp.headers, body)
+            r = base.Response(resp.status, resp.headers, body, content)
             await session.close()
             return callback(r)
 
