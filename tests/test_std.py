@@ -955,3 +955,6 @@ JA==
             os.path.join(os.path.dirname(__file__), '.'))
         assert c.snapshot.save(os.path.join(current_path, 'snapshot'))
         assert c.snapshot.restore(os.path.join(current_path, 'snapshot'))
+        pytest.raises(consul.ConsulException,
+                      c.snapshot.restore,
+                      os.path.join(current_path, 'test_std.py'))
