@@ -30,7 +30,7 @@ class HTTPClient(object):
 
 
 class Consul(consul.base.Consul):
-    def connect(self, host, port, scheme, verify=True, cert=None):
+    def http_connect(self, host, port, scheme, verify=True, cert=None):
         return HTTPClient(host, port, scheme, verify=verify, cert=None)
 
 

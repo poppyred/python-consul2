@@ -224,7 +224,7 @@ class CB(object):
         def cb(response):
             CB._status(response, allow_404=allow_404)
             if response.code == 404:
-                return response.headers['X-Consul-Index'], None
+                return response.headers.get('X-Consul-Index'), None
 
             data = json.loads(response.body)
 
@@ -327,14 +327,20 @@ class Consul(object):
         if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
             verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
 
-        self.http = self.connect(host, port, scheme, verify, cert, **kwargs)
+        self.http = self.http_connect(host,
+                                      port,
+                                      scheme,
+                                      verify,
+                                      cert,
+                                      **kwargs)
         self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
         self.scheme = scheme
         self.dc = dc
         assert consistency in ('default', 'consistent', 'stale'), \
             'consistency must be either default, consistent or state'
         self.consistency = consistency
-
+        self.config = Consul.Config(self)
+        self.connect = Consul.Connect(self)
         self.event = Consul.Event(self)
         self.kv = Consul.KV(self)
         self.txn = Consul.Txn(self)
@@ -1379,17 +1385,18 @@ class Consul(object):
 
     class Config(object):
         """
-        The /config endpoints create, update, delete and query central configuration
-        entries registered with Consul. See the agent configuration for more
-        information on how to enable this functionality for centrally configuring
-        services and configuration entries docs for a description of the configuration
-        entries content.
+        The /config endpoints create, update, delete and query central
+        configurationentries registered with Consul. See the agent
+        configuration for moreinformation on how to enable this
+        functionality for centrally configuring services and
+        configuration entries docs for a description of the
+        configuration entries content.
         """
 
         def __init__(self, agent):
             self.agent = agent
 
-        def put(self, dc=None, token=None, cas=None, data=''):
+        def put(self, data, dc=None, token=None, cas=None):
             """
             This endpoint creates or updates the given config entry.
 
@@ -1504,9 +1511,8 @@ class Consul(object):
 
     class Connect(object):
         """
-        The */connect* endpoints provide access to Connect-related operations for
-        intentions and the certificate authority.
-
+        The */connect* endpoints provide access to Connect-related
+        operations for  intentions and the certificate authority.
 
         There are also Connect-related endpoints in the Agent and Catalog APIs.
         For example, the API for requesting a TLS certificate for a service is
@@ -1523,7 +1529,7 @@ class Consul(object):
             """
             This endpoint returns the current list of trusted CA root
             certificates in the cluster.
-            todo Certificates
+            FIXME  Certificates
             """
 
             def __init__(self, agent):
@@ -1536,6 +1542,8 @@ class Consul(object):
                 if token:
                     params.append(('token', token))
 
+                return self.agent.http.get(CB.json(), path, params)
+
             def current(self, token=None):
                 """
                 This endpoint returns the current CA configuration.
@@ -1546,11 +1554,13 @@ class Consul(object):
                 if token:
                     params.append(('token', token))
 
-            def put(self, token=None):
+                return self.agent.http.get(CB.json(), path, params)
+
+            def put(self, config, provider, token=None):
                 """
-                This endpoint updates the configuration for the CA. If this results
-                in a new root certificate being used, the Root Rotation process will
-                be triggered.
+                This endpoint updates the configuration for the CA.
+                If this results in a new root certificate being used,
+                the Root Rotation process will be triggered.
 
                 *Provider*
                 *Config*
@@ -1565,10 +1575,18 @@ class Consul(object):
                 :return:
                 """
                 path = '/v1/connect/ca/configuration'
+                payload = {
+                    "Provider": provider,
+                    "Config": config
+                }
                 params = []
                 token = token or self.agent.token
                 if token:
                     params.append(('token', token))
+                return self.agent.http.put(CB.bool(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
 
         class Intentions:
             """
@@ -1580,46 +1598,143 @@ class Consul(object):
             def __init__(self, agent):
                 self.agent = agent
 
+            def create(self,
+                       source_name,
+                       destination_name,
+                       source_type,
+                       action,
+                       description=None,
+                       meta=None,
+                       token=None):
+                """
+                :param source_name:
+                :param destination_name:
+                :param source_type:
+                :param action:
+                :param description:
+                :param meta:
+                :param token:
+                :return: intentions id
+                """
+                path = '/v1/connect/intentions'
+                payload = {
+                    "SourceName": source_name,
+                    "DestinationName": destination_name,
+                    "SourceType": source_type,
+                    "Action": action
+                }
+                if description:
+                    payload['Description'] = description
+                if meta:
+                    payload['Meta'] = meta
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.post(CB.json(),
+                                            path,
+                                            params,
+                                            json.dumps(payload))
+
+            def get(self, intention_id, token=None):
+                path = '/v1/connect/intentions/%s' % intention_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
             def list(self, token=None):
-                path = '/v1/connect/ca/roots'
+                path = '/v1/connect/intentions'
                 params = []
                 token = token or self.agent.token
                 if token:
                     params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
 
-            def current(self, token=None):
+            def put(self, intention_id,
+                    token=None,
+                    source_name=None,
+                    destination_name=None,
+                    source_type=None,
+                    action=None,
+                    description=None,
+                    meta=None):
                 """
-                This endpoint returns the current CA configuration.
-                """
-                path = '/v1/connect/ca/configuration'
-                params = []
-                token = token or self.agent.token
-                if token:
-                    params.append(('token', token))
-
-            def put(self, token=None):
-                """
-                This endpoint updates the configuration for the CA. If this results
-                in a new root certificate being used, the Root Rotation process will
-                be triggered.
-
-                *Provider*
-                *Config*
-                dict::
-
-                {
-                    "LeafCertTTL": "72h",
-                    "PrivateKey": "-----BEGIN RSA PRIVATE KEY-----...",
-                    "RootCert": "-----BEGIN CERTIFICATE-----...",
-                    "RotationPeriod": "2160h"
-                 }
+                :param intention_id:
+                :param token:
+                :param source_name:
+                :param destination_name:
+                :param source_type:
+                :param action:
+                :param description:
+                :param meta:
                 :return:
                 """
-                path = '/v1/connect/ca/configuration'
+                path = '/v1/connect/intentions/%s' % intention_id
+                payload = {}
+                if source_name:
+                    payload['SourceName'] = source_name
+                if destination_name:
+                    payload['DestinationName'] = destination_name
+                if source_type:
+                    payload['SourceType'] = source_type
+                if action:
+                    payload['Action'] = action
+                if description:
+                    payload['Description'] = description
+                if meta:
+                    payload['Meta'] = meta
+                params = []
+                token = token or self.agent.token
+                if payload:
+                    data = json.dumps(payload)
+                else:
+                    data = ''
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.bool(),
+                                           path,
+                                           params,
+                                           data)
+
+            def delete(self, intention_id, token=None):
+                path = '/v1/connect/intentions/%s' % intention_id
                 params = []
                 token = token or self.agent.token
                 if token:
                     params.append(('token', token))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+            def check(self, source, destination, token=None):
+                path = '/v1/connect/intentions/check'
+                params = []
+                token = token or self.agent.token
+                params.append(('source', source))
+                params.append(('destination', destination))
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def list_match(self, by, name, token=None):
+                path = '/v1/connect/intentions/match'
+                params = []
+                token = token or self.agent.token
+                params.append(('by', by))
+                params.append(('name', name))
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
 
     class Coordinate(object):
         def __init__(self, agent):
@@ -1662,7 +1777,13 @@ class Consul(object):
                 CB.json(index=True), '/v1/coordinate/nodes', params=params)
 
     class DiscoveryChain(object):
+        """
+        This is a low-level API primarily targeted at developers
+        building external Connect proxy integrations. Future
+        high-level proxy integration APIs may obviate the need
+        for this API over time.
         # todo DiscoveryChain
+        """
         pass
 
     class Event(object):
@@ -2852,4 +2973,4 @@ class Consul(object):
                                        params=params,
                                        data=json.dumps(payload))
 
-# todo 寻找所有的未实现api
+# todo 寻找所有的未实现api from https://www.consul.io/api/
