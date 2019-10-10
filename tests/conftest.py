@@ -50,7 +50,8 @@ def get_free_ports(num, host=None):
     return ret
 
 
-def start_consul_instance(acl_master_token=None, acl_agent_token=None):
+def start_consul_instance(
+        acl_master_token=None, acl_agent_token=None, default_policy='deny'):
     """
     starts a consul instance. if acl_master_token is None, acl will be disabled
     for this server, otherwise it will be enabled and the master token will be
@@ -73,7 +74,7 @@ def start_consul_instance(acl_master_token=None, acl_agent_token=None):
     if acl_master_token or acl_agent_token:
         config['acl'] = {
             "enabled": True,
-            "default_policy": "deny",
+            "default_policy": default_policy,
             "enable_token_persistence": True,
             "tokens": {
                 "master": acl_master_token,
@@ -96,7 +97,8 @@ def start_consul_instance(acl_master_token=None, acl_agent_token=None):
     bin = os.path.join(os.path.dirname(__file__), 'consul.' + postfix)
     command = '{bin} agent -dev' \
               ' -bind=127.0.0.1' \
-              ' -config-dir=.'
+              ' -config-dir=.'   \
+              ' -bootstrap-expect 1'
     command = command.format(bin=bin).strip()
     command = shlex.split(command)
     with open('/dev/null', 'w') as devnull:
@@ -155,7 +157,17 @@ def consul_port(consul_instance):
 
 
 @pytest.fixture(scope="module")
-def acl_consul_instance():
+def acl_consul_policy_allow_instance():
+    # acl_master_token = uuid.uuid4().hex
+    acl_master_token = str(uuid.uuid4())
+    p, port = start_consul_instance(
+        acl_master_token=acl_master_token, default_policy='allow')
+    yield port, acl_master_token
+    p.terminate()
+
+
+@pytest.fixture(scope="module")
+def acl_consul_policy_deny_instance():
     # acl_master_token = uuid.uuid4().hex
     acl_master_token = str(uuid.uuid4())
     p, port = start_consul_instance(acl_master_token=acl_master_token)
@@ -164,8 +176,16 @@ def acl_consul_instance():
 
 
 @pytest.fixture
-def acl_consul(acl_consul_instance):
+def acl_consul(acl_consul_policy_deny_instance):
     ACLConsul = collections.namedtuple('ACLConsul', ['port', 'token'])
-    port, token = acl_consul_instance
+    port, token = acl_consul_policy_deny_instance
+    yield ACLConsul(port, token)
+    clean_consul(port)
+
+
+@pytest.fixture
+def acl_consul_policy_allow(acl_consul_policy_allow_instance):
+    ACLConsul = collections.namedtuple('ACLConsul', ['port', 'token'])
+    port, token = acl_consul_policy_allow_instance
     yield ACLConsul(port, token)
     clean_consul(port)

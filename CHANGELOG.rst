@@ -10,3 +10,11 @@ Features
 * Fix  `Consul.ACL` support
 
 
+0.0.4
+-----
+
+Features
+~~~~~~~~
+* implement Connect Config Snapshot  consul_api
+
+

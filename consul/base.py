@@ -371,6 +371,20 @@ class Consul(object):
     class ACL(object):
         def __init__(self, agent):
             self.agent = agent
+            self.tokens = Consul.ACL.Tokens(agent)
+            self.legacy_tokens = Consul.ACL.LegacyTokens(agent)
+            self.policy = Consul.ACL.Policy(agent)
+            self.roles = Consul.ACL.Roles(agent)
+            self.auth_method = Consul.ACL.AuthMethod(agent)
+            self.binding_rule = Consul.ACL.BindingRule(agent)
+
+        def self(self, token=None):
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.get(
+                CB.json(), '/v1/acl/token/self', params=params)
 
         def list(self, token=None):
             """
@@ -379,6 +393,8 @@ class Consul(object):
             default token.  An *ACLPermissionDenied* exception will be raised
             if a management token is not used.
             """
+            warnings.warn('Consul 1.4.0 deprecated',
+                          DeprecationWarning)
             params = []
             token = token or self.agent.token
             if token:
@@ -390,6 +406,8 @@ class Consul(object):
             """
             Returns the token information for *acl_id*.
             """
+            warnings.warn('Consul 1.4.0 deprecated',
+                          DeprecationWarning)
             params = []
             token = token or self.agent.token
             if token:
@@ -435,6 +453,8 @@ class Consul(object):
 
             Returns the string *acl_id* for the new token.
             """
+            warnings.warn('Consul 1.4.0 deprecated',
+                          DeprecationWarning)
             params = []
             token = token or self.agent.token
             if token:
@@ -484,6 +504,8 @@ class Consul(object):
 
             Returns the string *acl_id* of this token on success.
             """
+            warnings.warn('Consul 1.4.0 deprecated',
+                          DeprecationWarning)
             params = []
             token = token or self.agent.token
             if token:
@@ -518,6 +540,8 @@ class Consul(object):
 
             Returns the string of the newly created *acl_id*.
             """
+            warnings.warn('Consul 1.4.0 deprecated',
+                          DeprecationWarning)
             params = []
             token = token or self.agent.token
             if token:
@@ -536,6 +560,8 @@ class Consul(object):
 
             Returns *True* on success.
             """
+            warnings.warn('Consul 1.4.0 deprecated',
+                          DeprecationWarning)
             params = []
             token = token or self.agent.token
             if token:
@@ -544,6 +570,424 @@ class Consul(object):
                 CB.json(),
                 '/v1/acl/destroy/%s' % acl_id,
                 params=params)
+
+        def bootstrap(self, token=None):
+            """
+            This endpoint does a special one-time bootstrap of the ACL system,
+            making the first management token if the acl.tokens.master
+            configuration entry is not specified in the Consul server
+            configuration and if the cluster has not been bootstrapped
+            previously. This is available in Consul 0.9.1 and later, and
+            requires all Consul servers to be upgraded in order to operate.
+            :param token:
+            :return:
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.put(CB.json(),
+                                       '/v1/acl/bootstrap',
+                                       params=params)
+
+        def replication(self, dc=None, token=None):
+            """
+            This endpoint returns the status of the ACL replication
+            processes in the datacenter. This is intended to be used
+            by operators or by automation checking to discover the
+            health of ACL replication.
+            :param dc:
+            :param token:
+            :return:
+            """
+            params = []
+            token = token or self.agent.token
+            dc = dc or self.agent.dc
+            if token:
+                params.append(('token', token))
+            if dc:
+                params.append(('dc', dc))
+            return self.agent.http.get(CB.json(),
+                                       '/v1/acl/replication',
+                                       params=params)
+
+        def create_translate(self, payload, token=None):
+            """
+            This endpoint translates the legacy rule syntax into the latest
+            syntax. It is intended to be used by operators managing Consul's
+            ACLs and performing legacy token to new policy migrations.
+            *payload*
+
+            agent "" {
+                policy = "read"
+            }
+
+            :return:
+            """
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.post(CB.binary(),
+                                        '/v1/acl/rules/translate',
+                                        params=params,
+                                        data=payload)
+
+        def get_translate(self, accessor_id, token=None):
+            """
+            This endpoint translates the legacy rules embedded within a legacy
+            ACL into the latest syntax.
+            :param accessor_id:
+            :param token:
+            :return:
+            """
+            path = '/v1/acl/rules/translate/%s' % accessor_id
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.get(CB.json(),
+                                       path,
+                                       params)
+
+        def login(self, auth_method, bearer_token, meta=None, token=None):
+            payload = {
+                "AuthMethod": auth_method,
+                "BearerToken": bearer_token,
+
+            }
+            if meta:
+                payload['Meta'] = meta
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.post(CB.json(),
+                                        '/v1/acl/login',
+                                        params,
+                                        json.dumps(payload))
+
+        def logout(self, token=None):
+            params = []
+            token = token or self.agent.token
+            if token:
+                params.append(('token', token))
+            return self.agent.http.post(CB.json(),
+                                        '/v1/acl/logout',
+                                        params)
+
+        class Tokens(object):
+            """
+            The APIs are available in Consul versions 1.4.0 and later.
+            """
+
+            def __init__(self, agent=None):
+                self.agent = agent
+
+            def create(self, payload, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           '/v1/acl/token',
+                                           params,
+                                           json.dumps(payload))
+
+            def get(self, token=None, accessor_id=None):
+                path = '/v1/acl/token/%s' % accessor_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def self(self, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           '/v1/acl/token/self',
+                                           params)
+
+            def update(self, payload, token=None, accessor_id=None):
+                path = '/v1/acl/token/%s' % accessor_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def clone(self,
+                      description='',
+                      token=None,
+                      accessor_id=None):
+                payload = {
+                    "Description": description,
+                }
+                path = '/v1/acl/token/%s/clone' % accessor_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def delete(self, token=None, accessor_id=None):
+                path = '/v1/acl/token/%s' % accessor_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+            def list(
+                    self, policy=None, role=None, authmethod=None, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if policy:
+                    params.append(('policy', policy))
+                if role:
+                    params.append(('role', role))
+                if authmethod:
+                    params.append(('authmethod', authmethod))
+                return self.agent.http.get(CB.json(),
+                                           '/v1/acl/tokens',
+                                           params)
+
+        class LegacyTokens(object):
+            def __init__(self, agent=None):
+                warnings.warn(
+                    'Consul 1.4.0 deprecates the legacy ACL.',
+                    DeprecationWarning)
+                self.agent = agent
+
+            def list(self, token=None):
+                warnings.warn('Consul 1.4.0 deprecated',
+                              DeprecationWarning)
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(
+                    CB.json(), '/v1/acl/list', params=params)
+
+            def info(self, acl_id, token=None):
+                """
+                Returns the token information for *acl_id*.
+                """
+                warnings.warn('Consul 1.4.0 deprecated',
+                              DeprecationWarning)
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(one=True),
+                                           '/v1/acl/info/%s' % acl_id,
+                                           params=params)
+
+            def create(self,
+                       name=None,
+                       type='client',
+                       rules=None,
+                       acl_id=None,
+                       token=None):
+                warnings.warn('Consul 1.4.0 deprecated',
+                              DeprecationWarning)
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                payload = {}
+                if name:
+                    payload['Name'] = name
+                if type:
+                    assert type in ('client', 'management'), \
+                        'type must be client or management'
+                    payload['Type'] = type
+                if rules:
+                    assert isinstance(rules, str), \
+                        'Only HCL or JSON encoded strings' \
+                        ' supported for the moment'
+                    payload['Rules'] = rules
+                if acl_id:
+                    payload['ID'] = acl_id
+
+                if payload:
+                    data = json.dumps(payload)
+                else:
+                    data = ''
+
+                return self.agent.http.put(
+                    CB.json(is_id=True),
+                    '/v1/acl/create',
+                    params=params,
+                    data=data)
+
+            def update(self, acl_id, name=None,
+                       type=None, rules=None, token=None):
+                warnings.warn('Consul 1.4.0 deprecated',
+                              DeprecationWarning)
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                payload = {'ID': acl_id}
+                if name:
+                    payload['Name'] = name
+                if type:
+                    assert type in ('client', 'management'), \
+                        'type must be client or management'
+                    payload['Type'] = type
+                if rules:
+                    assert isinstance(rules, str), \
+                        'Only HCL or JSON encoded strings' \
+                        ' supported for the moment'
+                    payload['Rules'] = rules
+
+                data = json.dumps(payload)
+
+                return self.agent.http.put(
+                    CB.json(is_id=True),
+                    '/v1/acl/update',
+                    params=params,
+                    data=data)
+
+            def clone(self, acl_id, token=None):
+                warnings.warn('Consul 1.4.0 deprecated',
+                              DeprecationWarning)
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(
+                    CB.json(is_id=True),
+                    '/v1/acl/clone/%s' % acl_id,
+                    params=params)
+
+            def destroy(self, acl_id, token=None):
+                """
+                Returns *True* on success.
+                """
+                warnings.warn('Consul 1.4.0 deprecated',
+                              DeprecationWarning)
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(
+                    CB.bool(),
+                    '/v1/acl/destroy/%s' % acl_id,
+                    params=params)
+
+        class Policy(object):
+            def __init__(self, agent=None):
+                self.agent = agent
+
+            def create(self, name, description=None,
+                       rules=None, datacenters=None, token=None):
+
+                payload = {"Name": name}
+                if description:
+                    payload['Description'] = description
+                if description:
+                    payload['Rules'] = rules
+                if description:
+                    payload['Datacenters'] = datacenters
+
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                return self.agent.http.put(CB.json(),
+                                           '/v1/acl/policy',
+                                           params,
+                                           json.dumps(payload))
+
+            def get(self, policy_id, token=None):
+                path = '/v1/acl/policy/%s' % policy_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params, )
+
+            def update(self, policy_id, name, description=None,
+                       rules=None, datacenters=None, token=None):
+
+                payload = {"Name": name}
+                if description:
+                    payload['Description'] = description
+                if description:
+                    payload['Rules'] = rules
+                if description:
+                    payload['Datacenters'] = datacenters
+
+                path = '/v1/acl/policy/%s' % policy_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def delete(self, policy_id, token=None):
+                path = '/v1/acl/policy/%s' % policy_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+            def list(self, token=None):
+                path = '/v1/acl/policies'
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+        class Roles(object):
+            # TODO ACL ROLES
+            def __init__(self, agent=None):
+                self.agent = agent
+
+        class AuthMethod(object):
+            # TODO ACL AUTHMETHOD
+            def __init__(self, agent=None):
+                self.agent = agent
+
+        class BindingRule(object):
+            # TODO ACL BINDINGRULE
+            def __init__(self, agent=None):
+                self.agent = agent
 
     class Agent(object):
         """
@@ -557,6 +1001,7 @@ class Consul(object):
             self.agent = agent
             self.service = Consul.Agent.Service(agent)
             self.check = Consul.Agent.Check(agent)
+            self.connect = Consul.Agent.Connect(agent)
 
         def self(self, token=None):
             """
@@ -970,8 +1415,62 @@ class Consul(object):
                     params=params)
 
         class Connect(object):
-            # todo connect
-            pass
+            def __init__(self, agent):
+                self.agent = agent
+
+            def authorize(self,
+                          target,
+                          client_cert_uri,
+                          client_cert_serial,
+                          token=None):
+                payload = {
+                    "Target": target,
+                    "ClientCertURI": client_cert_uri,
+                    "ClientCertSerial": client_cert_serial
+                }
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                return self.agent.http.post(
+                    CB.json(),
+                    '/v1/agent/connect/authorize',
+                    params=params,
+                    data=json.dumps(payload))
+
+            def root_certificates(self, token=None):
+                """
+                :param token:
+                :return: returns the trusted certificate authority (CA)
+                root certificates.
+                """
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                return self.agent.http.get(
+                    CB.json(),
+                    '/v1/agent/connect/ca/roots',
+                    params=params)
+
+            def leaf_certificates(self, service, token=None):
+                """
+                :param token:
+                :return: returns the leaf certificate representing
+                a single service.
+                """
+                path = '/agent/connect/ca/leaf/%s' % service
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+
+                return self.agent.http.get(
+                    CB.json(),
+                    path,
+                    params=params)
 
     class Catalog(object):
         def __init__(self, agent):
@@ -1543,7 +2042,6 @@ class Consul(object):
             """
             This endpoint returns the current list of trusted CA root
             certificates in the cluster.
-            FIXME  Certificates
             """
 
             def __init__(self, agent):
