@@ -340,33 +340,34 @@ class Consul(object):
         if os.getenv('CONSUL_HTTP_SSL_VERIFY') is not None:
             verify = os.getenv('CONSUL_HTTP_SSL_VERIFY') == 'true'
 
+        self.acl = Consul.ACL(self)
+        self.agent = Consul.Agent(self)
+        self.catalog = Consul.Catalog(self)
+        self.config = Consul.Config(self)
+        self.connect = Consul.Connect(self)
+        assert consistency in ('default', 'consistent', 'stale'), \
+            'consistency must be either default, consistent or state'
+        self.consistency = consistency
+        self.coordinate = Consul.Coordinate(self)
+        self.dc = dc
+        self.discovery_chain = Consul.DiscoveryChain(self)
+        self.event = Consul.Event(self)
+        self.health = Consul.Health(self)
         self.http = self.http_connect(host,
                                       port,
                                       scheme,
                                       verify,
                                       cert,
                                       **kwargs)
-        self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
-        self.scheme = scheme
-        self.dc = dc
-        assert consistency in ('default', 'consistent', 'stale'), \
-            'consistency must be either default, consistent or state'
-        self.consistency = consistency
-        self.config = Consul.Config(self)
-        self.connect = Consul.Connect(self)
-        self.event = Consul.Event(self)
         self.kv = Consul.KV(self)
-        self.txn = Consul.Txn(self)
-        self.agent = Consul.Agent(self)
-        self.catalog = Consul.Catalog(self)
-        self.health = Consul.Health(self)
+        self.operator = Consul.Operator(self)
+        self.query = Consul.Query(self)
+        self.scheme = scheme
         self.session = Consul.Session(self)
         self.snapshot = Consul.Snapshot(self)
-        self.acl = Consul.ACL(self)
         self.status = Consul.Status(self)
-        self.query = Consul.Query(self)
-        self.coordinate = Consul.Coordinate(self)
-        self.operator = Consul.Operator(self)
+        self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
+        self.txn = Consul.Txn(self)
 
     class ACL(object):
         def __init__(self, agent):
@@ -2265,7 +2266,6 @@ class Consul(object):
             """
             This endpoint returns the current list of trusted CA root
             certificates in the cluster.
-            todo Intentions
             """
 
             def __init__(self, agent):
@@ -2450,6 +2450,12 @@ class Consul(object):
                 CB.json(index=True), '/v1/coordinate/nodes', params=params)
 
     class DiscoveryChain(object):
+        def __init__(self):
+            warnings.warn('1.6.0+: The discovery '
+                          'chain API is available '
+                          'in Consul versions 1.6.0 '
+                          'and newer.', DeprecationWarning)
+
         """
         This is a low-level API primarily targeted at developers
         building external Connect proxy integrations. Future
@@ -2457,7 +2463,6 @@ class Consul(object):
         for this API over time.
         # todo DiscoveryChain
         """
-        pass
 
     class Event(object):
         """
@@ -2890,7 +2895,8 @@ class Consul(object):
             if not recurse and not keys:
                 one = True
             return self.agent.http.get(
-                CB.json(index=True, decode=decode, one=one, map=lambda x: x),
+                CB.json(index=True, decode=decode, one=one,
+                        map=lambda x: x if x else None),
                 '/v1/kv/%s' % key,
                 params=params)
 
