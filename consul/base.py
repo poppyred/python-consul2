@@ -2450,11 +2450,12 @@ class Consul(object):
                 CB.json(index=True), '/v1/coordinate/nodes', params=params)
 
     class DiscoveryChain(object):
-        def __init__(self):
+        def __init__(self, agent):
             warnings.warn('1.6.0+: The discovery '
                           'chain API is available '
                           'in Consul versions 1.6.0 '
                           'and newer.', DeprecationWarning)
+            self.agent = agent
 
         """
         This is a low-level API primarily targeted at developers
