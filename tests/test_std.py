@@ -958,3 +958,19 @@ JA==
         pytest.raises(consul.ConsulException,
                       c.snapshot.restore,
                       os.path.join(current_path, 'test_std.py'))
+
+    def test_agent_connect(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        root_ca = c.agent.connect.root_certificates()
+        assert root_ca['Roots'][0]['Name'] == 'Consul CA Root Cert'
+        assert root_ca['Roots'][0]['Active']
+
+        db_ca = c.agent.connect.authorize('db',
+                                          'spiffe://dc1-7e567ac2-551d-463f-849'
+                                          '7-f78972856fc1.consul/ns/default/dc'
+                                          '/dc1/svc/web',
+                                          '04:00:00:00:00:01:15:4b:5a:c3:94')
+        assert db_ca['Authorized']
+
+        db_ca = c.agent.connect.leaf_certificates('db')
+        assert db_ca == (None, None)

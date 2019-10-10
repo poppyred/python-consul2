@@ -1,4 +1,5 @@
 import operator
+import re
 
 import pytest
 import six
@@ -164,9 +165,75 @@ class TestConsulACL(object):
             consul.ACLPermissionDenied,
             c.kv.delete, 'private/foo', token=token)
 
+        assert c.agent.service.maintenance('foo', 'true', "test") is True
+
         # clean up
         c.acl.destroy(token)
         acls = c.acl.list()
         assert set([x['ID'] for x in acls]) == {master_token}
 
-        assert c.agent.service.maintenance('foo', 'true', "test") is True
+    def test_ccl_bootstrap(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+
+        index = None
+        try:
+            c.acl.bootstrap()
+        except Exception as e:
+            index = re.search(r".*:(.*)\)", str(e)).group(1)
+        with open('acl-bootstrap-reset', 'w') as f:
+            f.write(str(index))
+        bootstrap = c.acl.bootstrap()
+        assert bootstrap['Policies'][0] == {
+            'ID': '00000000-0000-0000-0000-000000000001',
+            'Name': 'global-management'}
+
+    def test_ccl_replication(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        # todo cluster replication test
+        assert not c.acl.replication()['Enabled']
+
+    def test_ccl_translate(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+
+        payload = """
+        agent "" {
+            policy = "read"
+        }
+        """
+
+        translate = c.acl.create_translate(
+            payload=payload, token=acl_consul.token)
+        assert translate == b'agent_prefix "" {\n  policy = "read"\n}'
+
+        # fixme
+        # c.acl.get_translate(
+        #           c.acl.self()['AccessorID'], token=acl_consul.token)
+
+    @pytest.mark.skip(reason='The auth_method has not been used')
+    def test_acl_login(self, acl_consul):
+        # c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        # fixme c.acl.login()
+        pass
+
+    @pytest.mark.skip(reason='The auth_method has not been used')
+    def test_acl_logout(self, acl_consul):
+        # c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        # fixme c.acl.logout()
+        pass
+
+    def test_acl_tokens(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        # payload = {
+        #     "Description": "Agent token for 'node1'",
+        #     "Policies": [
+        #         {
+        #             "ID": "165d4317-e379-f732-ce70-86278c4558f7"
+        #         },
+        #         {
+        #             "Name": "node-read"
+        #         }
+        #     ],
+        #     "Local": False
+        # }
+        # token = c.acl.tokens.create(payload)
+        c.acl.tokens.list()
