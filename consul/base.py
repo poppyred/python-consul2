@@ -975,7 +975,6 @@ class Consul(object):
                                               params)
 
         class Roles(object):
-            # TODO ACL ROLES
             def __init__(self, agent=None):
                 self.agent = agent
 
@@ -1031,30 +1030,125 @@ class Consul(object):
                                               params)
 
             def list(
-                    self, policy=None, role=None, authmethod=None, token=None):
+                    self, policy=None, token=None):
                 params = []
                 token = token or self.agent.token
                 if token:
                     params.append(('token', token))
-                if policy:
-                    params.append(('policy', policy))
-                if role:
-                    params.append(('role', role))
-                if authmethod:
-                    params.append(('authmethod', authmethod))
+
                 return self.agent.http.get(CB.json(),
                                            '/v1/acl/roles',
                                            params)
 
         class AuthMethod(object):
-            # TODO ACL AUTHMETHOD
             def __init__(self, agent=None):
                 self.agent = agent
 
+            def create(self, payload, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           '/v1/acl/auth-method',
+                                           params,
+                                           json.dumps(payload))
+
+            def get(self, auth_method_name, token=None):
+                path = '/v1/acl/auth-method/%s' % auth_method_name
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def update(self, payload, name, token=None):
+                path = '/v1/acl/auth-method/%s' % name
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def delete(self, name, token=None):
+                path = '/v1/acl/auth-method/%s' % name
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+            def list(
+                    self, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           '/v1/acl/auth-methods',
+                                           params)
+
         class BindingRule(object):
-            # TODO ACL BINDINGRULE
             def __init__(self, agent=None):
                 self.agent = agent
+
+            def create(self, payload, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           '/v1/acl/binding-rule',
+                                           params,
+                                           json.dumps(payload))
+
+            def get(self, binding_rule_id, token=None):
+                path = '/v1/acl/binding-rule/%s' % binding_rule_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def update(self, payload, binding_rule_id, token=None):
+                path = '/v1/acl/binding-rule/%s' % binding_rule_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def delete(self, binding_rule_id, token=None):
+                path = '/v1/acl/binding-rule/%s' % binding_rule_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+            def list(
+                    self, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           '/v1/acl/binding-rules',
+                                           params)
 
     class Agent(object):
         """
