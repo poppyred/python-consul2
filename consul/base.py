@@ -694,7 +694,7 @@ class Consul(object):
                                            params,
                                            json.dumps(payload))
 
-            def get(self, token=None, accessor_id=None):
+            def get(self, accessor_id, token=None):
                 path = '/v1/acl/token/%s' % accessor_id
                 params = []
                 token = token or self.agent.token
@@ -713,7 +713,7 @@ class Consul(object):
                                            '/v1/acl/token/self',
                                            params)
 
-            def update(self, payload, token=None, accessor_id=None):
+            def update(self, payload, accessor_id, token=None):
                 path = '/v1/acl/token/%s' % accessor_id
                 params = []
                 token = token or self.agent.token
@@ -741,7 +741,7 @@ class Consul(object):
                                            params,
                                            json.dumps(payload))
 
-            def delete(self, token=None, accessor_id=None):
+            def delete(self, accessor_id, token=None):
                 path = '/v1/acl/token/%s' % accessor_id
                 params = []
                 token = token or self.agent.token
@@ -978,6 +978,73 @@ class Consul(object):
             # TODO ACL ROLES
             def __init__(self, agent=None):
                 self.agent = agent
+
+            def create(self, payload, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           '/v1/acl/role',
+                                           params,
+                                           json.dumps(payload))
+
+            def get(self, role_id, token=None):
+                path = '/v1/acl/role/%s' % role_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def get_by_name(self, role_name, token=None):
+                path = '/v1/acl/role/name/%s' % role_name
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def update(self, payload, role_id, token=None):
+                path = '/v1/acl/role/%s' % role_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def delete(self, role_id, token=None):
+                path = '/v1/acl/role/%s' % role_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+            def list(
+                    self, policy=None, role=None, authmethod=None, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if policy:
+                    params.append(('policy', policy))
+                if role:
+                    params.append(('role', role))
+                if authmethod:
+                    params.append(('authmethod', authmethod))
+                return self.agent.http.get(CB.json(),
+                                           '/v1/acl/roles',
+                                           params)
 
         class AuthMethod(object):
             # TODO ACL AUTHMETHOD
