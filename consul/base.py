@@ -681,7 +681,6 @@ class Consul(object):
             """
             The APIs are available in Consul versions 1.4.0 and later.
             """
-
             def __init__(self, agent=None):
                 self.agent = agent
 

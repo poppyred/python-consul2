@@ -24,8 +24,16 @@ class TestConsulACL(object):
         acls = c.acl.list(token=master_token)
         assert set([x['ID'] for x in acls]) == {master_token}
 
+        acls = c.acl.legacy_tokens.list(token=master_token)
+        assert set([x['ID'] for x in acls]) == {master_token}
+
         assert c.acl.info('1' * 36) is None
         compare = [c.acl.info(master_token)]
+        compare.sort(key=operator.itemgetter('ID'))
+        assert acls == compare
+
+        assert c.acl.legacy_tokens.info('1' * 36) is None
+        compare = [c.acl.legacy_tokens.info(master_token)]
         compare.sort(key=operator.itemgetter('ID'))
         assert acls == compare
 
@@ -50,14 +58,25 @@ class TestConsulACL(object):
         token = c.acl.create(rules=rules, token=master_token)
         assert c.acl.info(token)['Rules'] == rules
 
+        token = c.acl.legacy_tokens.create(rules=rules, token=master_token)
+        assert c.acl.legacy_tokens.info(token)['Rules'] == rules
+
         token2 = c.acl.clone(token, token=master_token)
         assert c.acl.info(token2)['Rules'] == rules
 
+        token2 = c.acl.legacy_tokens.clone(token, token=master_token)
+        assert c.acl.legacy_tokens.info(token2)['Rules'] == rules
+
         assert c.acl.update(token2, name='Foo', token=master_token,
                             type='client', rules=rules) == token2
+
+        assert c.acl.legacy_tokens.update(token2, name='Foo', token=master_token,
+                                          type='client', rules=rules) == token2
+
         assert c.acl.info(token2)['Name'] == 'Foo'
 
         assert c.acl.destroy(token2, token=master_token) is True
+        assert c.acl.legacy_tokens.destroy(token2, token=master_token) is True
         assert c.acl.info(token2) is None
 
         c.kv.put('foo', 'bar', token=master_token)
@@ -97,7 +116,8 @@ class TestConsulACL(object):
         assert c.agent.service.deregister('foo-1', token=token) is True
         c.acl.destroy(token, token=master_token)
         acls = c.acl.list(token=master_token)
-        assert set([x['ID'] for x in acls]) == {master_token}
+        [c.acl.destroy(x['ID'], token=master_token) for x in acls if x['ID'] != master_token]
+        assert master_token in set([x['ID'] for x in acls])
 
     def test_acl_implicit_token_use(self, acl_consul):
         # configure client to use the master token by default
@@ -105,12 +125,14 @@ class TestConsulACL(object):
         master_token = acl_consul.token
 
         acls = c.acl.list()
-        assert set([x['ID'] for x in acls]) == {master_token}
+        assert master_token in set([x['ID'] for x in acls])
 
         assert c.acl.info('foo') is None
         compare = [c.acl.info(master_token)]
         compare.sort(key=operator.itemgetter('ID'))
         assert acls == compare
+
+        assert c.acl.self()['Description'] == 'Master Token'
 
         rules = """
             key "" {
@@ -169,10 +191,11 @@ class TestConsulACL(object):
 
         # clean up
         c.acl.destroy(token)
+        c.acl.destroy(token2)
         acls = c.acl.list()
         assert set([x['ID'] for x in acls]) == {master_token}
 
-    def test_ccl_bootstrap(self, acl_consul):
+    def test_acl_bootstrap(self, acl_consul):
         c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
 
         index = None
@@ -187,27 +210,26 @@ class TestConsulACL(object):
             'ID': '00000000-0000-0000-0000-000000000001',
             'Name': 'global-management'}
 
-    def test_ccl_replication(self, acl_consul):
+    def test_acl_replication(self, acl_consul):
         c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
         # todo cluster replication test
         assert not c.acl.replication()['Enabled']
 
-    def test_ccl_translate(self, acl_consul):
+    def test_acl_translate(self, acl_consul):
         c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
 
         payload = """
         agent "" {
-            policy = "read"
+            policy = "write"
         }
         """
 
         translate = c.acl.create_translate(
             payload=payload, token=acl_consul.token)
-        assert translate == b'agent_prefix "" {\n  policy = "read"\n}'
+        assert translate == b'agent_prefix "" {\n  policy = "write"\n}'
 
         # fixme
-        # c.acl.get_translate(
-        #           c.acl.self()['AccessorID'], token=acl_consul.token)
+        pytest.raises(consul.ConsulException, c.acl.get_translate, c.acl.self()['AccessorID'], acl_consul.token)
 
     @pytest.mark.skip(reason='The auth_method has not been used')
     def test_acl_login(self, acl_consul):
@@ -223,17 +245,36 @@ class TestConsulACL(object):
 
     def test_acl_tokens(self, acl_consul):
         c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
-        # payload = {
-        #     "Description": "Agent token for 'node1'",
-        #     "Policies": [
-        #         {
-        #             "ID": "165d4317-e379-f732-ce70-86278c4558f7"
-        #         },
-        #         {
-        #             "Name": "node-read"
-        #         }
-        #     ],
-        #     "Local": False
-        # }
-        # token = c.acl.tokens.create(payload)
-        c.acl.tokens.list()
+
+        policy = c.acl.policy.create(name='node-read',
+                                     rules='node_prefix \"\" { policy = \"read\"}',
+                                     description='Grants read access to all node information',
+                                     datacenters=["dc1"])
+        payload = {
+            "Description": "Agent token for 'node1'",
+            "Policies": [
+                {
+                    "ID": policy["ID"]
+                },
+                {
+                    "Name": policy["Name"]
+                }
+            ],
+            "Local": False
+        }
+
+        token_list1 = c.acl.tokens.list()
+        assert 'Master Token' in [l['Description'] for l in token_list1]
+        token1 = c.acl.tokens.create(payload)
+        assert token1['Description'] == payload['Description']
+        token2 = c.acl.tokens.update(accessor_id=token1['AccessorID'], payload=payload)
+        assert token2['AccessorID'] == token1['AccessorID']
+        token3 = c.acl.tokens.get(accessor_id=token2['AccessorID'])
+        assert token3['AccessorID'] == token1['AccessorID']
+        token_self = c.acl.tokens.self()
+        assert token_self['Description'] == 'Master Token'
+        token4 = c.acl.tokens.clone(accessor_id=token3['AccessorID'], description='i am clone')
+        assert token4['AccessorID'] != token3['AccessorID']
+        assert c.acl.tokens.delete(accessor_id=token4['AccessorID'])
+        token_list2 = c.acl.tokens.list()
+        assert len(token_list2) == len(token_list1)+1
