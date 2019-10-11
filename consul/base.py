@@ -3342,7 +3342,8 @@ class Consul(object):
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
                 assert (raft_id or address) and not \
-                    (raft_id and address), 'id or address there just and must be one'
+                    (raft_id and address), 'id or address there' \
+                                           ' just and must be one'
 
                 if raft_id:
                     params.append(('id', raft_id))
