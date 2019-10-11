@@ -1,13 +1,20 @@
 language: python
 before_install:
   - wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
+  - wget -O tests/consul_1.6.1_linux_arm64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_arm64.zip
   - cd tests
   - unzip consul_1.6.1_linux_amd64.zip
   - mv consul consul.linux64
+  - unzip consul_1.6.1_linux_arm64.zip
+  - mv consul consul.aarch64
   - cd ..
 
 git:
   lfs_skip_smudge: true
+
+arch:
+  - amd64
+  - arm64
 
 python:
   - "2.7"
