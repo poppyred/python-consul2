@@ -47,6 +47,7 @@ class HTTPClient(base.HTTPClient):
         request = httpclient.HTTPRequest(uri, method='DELETE',
                                          body='' if data is None else data,
                                          validate_cert=self.verify)
+        request.allow_nonstandard_methods = True
         return self._request(callback, request)
 
     def post(self, callback, path, params=None, data=''):
