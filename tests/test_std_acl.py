@@ -120,7 +120,7 @@ class TestConsulACL(object):
         c.acl.destroy(token, token=master_token)
         acls = c.acl.list(token=master_token)
         [c.acl.destroy(x['ID'],
-         token=master_token) for x in acls
+                       token=master_token) for x in acls
          if x['ID'] != master_token]
         assert master_token in set([x['ID'] for x in acls])
 
@@ -289,4 +289,116 @@ class TestConsulACL(object):
         assert token4['AccessorID'] != token3['AccessorID']
         assert c.acl.tokens.delete(accessor_id=token4['AccessorID'])
         token_list2 = c.acl.tokens.list()
-        assert len(token_list2) == len(token_list1)+1
+        assert len(token_list2) == len(token_list1) + 1
+
+    def test_acl_policy(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+
+        policy = c.acl.policy.create(name='node-read',
+                                     rules='node_prefix \"\" '
+                                           '{ policy = \"read\"}',
+                                     description='Grants read access '
+                                                 'to all node information',
+                                     datacenters=["dc1"])
+
+        policy_list = c.acl.policy.list()
+        assert policy['ID'] in [p['ID'] for p in policy_list]
+        policy = c.acl.policy.update(policy['ID'],
+                                     name='node-read1',
+                                     rules='node_prefix \"\" '
+                                           '{ policy = \"read\"}',
+                                     description='Grants read access '
+                                                 'to all node information',
+                                     datacenters=["dc1"])
+        assert policy['Name'] == 'node-read1'
+        policy2 = c.acl.policy.get(policy['ID'])
+        assert policy2['ID'] == policy['ID']
+
+        assert c.acl.policy.delete(policy['ID'])
+        policy_list = c.acl.policy.list()
+        assert policy['ID'] not in [p['ID'] for p in policy_list]
+
+    def test_acl_roles(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        policy = c.acl.policy.create(name='node-read',
+                                     rules='node_prefix \"\" '
+                                           '{ policy = \"read\"}',
+                                     description='Grants read access '
+                                                 'to all node information',
+                                     datacenters=["dc1"])
+        payload = {
+            "Name": "example-role",
+            "Description": "Showcases all input parameters",
+            "Policies": [
+                {
+                    "ID": policy['ID']
+                },
+                {
+                    "Name": "node-read"
+                }
+            ],
+            "ServiceIdentities": [
+                {
+                    "ServiceName": "web"
+                },
+                {
+                    "ServiceName": "db",
+                    "Datacenters": [
+                        "dc1"
+                    ]
+                }
+            ]
+        }
+        role = c.acl.roles.create(payload=payload)
+        assert role['Name'] == 'example-role'
+        payload['Name'] = 'example-role1'
+        role = c.acl.roles.update(role_id=role['ID'], payload=payload)
+        assert role['Name'] == 'example-role1'
+        role = c.acl.roles.get(role['ID'])
+        assert role['Name'] == 'example-role1'
+        assert 'example-role1' in [r['Name'] for r in c.acl.roles.list()]
+        assert c.acl.roles.delete(role['ID'])
+        assert 'example-role1' not in [r['Name'] for r in c.acl.roles.list()]
+
+    def test_acl_roles(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        policy = c.acl.policy.create(name='node-read',
+                                     rules='node_prefix \"\" '
+                                           '{ policy = \"read\"}',
+                                     description='Grants read access '
+                                                 'to all node information',
+                                     datacenters=["dc1"])
+        payload = {
+            "Name": "example-role",
+            "Description": "Showcases all input parameters",
+            "Policies": [
+                {
+                    "ID": policy['ID']
+                },
+                {
+                    "Name": "node-read"
+                }
+            ],
+            "ServiceIdentities": [
+                {
+                    "ServiceName": "web"
+                },
+                {
+                    "ServiceName": "db",
+                    "Datacenters": [
+                        "dc1"
+                    ]
+                }
+            ]
+        }
+        role = c.acl.roles.create(payload=payload)
+        assert role['Name'] == 'example-role'
+        payload['Name'] = 'example-role1'
+        role = c.acl.roles.update(role_id=role['ID'], payload=payload)
+        assert role['Name'] == 'example-role1'
+        role = c.acl.roles.get(role['ID'])
+        assert role['Name'] == 'example-role1'
+        assert 'example-role1' in [r['Name'] for r in c.acl.roles.list()]
+        assert c.acl.roles.delete(role['ID'])
+        assert 'example-role1' not in [r['Name'] for r in c.acl.roles.list()]
+
