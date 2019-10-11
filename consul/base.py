@@ -970,7 +970,7 @@ class Consul(object):
                 if token:
                     params.append(('token', token))
 
-                return self.agent.http.delete(CB.bool(),
+                return self.agent.http.get(CB.json(),
                                               path,
                                               params)
 
