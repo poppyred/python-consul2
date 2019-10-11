@@ -142,7 +142,8 @@ def clean_consul(port, token=''):
     if token:
         params['token'] = token
     requests.delete(base_uri + 'kv/', params=params)
-    services = requests.get(base_uri + 'agent/services', params=params).json().keys()
+    services = requests.get(base_uri + 'agent/services',
+                            params=params).json().keys()
     for s in services:
         requests.put(base_uri + 'agent/service/deregister/%s' % s)
     if token:
