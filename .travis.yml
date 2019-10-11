@@ -15,6 +15,7 @@ git:
 arch:
   - amd64
   - arm64
+    dist: bionic
 
 python:
   - "2.7"
