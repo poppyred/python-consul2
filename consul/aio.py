@@ -51,9 +51,9 @@ class HTTPClient(base.HTTPClient):
         uri = self.uri(path, params)
         return await self._request(callback, 'PUT', uri, data=data)
 
-    async def delete(self, callback, path, params=None):
+    async def delete(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
-        return await self._request(callback, 'DELETE', uri)
+        return await self._request(callback, 'DELETE', uri, data=data)
 
     async def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
