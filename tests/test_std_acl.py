@@ -70,8 +70,11 @@ class TestConsulACL(object):
         assert c.acl.update(token2, name='Foo', token=master_token,
                             type='client', rules=rules) == token2
 
-        assert c.acl.legacy_tokens.update(token2, name='Foo', token=master_token,
-                                          type='client', rules=rules) == token2
+        assert c.acl.legacy_tokens.update(token2,
+                                          name='Foo',
+                                          token=master_token,
+                                          type='client',
+                                          rules=rules) == token2
 
         assert c.acl.info(token2)['Name'] == 'Foo'
 
@@ -116,7 +119,9 @@ class TestConsulACL(object):
         assert c.agent.service.deregister('foo-1', token=token) is True
         c.acl.destroy(token, token=master_token)
         acls = c.acl.list(token=master_token)
-        [c.acl.destroy(x['ID'], token=master_token) for x in acls if x['ID'] != master_token]
+        [c.acl.destroy(x['ID'],
+         token=master_token) for x in acls
+         if x['ID'] != master_token]
         assert master_token in set([x['ID'] for x in acls])
 
     def test_acl_implicit_token_use(self, acl_consul):
@@ -229,7 +234,10 @@ class TestConsulACL(object):
         assert translate == b'agent_prefix "" {\n  policy = "write"\n}'
 
         # fixme
-        pytest.raises(consul.ConsulException, c.acl.get_translate, c.acl.self()['AccessorID'], acl_consul.token)
+        pytest.raises(consul.ConsulException,
+                      c.acl.get_translate,
+                      c.acl.self()['AccessorID'],
+                      acl_consul.token)
 
     @pytest.mark.skip(reason='The auth_method has not been used')
     def test_acl_login(self, acl_consul):
@@ -247,8 +255,10 @@ class TestConsulACL(object):
         c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
 
         policy = c.acl.policy.create(name='node-read',
-                                     rules='node_prefix \"\" { policy = \"read\"}',
-                                     description='Grants read access to all node information',
+                                     rules='node_prefix \"\" '
+                                           '{ policy = \"read\"}',
+                                     description='Grants read access '
+                                                 'to all node information',
                                      datacenters=["dc1"])
         payload = {
             "Description": "Agent token for 'node1'",
@@ -267,13 +277,15 @@ class TestConsulACL(object):
         assert 'Master Token' in [l['Description'] for l in token_list1]
         token1 = c.acl.tokens.create(payload)
         assert token1['Description'] == payload['Description']
-        token2 = c.acl.tokens.update(accessor_id=token1['AccessorID'], payload=payload)
+        token2 = c.acl.tokens.update(accessor_id=token1['AccessorID'],
+                                     payload=payload)
         assert token2['AccessorID'] == token1['AccessorID']
         token3 = c.acl.tokens.get(accessor_id=token2['AccessorID'])
         assert token3['AccessorID'] == token1['AccessorID']
         token_self = c.acl.tokens.self()
         assert token_self['Description'] == 'Master Token'
-        token4 = c.acl.tokens.clone(accessor_id=token3['AccessorID'], description='i am clone')
+        token4 = c.acl.tokens.clone(accessor_id=token3['AccessorID'],
+                                    description='i am clone')
         assert token4['AccessorID'] != token3['AccessorID']
         assert c.acl.tokens.delete(accessor_id=token4['AccessorID'])
         token_list2 = c.acl.tokens.list()
