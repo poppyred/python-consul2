@@ -151,17 +151,22 @@ def clean_consul(port, token=''):
         acl_tokens = requests.get(base_uri + 'acl/list', params=params).json()
         for t in acl_tokens:
             if t['ID'] != token:
-                requests.put(base_uri + 'acl/destroy/%s' % t['ID'], params=params)
+                requests.put(base_uri + 'acl/destroy/%s' % t['ID'],
+                             params=params)
 
-        acl_policys = requests.get(base_uri + 'acl/policies', params=params).json()
+        acl_policys = requests.get(base_uri + 'acl/policies',
+                                   params=params).json()
         for pls in acl_policys:
             if pls['ID'] != token:
-                requests.delete(base_uri + 'acl/policy/%s' % pls['ID'], params=params)
+                requests.delete(base_uri + 'acl/policy/%s' % pls['ID'],
+                                params=params)
 
-        acl_roles = requests.get(base_uri + 'acl/roles', params=params).json()
+        acl_roles = requests.get(base_uri + 'acl/roles',
+                                 params=params).json()
         for role in acl_roles:
             if role['ID'] != token:
-                requests.delete(base_uri + 'acl/role/%s' % role['ID'], params=params)
+                requests.delete(base_uri + 'acl/role/%s' % role['ID'],
+                                params=params)
 
 
 @pytest.fixture(scope="module")

@@ -681,6 +681,7 @@ class Consul(object):
             """
             The APIs are available in Consul versions 1.4.0 and later.
             """
+
             def __init__(self, agent=None):
                 self.agent = agent
 
@@ -971,8 +972,8 @@ class Consul(object):
                     params.append(('token', token))
 
                 return self.agent.http.get(CB.json(),
-                                              path,
-                                              params)
+                                           path,
+                                           params)
 
         class Roles(object):
             def __init__(self, agent=None):
@@ -3360,6 +3361,7 @@ class Consul(object):
             """
             Segments
             """
+
             def __init__(self, agent=None):
                 self.agent = agent
 

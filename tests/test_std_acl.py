@@ -360,45 +360,23 @@ class TestConsulACL(object):
         assert c.acl.roles.delete(role['ID'])
         assert 'example-role1' not in [r['Name'] for r in c.acl.roles.list()]
 
-    def test_acl_roles(self, acl_consul):
-        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
-        policy = c.acl.policy.create(name='node-read',
-                                     rules='node_prefix \"\" '
-                                           '{ policy = \"read\"}',
-                                     description='Grants read access '
-                                                 'to all node information',
-                                     datacenters=["dc1"])
-        payload = {
-            "Name": "example-role",
-            "Description": "Showcases all input parameters",
-            "Policies": [
-                {
-                    "ID": policy['ID']
-                },
-                {
-                    "Name": "node-read"
-                }
-            ],
-            "ServiceIdentities": [
-                {
-                    "ServiceName": "web"
-                },
-                {
-                    "ServiceName": "db",
-                    "Datacenters": [
-                        "dc1"
-                    ]
-                }
-            ]
-        }
-        role = c.acl.roles.create(payload=payload)
-        assert role['Name'] == 'example-role'
-        payload['Name'] = 'example-role1'
-        role = c.acl.roles.update(role_id=role['ID'], payload=payload)
-        assert role['Name'] == 'example-role1'
-        role = c.acl.roles.get(role['ID'])
-        assert role['Name'] == 'example-role1'
-        assert 'example-role1' in [r['Name'] for r in c.acl.roles.list()]
-        assert c.acl.roles.delete(role['ID'])
-        assert 'example-role1' not in [r['Name'] for r in c.acl.roles.list()]
+    def test_acl_auth_method(self, acl_consul):
+        # todo
+        # c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        # auth_method = c.acl.auth_method.create(payload)
+        # auth_methods = c.acl.auth_method.list()
+        # auth_methods = c.acl.auth_method.get()
+        pass
 
+    def test_acl_binding_rules(self, acl_consul):
+        # todo laster
+        # payload = {
+        #     "Description": "example rule",
+        #     "AuthMethod": "minikube",
+        #     "Selector": "serviceaccount.namespace==default",
+        #     "BindType": "service",
+        #     "BindName": "{{ serviceaccount.name }}"
+        # }
+        # c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        # binding_rules = c.acl.binding_rule.create(payload)
+        pass
