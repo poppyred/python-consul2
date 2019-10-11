@@ -286,7 +286,7 @@ class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def delete(self, callback, path, params=None):
+    def delete(self, callback, path, params=None, data=''):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -3011,6 +3011,12 @@ class Consul(object):
     class Operator(object):
         def __init__(self, agent):
             self.agent = agent
+            self.area = Consul.Operator.Area(agent)
+            self.autopilot = Consul.Operator.Autopilot(agent)
+            self.keyring = Consul.Operator.Keyring(agent)
+            self.license = Consul.Operator.License(agent)
+            self.raft = Consul.Operator.Raft(agent)
+            self.segments = Consul.Operator.Segments(agent)
 
         def raft_config(self, token=None):
             """
@@ -3027,39 +3033,348 @@ class Consul(object):
 
         class Area:
             """
-            todo Area
+            doing Area
             """
-            pass
+
+            def __init__(self, agent=None):
+                self.agent = agent
+
+            def create(self, payload, dc=None, token=None):
+                params = []
+                token = token or self.agent.token
+                dc = dc or self.agent.dc
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.put(CB.json(),
+                                           '/v1/operator/area',
+                                           params,
+                                           json.dumps(payload))
+
+            def get(self, area_id, dc=None, token=None):
+                path = '/v1/operator/area/%s' % area_id
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def update(self, payload, area_id, dc=None, token=None):
+                path = '/v1/operator/area/%s' % area_id
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def join(self, payload, area_id, dc=None, token=None):
+                path = '/v1/operator/area/%s/join' % area_id
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def members(self, area_id, dc=None, token=None):
+                path = '/v1/operator/area/%s/members' % area_id
+                params = []
+                token = token or self.agent.token
+                dc = dc or self.agent.dc
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def delete(self, area_id, token=None):
+                path = '/v1/operator/area/%s' % area_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+            def list(
+                    self, dc=None, token=None):
+                params = []
+                token = token or self.agent.token
+                dc = dc or self.agent.dc
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.get(CB.json(),
+                                           '/v1/operator/area',
+                                           params)
 
         class Autopilot:
             """
-            todo Autopilot
+            doing Autopilot
             """
-            pass
+
+            def __init__(self, agent=None):
+                self.agent = agent
+
+            def configuration(self, stale=None, dc=None, token=None):
+                path = '/v1/operator/autopilot/configuration'
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                if stale:
+                    params.append(('stale', stale))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def update(self, payload, cas=None, dc=None, token=None):
+                path = '/operator/autopilot/configuration'
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                if cas:
+                    params.append(('cas', cas))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def health(self, dc=None, token=None):
+                path = '/operator/autopilot/health'
+                params = []
+                token = token or self.agent.token
+                dc = dc or self.agent.dc
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def delete(self, area_id, token=None):
+                path = '/v1/operator/area/%s' % area_id
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
+
+            def list(self, dc=None, token=None):
+                params = []
+                token = token or self.agent.token
+                dc = dc or self.agent.dc
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.get(CB.json(),
+                                           '/v1/operator/area',
+                                           params)
 
         class Keyring:
-            """
-            todo Keyring
-            """
-            pass
+
+            def __init__(self, agent=None):
+                self.agent = agent
+
+            def create(self, key, relay_factor=None, token=None):
+                path = '/v1/operator/keyring'
+                params = []
+                payload = {'Key': key}
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if relay_factor:
+                    params.append(('relay-factor', relay_factor))
+                return self.agent.http.post(CB.json(),
+                                            path,
+                                            params,
+                                            json.dumps(payload))
+
+            def update(self, key, relay_factor=None, token=None):
+                path = '/v1/operator/keyring'
+                params = []
+                payload = {'Key': key}
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if relay_factor:
+                    params.append(('relay-factor', relay_factor))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def delete(self, key, token=None):
+                path = '/v1/operator/keyring'
+                params = []
+                payload = {'Key': key}
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params,
+                                              json.dumps(payload))
+
+            def list(self, relay_factor=None, local_only=None, token=None):
+                params = []
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if relay_factor:
+                    params.append(('relay-factor', relay_factor))
+                if local_only:
+                    params.append(('local-only', local_only))
+                return self.agent.http.get(CB.json(),
+                                           '/v1/operator/keyring',
+                                           params)
 
         class License:
             """
-            todo License
+            License
             """
-            pass
+
+            def __init__(self, agent=None):
+                self.agent = agent
+
+            def get(self, dc=None, token=None):
+                path = '/v1/operator/license'
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def update(self, payload, cas=None, dc=None, token=None):
+                path = '/v1/operator/license'
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                if cas:
+                    params.append(('cas', cas))
+                return self.agent.http.put(CB.json(),
+                                           path,
+                                           params,
+                                           json.dumps(payload))
+
+            def delete(self, dc=None, token=None):
+                path = '/v1/operator/license'
+                params = []
+                token = token or self.agent.token
+                dc = dc or self.agent.dc
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
 
         class Raft:
             """
-            todo Area
+            Raft
             """
-            pass
+
+            def __init__(self, agent=None):
+                self.agent = agent
+
+            def configuration(self, dc=None, stale=None, token=None):
+                path = '/v1/operator/raft/configuration'
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                if stale:
+                    params.append(('stale', stale))
+
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
+
+            def delete(self, raft_id=None, address=None, dc=None, token=None):
+                path = '/v1/operator/license'
+                params = []
+                token = token or self.agent.token
+                dc = dc or self.agent.dc
+                assert (raft_id or address) and not \
+                    (raft_id and address), 'id or address there just and must be one'
+
+                if raft_id:
+                    params.append(('id', raft_id))
+                else:
+                    params.append(('address', address))
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.delete(CB.bool(),
+                                              path,
+                                              params)
 
         class Segments:
             """
-            todo Segments
+            Segments
             """
-            pass
+            def __init__(self, agent=None):
+                self.agent = agent
+
+            def list(self, dc=None, token=None):
+                path = '/v1/operator/segment'
+                params = []
+                dc = dc or self.agent.dc
+                token = token or self.agent.token
+                if token:
+                    params.append(('token', token))
+                if dc:
+                    params.append(('dc', dc))
+                return self.agent.http.get(CB.json(),
+                                           path,
+                                           params)
 
     class Query(object):
         def __init__(self, agent):
@@ -3708,5 +4023,3 @@ class Consul(object):
             return self.agent.http.put(CB.json(), "/v1/txn",
                                        params=params,
                                        data=json.dumps(payload))
-
-# todo Look for all unimplemented apis from https://www.consul.io/api/

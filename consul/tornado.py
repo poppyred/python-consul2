@@ -42,9 +42,10 @@ class HTTPClient(base.HTTPClient):
                                          validate_cert=self.verify)
         return self._request(callback, request)
 
-    def delete(self, callback, path, params=None):
+    def delete(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='DELETE',
+                                         body='' if data is None else data,
                                          validate_cert=self.verify)
         return self._request(callback, request)
 

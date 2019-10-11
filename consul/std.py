@@ -29,10 +29,11 @@ class HTTPClient(base.HTTPClient):
             self.session.put(uri, data=data, verify=self.verify,
                              cert=self.cert)))
 
-    def delete(self, callback, path, params=None):
+    def delete(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.delete(uri, verify=self.verify, cert=self.cert)))
+            self.session.delete(uri, data=data, verify=self.verify,
+                                cert=self.cert)))
 
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)

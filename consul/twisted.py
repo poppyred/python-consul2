@@ -118,9 +118,9 @@ class HTTPClient(base.HTTPClient):
         returnValue(response)
 
     @inlineCallbacks
-    def delete(self, callback, path, params=None):
+    def delete(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
-        response = yield self.request(callback, 'delete', uri, params=params)
+        response = yield self.request(callback, 'delete', uri, params=params, data=data)
         returnValue(response)
 
 
