@@ -12,11 +12,14 @@ before_install:
 git:
   lfs_skip_smudge: true
 
+services:
+  - docker
+
 arch:
   - amd64
   - arm64
-  -
-dist: bionic
+
+os: linux
 
 python:
   - "2.7"
