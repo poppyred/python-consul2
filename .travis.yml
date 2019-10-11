@@ -29,6 +29,7 @@ python:
 
 matrix:
   allow_failures:
+    - arch: arm64
     - python: 3.7-dev
     - python: 3.8-dev
     - python: nightly
