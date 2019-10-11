@@ -99,7 +99,7 @@ def start_consul_instance(
     bin = os.path.join(os.path.dirname(__file__), 'consul.' + postfix)
     command = '{bin} agent -dev' \
               ' -bind=127.0.0.1' \
-              ' -config-dir=.'   \
+              ' -config-dir=.' \
               ' -bootstrap-expect 1'
     command = command.format(bin=bin).strip()
     command = shlex.split(command)
@@ -135,13 +135,21 @@ def start_consul_instance(
     return p, ports['http']
 
 
-def clean_consul(port):
+def clean_consul(port, token=''):
     # remove all data from the instance, to have a clean start
     base_uri = 'http://127.0.0.1:%s/v1/' % port
-    requests.delete(base_uri + 'kv/', params={'recurse': 1})
-    services = requests.get(base_uri + 'agent/services').json().keys()
+    params = {'recurse': 1}
+    if token:
+        params['token'] = token
+    requests.delete(base_uri + 'kv/', params=params)
+    services = requests.get(base_uri + 'agent/services', params=params).json().keys()
     for s in services:
         requests.put(base_uri + 'agent/service/deregister/%s' % s)
+    if token:
+        acl_tokens = requests.get(base_uri + 'acl/list', params=params).json()
+        for acl in acl_tokens:
+            if acl['ID'] != token:
+                requests.put(base_uri + 'acl/destroy/%s' % acl['ID'])
 
 
 @pytest.fixture(scope="module")
@@ -182,7 +190,7 @@ def acl_consul(acl_consul_policy_deny_instance):
     ACLConsul = collections.namedtuple('ACLConsul', ['port', 'token'])
     port, token = acl_consul_policy_deny_instance
     yield ACLConsul(port, token)
-    clean_consul(port)
+    clean_consul(port, token)
 
 
 @pytest.fixture
