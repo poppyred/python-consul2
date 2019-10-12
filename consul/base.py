@@ -3047,10 +3047,10 @@ class Consul(object):
                     params.append(('token', token))
                 if dc:
                     params.append(('dc', dc))
-                return self.agent.http.put(CB.json(),
-                                           '/v1/operator/area',
-                                           params,
-                                           json.dumps(payload))
+                return self.agent.http.post(CB.json(),
+                                            '/v1/operator/area',
+                                            params,
+                                            json.dumps(payload))
 
             def get(self, area_id, dc=None, token=None):
                 path = '/v1/operator/area/%s' % area_id

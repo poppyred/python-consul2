@@ -380,3 +380,26 @@ class TestConsulACL(object):
         # c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
         # binding_rules = c.acl.binding_rule.create(payload)
         pass
+
+    @pytest.mark.skip(
+        reason='Enterprise Only! This API endpoint and '
+               'functionality only exists in Consul Enterprise'
+               '. This is not present in the open source version'
+               ' of Consul.')
+    def test_acl_operator_area(self, acl_consul):
+        c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
+        payload = {
+            "PeerDatacenter": "dc1",
+            "RetryJoin": ["10.1.2.3", "10.1.2.4", "10.1.2.5"],
+            "UseTLS": False
+        }
+        area1 = c.operator.area.create(payload)
+        c.operator.area.get(area1['ID'])
+        payload["PeerDatacenter"] = "dc1"
+        c.operator.area.update(payload, area1['ID'])
+        c.operator.area.list()
+        payload2 = ["10.1.2.3", "10.1.2.4", "10.1.2.5"]
+        c.operator.area.join(payload2, area1['ID'])
+        c.operator.area.members()
+        c.operator.area.delete(area1['ID'])
+        c.operator.area.list()
