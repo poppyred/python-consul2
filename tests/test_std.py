@@ -974,3 +974,34 @@ JA==
 
         db_ca = c.agent.connect.leaf_certificates('db')
         assert db_ca == (None, None)
+
+    def test_operator_autopilot(self, consul_port):
+        time.sleep(2)  # http code 429 Too Many Requests
+        c = consul.Consul(port=consul_port)
+        assert c.operator.autopilot.configuration()['MaxTrailingLogs'] == 250
+        assert not c.operator.autopilot.health()['FailureTolerance']
+        payload = {
+            "CleanupDeadServers": True,
+            "LastContactThreshold": "200ms",
+            "MaxTrailingLogs": 251,
+            "ServerStabilizationTime": "10s",
+            "RedundancyZoneTag": "",
+            "DisableUpgradeMigration": False,
+            "UpgradeVersionTag": "",
+            "CreateIndex": 4,
+            "ModifyIndex": 4
+        }
+        assert c.operator.autopilot.update(payload)
+
+        config = c.operator.autopilot.configuration()
+
+        assert config['MaxTrailingLogs'] == 251
+
+    def test_operator_keyring(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        Key = "pUqJrVyVRj5jsiYEkM/tFQYfWyJIv4s3XkvDwy7Cu5s="
+        Key2 = "pUqJrVyVRj5jsiYEkM/tFQYfWyJIv4s3XkvDwy7Cu55="
+        assert c.operator.keyring.create(Key)
+        assert Key in {list(l['Keys'].keys())[0] for l in c.operator.keyring.list()}
+        pytest.raises(consul.ConsulException, c.operator.keyring.update, Key2)
+        pytest.raises(consul.ConsulException, c.operator.keyring.delete, Key)

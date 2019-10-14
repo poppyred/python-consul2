@@ -3033,7 +3033,11 @@ class Consul(object):
 
         class Area:
             """
-            doing Area
+            Enterprise Only! This API endpoint and
+            functionality only exists in Consul Enterprise.
+            This is not present in the open source version of Consul.
+
+
             """
 
             def __init__(self, agent=None):
@@ -3153,7 +3157,7 @@ class Consul(object):
                                            params)
 
             def update(self, payload, cas=None, dc=None, token=None):
-                path = '/operator/autopilot/configuration'
+                path = '/v1/operator/autopilot/configuration'
                 params = []
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
@@ -3169,7 +3173,7 @@ class Consul(object):
                                            json.dumps(payload))
 
             def health(self, dc=None, token=None):
-                path = '/operator/autopilot/health'
+                path = '/v1/operator/autopilot/health'
                 params = []
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
@@ -3179,28 +3183,6 @@ class Consul(object):
                     params.append(('dc', dc))
                 return self.agent.http.get(CB.json(),
                                            path,
-                                           params)
-
-            def delete(self, area_id, token=None):
-                path = '/v1/operator/area/%s' % area_id
-                params = []
-                token = token or self.agent.token
-                if token:
-                    params.append(('token', token))
-                return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
-
-            def list(self, dc=None, token=None):
-                params = []
-                token = token or self.agent.token
-                dc = dc or self.agent.dc
-                if token:
-                    params.append(('token', token))
-                if dc:
-                    params.append(('dc', dc))
-                return self.agent.http.get(CB.json(),
-                                           '/v1/operator/area',
                                            params)
 
         class Keyring:
@@ -3217,7 +3199,7 @@ class Consul(object):
                     params.append(('token', token))
                 if relay_factor:
                     params.append(('relay-factor', relay_factor))
-                return self.agent.http.post(CB.json(),
+                return self.agent.http.post(CB.bool(),
                                             path,
                                             params,
                                             json.dumps(payload))
@@ -3231,7 +3213,7 @@ class Consul(object):
                     params.append(('token', token))
                 if relay_factor:
                     params.append(('relay-factor', relay_factor))
-                return self.agent.http.put(CB.json(),
+                return self.agent.http.put(CB.bool(),
                                            path,
                                            params,
                                            json.dumps(payload))
