@@ -1002,6 +1002,7 @@ JA==
         Key = "pUqJrVyVRj5jsiYEkM/tFQYfWyJIv4s3XkvDwy7Cu5s="
         Key2 = "pUqJrVyVRj5jsiYEkM/tFQYfWyJIv4s3XkvDwy7Cu55="
         assert c.operator.keyring.create(Key)
-        assert Key in {list(l['Keys'].keys())[0] for l in c.operator.keyring.list()}
+        assert Key in {list(l['Keys'].keys())
+                       [0] for l in c.operator.keyring.list()}
         pytest.raises(consul.ConsulException, c.operator.keyring.update, Key2)
         pytest.raises(consul.ConsulException, c.operator.keyring.delete, Key)
