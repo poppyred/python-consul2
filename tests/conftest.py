@@ -84,9 +84,11 @@ def start_consul_instance(
         token = acl_master_token or acl_agent_token
         if token:
             params.append(('token', token))
+    encrypt ={"encrypt": "pUqJrVyVRj5jsiYEkM/tFQYfWyJIv4s3XkvDwy7Cu5s="}
 
     tmpdir = py.path.local(tempfile.mkdtemp())
     tmpdir.join('config.json').write(json.dumps(config))
+    tmpdir.join('encrypt.json').write(json.dumps(encrypt))
     tmpdir.chdir()
 
     (system, node, release, version, machine, processor) = platform.uname()
@@ -100,7 +102,8 @@ def start_consul_instance(
     command = '{bin} agent -dev' \
               ' -bind=127.0.0.1' \
               ' -config-dir=.' \
-              ' -bootstrap-expect 1'
+              ' -bootstrap-expect 1' \
+              ' -config-file=encrypt.json'
     command = command.format(bin=bin).strip()
     command = shlex.split(command)
     with open('/dev/null', 'w') as devnull:
