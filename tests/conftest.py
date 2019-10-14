@@ -84,7 +84,10 @@ def start_consul_instance(
         token = acl_master_token or acl_agent_token
         if token:
             params.append(('token', token))
-    encrypt ={"encrypt": "pUqJrVyVRj5jsiYEkM/tFQYfWyJIv4s3XkvDwy7Cu5s="}
+    encrypt = {
+        "encrypt":
+            "pUqJrVyVRj5jsiYEkM/tFQYfWyJIv4s3XkvDwy7Cu5s="
+    }
 
     tmpdir = py.path.local(tempfile.mkdtemp())
     tmpdir.join('config.json').write(json.dumps(config))
