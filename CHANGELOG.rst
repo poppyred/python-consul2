@@ -18,3 +18,11 @@ Features
 * implement Connect Config Snapshot  consul_api
 
 
+0.0.5
+-----
+
+Features
+~~~~~~~~
+* implement all consul http-api
+
+
