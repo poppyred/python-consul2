@@ -3393,12 +3393,32 @@ class Consul(object):
                         onlypassing=None,
                         tags=None,
                         ttl=None,
-                        regexp=None):
+                        regexp=None,
+                        near=None,
+                        nodemeta=None,
+                        servicemeta=None):
+            """
+            {
+    "Service": "redis",
+    "Failover": {
+      "NearestN": 3,
+      "Datacenters": ["dc1", "dc2"]
+    },
+    "Near": "node1",
+    "OnlyPassing": false,
+    "Tags": ["primary", "!experimental"],
+    "NodeMeta": {"instance_type": "m3.large"},
+    "ServiceMeta": {"environment": "production"}
+  },
+            """
             service_body = dict([
                 (k, v) for k, v in {
-                    'service': service,
+                    'Service': service,
                     'onlypassing': onlypassing,
                     'tags': tags,
+                    'near': near,
+                    'nodemeta': nodemeta,
+                    'servicemeta': servicemeta,
                     'failover': dict([
                         (k, v) for k, v in {
                             'nearestn': nearestn,
@@ -3437,7 +3457,10 @@ class Consul(object):
                    onlypassing=None,
                    tags=None,
                    ttl=None,
-                   regexp=None):
+                   regexp=None,
+                   near=None,
+                   nodemeta=None,
+                   servicemeta=None):
             """
             Creates a new query. This is a privileged endpoint, and
             requires a management token for a certain query name.*token* will
@@ -3485,7 +3508,8 @@ class Consul(object):
                 params.append(('token', token))
             data = self._query_data(
                 service, name, session, token, nearestn, datacenters,
-                onlypassing, tags, ttl, regexp
+                onlypassing, tags, ttl, regexp, near, nodemeta,
+                servicemeta
             )
             return self.agent.http.post(
                 CB.json(), path, params=params, data=data)
@@ -3501,7 +3525,10 @@ class Consul(object):
                    onlypassing=None,
                    tags=None,
                    ttl=None,
-                   regexp=None):
+                   regexp=None,
+                   near=None,
+                   nodemeta=None,
+                   servicemeta=None):
             """
             This endpoint will update a certain query
 
@@ -3518,7 +3545,8 @@ class Consul(object):
                 params.append(('token', token))
             data = self._query_data(
                 service, name, session, token, nearestn, datacenters,
-                onlypassing, tags, ttl, regexp
+                onlypassing, tags, ttl, regexp, near, nodemeta,
+                servicemeta
             )
             return self.agent.http.put(
                 CB.bool(), path, params=params, data=data)
