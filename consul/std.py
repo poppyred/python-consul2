@@ -10,7 +10,8 @@ class HTTPClient(base.HTTPClient):
         super(HTTPClient, self).__init__(*args, **kwargs)
         self.session = requests.session()
 
-    def response(self, response):
+    @staticmethod
+    def response(response):
         response.encoding = 'utf-8'
         return base.Response(
             response.status_code,

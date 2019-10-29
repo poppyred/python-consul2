@@ -50,7 +50,7 @@ setup(
     license='MIT',
     description=description,
     long_description='{0}\n\n{1}'.format(
-        open('README.rst').read(),# noqa
+        open('README.rst').read(),  # noqa
         open('CHANGELOG.rst').read()
     ),
     py_modules=py_modules,
