@@ -63,14 +63,16 @@ class Check(object):
         return {'args': args, 'interval': interval}
 
     @classmethod
-    def http(klass, url, interval, timeout=None, deregister=None, header=None):
+    def http(klass, url, interval, timeout=None, deregister=None, header=None,
+             tls_skip_verify=None):
         """
-        Peform a HTTP GET against *url* every *interval* (e.g. "10s") to peform
-        health check with an optional *timeout* and optional *deregister* after
-        which a failing service will be automatically deregistered. Optional
-        parameter *header* specifies headers sent in HTTP request. *header*
-        paramater is in form of map of lists of strings,
-        e.g. {"x-foo": ["bar", "baz"]}.
+        Perform a HTTP GET against *url* every *interval* (e.g. "10s") to
+        perform health check with an optional *timeout* and optional
+        *deregister* after which a failing service will be automatically
+        deregistered. Optional parameter *header* specifies headers sent in
+        HTTP request. *header* parameter is in form of map of lists of
+        strings, e.g. {"x-foo": ["bar", "baz"]}. Optional parameter
+        *tls_skip_verify* allow to skip TLS certificate verification.
         """
         ret = {'http': url, 'interval': interval}
         if timeout:
@@ -79,6 +81,8 @@ class Check(object):
             ret['DeregisterCriticalServiceAfter'] = deregister
         if header:
             ret['header'] = header
+        if tls_skip_verify:
+            ret['TLSSkipVerify'] = tls_skip_verify
         return ret
 
     @classmethod
