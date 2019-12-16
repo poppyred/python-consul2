@@ -26,3 +26,9 @@ Features
 * implement all consul http-api
 
 
+0.0.8
+-----
+
+Features
+~~~~~~~~
+* Add TLSSkipVerify for HTTPS check <bhuisgen@hbis.fr>
