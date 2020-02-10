@@ -22,28 +22,28 @@ class HTTPClient(base.HTTPClient):
     def get(self, callback, path, params=None):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.get(uri, verify=self.verify, cert=self.cert)))
+            self.session.get(uri, verify=self.verify, cert=self.cert, timeout=self.timeout)))
 
     def put(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
             self.session.put(uri, data=data, verify=self.verify,
-                             cert=self.cert)))
+                             cert=self.cert, timeout=self.timeout)))
 
     def delete(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
             self.session.delete(uri, data=data, verify=self.verify,
-                                cert=self.cert)))
+                                cert=self.cert, timeout=self.timeout)))
 
     def post(self, callback, path, params=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
             self.session.post(uri, data=data, verify=self.verify,
-                              cert=self.cert)))
+                              cert=self.cert, timeout=self.timeout)))
 
 
 class Consul(base.Consul):
     @staticmethod
-    def http_connect(host, port, scheme, verify=True, cert=None):
-        return HTTPClient(host, port, scheme, verify, cert)
+    def http_connect(host, port, scheme, verify=True, cert=None, timeout=None):
+        return HTTPClient(host, port, scheme, verify, cert, timeout)
