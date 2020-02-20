@@ -18,54 +18,54 @@ jobs:
       max-parallel: 6
       matrix:
         name: [py27, py35, pypy2, pypy3, py35, py36, py37, py38]
-      include:
-        - name: "py27"
-          python: "2.7"
-          os: ubuntu-latest
-          tox_env: "py27"
-          use_coverage: true
+        include:
+          - name: "py27"
+            python: "2.7"
+            os: ubuntu-latest
+            tox_env: "py27"
+            use_coverage: true
 
-        - name: "py35"
-          python: "3.5"
-          os: ubuntu-latest
-          tox_env: "py35"
-          use_coverage: true
+          - name: "py35"
+            python: "3.5"
+            os: ubuntu-latest
+            tox_env: "py35"
+            use_coverage: true
 
-        - name: "py35"
-          python: "3.5"
-          os: ubuntu-latest
-          tox_env: "py35"
-          use_coverage: true
+          - name: "py35"
+            python: "3.5"
+            os: ubuntu-latest
+            tox_env: "py35"
+            use_coverage: true
 
-        - name: "py36"
-          python: "3.6"
-          os: ubuntu-latest
-          tox_env: "py36"
-          use_coverage: true
+          - name: "py36"
+            python: "3.6"
+            os: ubuntu-latest
+            tox_env: "py36"
+            use_coverage: true
 
-        - name: "py37"
-          python: "3.7"
-          os: ubuntu-latest
-          tox_env: "py37"
-          use_coverage: true
+          - name: "py37"
+            python: "3.7"
+            os: ubuntu-latest
+            tox_env: "py37"
+            use_coverage: true
 
-        - name: "py38"
-          python: "3.8"
-          os: ubuntu-latest
-          tox_env: "py38"
-          use_coverage: true
+          - name: "py38"
+            python: "3.8"
+            os: ubuntu-latest
+            tox_env: "py38"
+            use_coverage: true
 
-        - name: "pypy"
-          python: "pypy2"
-          os: ubuntu-latest
-          tox_env: "py38"
-          use_coverage: true
+          - name: "pypy"
+            python: "pypy2"
+            os: ubuntu-latest
+            tox_env: "py38"
+            use_coverage: true
 
-        - name: "pypy3"
-          python: "pypy3"
-          os: ubuntu-latest
-          tox_env: "py38"
-          use_coverage: true
+          - name: "pypy3"
+            python: "pypy3"
+            os: ubuntu-latest
+            tox_env: "py38"
+            use_coverage: true
 
 
     steps:
