@@ -38,4 +38,4 @@ jobs:
         run: pip install tox
 
       - name: Run Tox
-        run: tox  .  # Run tox using the version of Python in `PATH`
+        run: tox -e ${{ matrix.python }} .  # Run tox using the version of Python in `PATH`
