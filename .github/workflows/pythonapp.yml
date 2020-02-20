@@ -19,7 +19,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: dowload consul bin files
-          run: |
+        run: |
             wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
             wget -O tests/consul_1.6.1_linux_arm64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_arm64.zip
             cd tests
