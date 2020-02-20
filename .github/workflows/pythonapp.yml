@@ -22,7 +22,7 @@ jobs:
         include:
           - name: "py27"
             python: "2.7"
-            os: windows-latest
+            os: ubuntu-latest
             tox_env: "py27"
             use_coverage: true
 #      matrix:
