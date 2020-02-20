@@ -16,7 +16,7 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        name: [py27, py35, pypy2, pypy3, py35, py36, py37, py38]
+        name: ["py27", "py35", "pypy2", "pypy3", "py35", "py36", "py37", "py38"]
         include:
           - name: "py27"
             python: "2.7"
