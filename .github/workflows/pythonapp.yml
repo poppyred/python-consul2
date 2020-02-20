@@ -1,44 +1,41 @@
-name: Python application
+name: python-consul2 ci
 
 on: [push]
 
 jobs:
+  build:
 
-  test:
-    runs-on:
-      - ubuntu-latest
+    runs-on: ubuntu-latest
     strategy:
-      max-parallel: 3
+      max-parallel: 6
       matrix:
-        python-version: [2.7, 3.5, pypy, pypy3, 3.6, 3.7]
+        python: [2.7, 3.5, pypy, pypy3, 3.6, 3.7]
+
     steps:
       - uses: actions/checkout@v2
-#      - name: Set up Python 3.8
-#        uses: actions/setup-python@v1
-#        with:
-#          python-version: 3.8
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+
       - name: dowload consul bin files
-        run: |
-          wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
-          wget -O tests/consul_1.6.1_linux_arm64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_arm64.zip
-          cd tests
-          unzip consul_1.6.1_linux_amd64.zip
-          mv consul consul.linux64
-          unzip consul_1.6.1_linux_arm64.zip
-          mv consul consul.aarch64
-          cd ..
+          run: |
+            wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
+            wget -O tests/consul_1.6.1_linux_arm64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_arm64.zip
+            cd tests
+            unzip consul_1.6.1_linux_amd64.zip
+            mv consul consul.linux64
+            unzip consul_1.6.1_linux_arm64.zip
+            mv consul consul.aarch64
+            cd ..
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Lint with flake8
-        run: |
-          pip install flake8
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Test with pytest
-        run: |
-          pip install tox pytest pytest-rerunfailures pytest-twisted twisted treq pytest_httpserver pyOpenSSL tornado aiohttp flake8
-          tox
+
+      - name: Install Tox and any other packages
+        run: pip install tox
+
+      - name: Run Tox
+        run: tox -e py  # Run tox using the version of Python in `PATH`
