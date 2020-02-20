@@ -87,5 +87,5 @@ jobs:
         run: pip install tox
 
       - name: Test without coverage
-        if: "! matrix.use_coverage"
+        if: "matrix.use_coverage"
         run: "tox -e ${{ matrix.tox_env }}"
