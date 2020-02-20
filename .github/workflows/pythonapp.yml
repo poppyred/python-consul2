@@ -37,4 +37,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install tox pytest pytest-rerunfailures pytest-twisted twisted treq pytest_httpserver pyOpenSSL tornado aiohttp flake8
-        tox
+        pytest
