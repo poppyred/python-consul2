@@ -13,6 +13,16 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - name: dowload consul bin files
+      run: |
+        wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
+        wget -O tests/consul_1.6.1_linux_arm64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_arm64.zip
+        cd tests
+        unzip consul_1.6.1_linux_amd64.zip
+        mv consul consul.linux64
+        unzip consul_1.6.1_linux_arm64.zip
+        mv consul consul.aarch64
+        cd ..
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
