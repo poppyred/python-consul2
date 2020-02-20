@@ -1,23 +1,71 @@
 name: python-consul2 ci
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 6
+      max-parallel: 3
       matrix:
-        python: [2.7, 3.5, pypy2, pypy3, 3.5, 3.6, 3.7]
+        name: ["py27", "py35", "py36", "py37", "py38","pypy2", "pypy3"]
 
+        include:
+          - name: "py27"
+            python: "2.7"
+            os: ubuntu-latest
+            tox_env: "py27"
+            use_coverage: true
+
+          - name: "py35"
+            python: "3.5"
+            os: ubuntu-latest
+            tox_env: "py35"
+            use_coverage: true
+
+          - name: "py36"
+            python: "3.6"
+            os: ubuntu-latest
+            tox_env: "py36"
+            use_coverage: true
+
+          - name: "py37"
+            python: "3.7"
+            os: ubuntu-latest
+            tox_env: "py37"
+            use_coverage: true
+
+          - name: "py38"
+            python: "3.8"
+            os: ubuntu-latest
+            tox_env: "py38"
+            use_coverage: true
+
+          - name: "pypy2"
+            python: "pypy2"
+            os: ubuntu-latest
+            tox_env: "pypy2"
+            use_coverage: true
+
+          - name: "pypy3"
+            python: "pypy3"
+            os: ubuntu-latest
+            tox_env: "pypy3"
+            use_coverage: true
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python }}
-
       - name: dowload consul bin files
         run: |
             wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
@@ -37,5 +85,6 @@ jobs:
       - name: Install Tox and any other packages
         run: pip install tox
 
-      - name: Run Tox
-        run: tox -e py  # Run tox using the version of Python in `PATH`
+      - name: Test without coverage
+        if: "matrix.use_coverage"
+        run: "tox -e ${{ matrix.tox_env }}"
