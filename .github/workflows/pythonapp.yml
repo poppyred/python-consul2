@@ -12,11 +12,11 @@ jobs:
       matrix:
         python-version: [2.7, 3.5, pypy, pypy3, 3.6, 3.7]
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
+#      - uses: actions/checkout@v2
+#      - name: Set up Python 3.8
+#        uses: actions/setup-python@v1
+#        with:
+#          python-version: 3.8
       - name: dowload consul bin files
         run: |
           wget -O tests/consul_1.6.1_linux_amd64.zip https://releases.hashicorp.com/consul/1.6.1/consul_1.6.1_linux_amd64.zip
@@ -41,4 +41,4 @@ jobs:
       - name: Test with pytest
         run: |
           pip install tox pytest pytest-rerunfailures pytest-twisted twisted treq pytest_httpserver pyOpenSSL tornado aiohttp flake8
-          pytest
+          tox
