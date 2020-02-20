@@ -38,4 +38,4 @@ jobs:
         run: pip install tox
 
       - name: Run Tox
-        run: tox -e py .  # Run tox using the version of Python in `PATH`
+        run: tox  .  # Run tox using the version of Python in `PATH`
