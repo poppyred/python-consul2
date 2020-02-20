@@ -55,16 +55,16 @@ jobs:
             tox_env: "py38"
             use_coverage: true
 
-          - name: "pypy"
+          - name: "pypy2"
             python: "pypy2"
             os: ubuntu-latest
-            tox_env: "py38"
+            tox_env: "pypy2"
             use_coverage: true
 
           - name: "pypy3"
             python: "pypy3"
             os: ubuntu-latest
-            tox_env: "py38"
+            tox_env: "pypy3"
             use_coverage: true
     steps:
       - uses: actions/checkout@v2
