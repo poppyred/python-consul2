@@ -102,23 +102,23 @@ jobs:
     needs: [build]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: '3.x'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --upgrade wheel setuptools tox
-      - name: Build package
+          pip install setuptools wheel twine
+      - name: Build and publish
+        env:
+          TWINE_USERNAME: ${{ secrets.pypi_username }}
+          TWINE_PASSWORD: ${{ secrets.pypi_token }}
         run: |
           python setup.py sdist bdist_wheel
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_token }}
+          twine upload dist/*
+
 
   flake8:
     runs-on: ubuntu-latest
