@@ -89,7 +89,7 @@ jobs:
         run: "tox -e ${{ matrix.tox_env }}"
 
   deploy:
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
 
     runs-on: ubuntu-latest
 
