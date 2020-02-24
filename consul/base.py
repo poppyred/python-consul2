@@ -338,7 +338,8 @@ class Consul(object):
                 scheme = 'http'
             except ValueError:
                 try:
-                    scheme, host, port = os.getenv('CONSUL_HTTP_ADDR').split(':')
+                    scheme, host, port = \
+                        os.getenv('CONSUL_HTTP_ADDR').split(':')
                     host = host.lstrip('//')
                 except ValueError:
                     raise ConsulException('CONSUL_HTTP_ADDR (%s) invalid, '
