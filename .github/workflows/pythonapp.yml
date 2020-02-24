@@ -15,7 +15,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        name: ["py27", "py35", "py36", "py37", "py38","pypy2", "pypy3"]
+        name: [
+          "py27",
+          "py35",
+          "py36",
+          "py37",
+          "pypy2",
+          "pypy3"]
 
         include:
           - name: "py27"
