@@ -117,7 +117,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.pypi_token }}
         run: |
           python setup.py sdist bdist_wheel
-          twine upload dist/*
+          twine upload dist/* --verbose
 
 
   flake8:
