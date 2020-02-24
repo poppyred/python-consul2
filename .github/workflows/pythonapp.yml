@@ -114,3 +114,18 @@ jobs:
           user: __token__
           password: ${{ secrets.pypi_token }}
 
+  flake8:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
+      - name: test
+        run: |
+          echo ok!
+
+
+
