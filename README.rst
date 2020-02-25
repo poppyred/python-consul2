@@ -2,6 +2,7 @@ Python client for `Consul.io <http://www.consul.io/>`_
 ======================================================
 
 |Build Status|
+|Build Status2|
 |License Status|
 |Pypi Status|
 |Pyversions Status|
@@ -38,6 +39,9 @@ Installation
 .. |Build Status|
    image:: https://travis-ci.org/poppyred/python-consul2.svg?branch=master&style=flat-square
    :target: https://travis-ci.org/poppyred/python-consul2
+
+.. |Build Status2|
+   image:: https://github.com/poppyred/python-consul2/workflows/python-consul2%20build/badge.svg
 
 .. |License Status|
    image:: https://img.shields.io/pypi/l/python-consul2
