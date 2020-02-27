@@ -32,3 +32,11 @@ Features
 Features
 ~~~~~~~~
 * Add TLSSkipVerify for HTTPS check <bhuisgen@hbis.fr>
+
+0.0.16
+-----
+
+Features
+~~~~~~~~
+* timeout added to http requests <https://github.com/poppyred/python-consul2/pull/4>
+* handle CONSUL_HTTP_ADDR including a http:// or https:// scheme  <https://github.com/poppyred/python-consul2/pull/3>
