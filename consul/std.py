@@ -25,10 +25,10 @@ class HTTPClient(base.HTTPClient):
             self.session.get(uri, verify=self.verify, cert=self.cert,
                              timeout=self.timeout)))
 
-    def put(self, callback, path, params=None, data=''):
+    def put(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.put(uri, data=data, verify=self.verify,
+            self.session.put(uri, data=data, headers=headers, verify=self.verify,
                              cert=self.cert, timeout=self.timeout)))
 
     def delete(self, callback, path, params=None, data=''):
