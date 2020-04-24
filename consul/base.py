@@ -392,12 +392,12 @@ class Consul(object):
             self.binding_rule = Consul.ACL.BindingRule(agent)
 
         def self(self, token=None):
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.get(
-                CB.json(), '/v1/acl/token/self', params=params)
+                CB.json(), '/v1/acl/token/self', headers=headers)
 
         def list(self, token=None):
             """
@@ -408,12 +408,12 @@ class Consul(object):
             """
             warnings.warn('Consul 1.4.0 deprecated',
                           DeprecationWarning)
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.get(
-                CB.json(), '/v1/acl/list', params=params)
+                CB.json(), '/v1/acl/list', headers=headers)
 
         def info(self, acl_id, token=None):
             """
@@ -421,12 +421,12 @@ class Consul(object):
             """
             warnings.warn('Consul 1.4.0 deprecated',
                           DeprecationWarning)
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.get(
-                CB.json(one=True), '/v1/acl/info/%s' % acl_id, params=params)
+                CB.json(one=True), '/v1/acl/info/%s' % acl_id, headers=headers)
 
         def create(self,
                    name=None,
@@ -468,10 +468,10 @@ class Consul(object):
             """
             warnings.warn('Consul 1.4.0 deprecated',
                           DeprecationWarning)
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
 
             payload = {}
             if name:
@@ -495,7 +495,7 @@ class Consul(object):
             return self.agent.http.put(
                 CB.json(is_id=True),
                 '/v1/acl/create',
-                params=params,
+                headers=headers,
                 data=data)
 
         def update(self, acl_id, name=None, type=None, rules=None, token=None):
@@ -519,10 +519,10 @@ class Consul(object):
             """
             warnings.warn('Consul 1.4.0 deprecated',
                           DeprecationWarning)
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
 
             payload = {'ID': acl_id}
             if name:
@@ -541,7 +541,7 @@ class Consul(object):
             return self.agent.http.put(
                 CB.json(is_id=True),
                 '/v1/acl/update',
-                params=params,
+                headers=headers,
                 data=data)
 
         def clone(self, acl_id, token=None):
@@ -555,14 +555,14 @@ class Consul(object):
             """
             warnings.warn('Consul 1.4.0 deprecated',
                           DeprecationWarning)
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.put(
                 CB.json(is_id=True),
                 '/v1/acl/clone/%s' % acl_id,
-                params=params)
+                headers=headers)
 
         def destroy(self, acl_id, token=None):
             """
@@ -575,14 +575,14 @@ class Consul(object):
             """
             warnings.warn('Consul 1.4.0 deprecated',
                           DeprecationWarning)
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.put(
                 CB.json(),
                 '/v1/acl/destroy/%s' % acl_id,
-                params=params)
+                headers=headers)
 
         def bootstrap(self, token=None):
             """
@@ -595,13 +595,13 @@ class Consul(object):
             :param token:
             :return:
             """
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.put(CB.json(),
                                        '/v1/acl/bootstrap',
-                                       params=params)
+                                       headers=headers)
 
         def replication(self, dc=None, token=None):
             """
@@ -610,19 +610,21 @@ class Consul(object):
             by operators or by automation checking to discover the
             health of ACL replication.
             :param dc:
-            :param token:
+            :header token:
             :return:
             """
             params = []
+            headers = {}
             token = token or self.agent.token
             dc = dc or self.agent.dc
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.get(CB.json(),
                                        '/v1/acl/replication',
-                                       params=params)
+                                       params=params,
+                                       headers=headers)
 
         def create_translate(self, payload, token=None):
             """
@@ -637,13 +639,13 @@ class Consul(object):
 
             :return:
             """
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.post(CB.binary(),
                                         '/v1/acl/rules/translate',
-                                        params=params,
+                                        headers=headers,
                                         data=payload)
 
         def get_translate(self, accessor_id, token=None):
@@ -655,13 +657,13 @@ class Consul(object):
             :return:
             """
             path = '/v1/acl/rules/translate/%s' % accessor_id
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.get(CB.json(),
-                                       path,
-                                       params)
+                                       path=path,
+                                       headers=headers)
 
         def login(self, auth_method, bearer_token, meta=None, token=None):
             payload = {
@@ -671,23 +673,23 @@ class Consul(object):
             }
             if meta:
                 payload['Meta'] = meta
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.post(CB.json(),
                                         '/v1/acl/login',
-                                        params,
-                                        json.dumps(payload))
+                                        headers=headers,
+                                        data=json.dumps(payload))
 
         def logout(self, token=None):
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.post(CB.json(),
                                         '/v1/acl/logout',
-                                        params)
+                                        headers=headers)
 
         class Tokens(object):
             """
@@ -698,44 +700,44 @@ class Consul(object):
                 self.agent = agent
 
             def create(self, payload, token=None):
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
                                            '/v1/acl/token',
-                                           params,
-                                           json.dumps(payload))
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def get(self, accessor_id, token=None):
                 path = '/v1/acl/token/%s' % accessor_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
             def self(self, token=None):
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
                                            '/v1/acl/token/self',
-                                           params)
+                                           headers=headers)
 
             def update(self, payload, accessor_id, token=None):
                 path = '/v1/acl/token/%s' % accessor_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def clone(self,
                       description='',
@@ -746,30 +748,32 @@ class Consul(object):
                 }
                 path = '/v1/acl/token/%s/clone' % accessor_id
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def delete(self, accessor_id, token=None):
                 path = '/v1/acl/token/%s' % accessor_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              headers=headers)
 
             def list(
                     self, policy=None, role=None, authmethod=None, token=None):
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if policy:
                     params.append(('policy', policy))
                 if role:
@@ -778,7 +782,8 @@ class Consul(object):
                     params.append(('authmethod', authmethod))
                 return self.agent.http.get(CB.json(),
                                            '/v1/acl/tokens',
-                                           params)
+                                           params=params,
+                                           headers=headers)
 
         class LegacyTokens(object):
             def __init__(self, agent=None):
@@ -922,26 +927,25 @@ class Consul(object):
                 if description:
                     payload['Datacenters'] = datacenters
 
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
                 return self.agent.http.put(CB.json(),
                                            '/v1/acl/policy',
-                                           params,
-                                           json.dumps(payload))
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def get(self, policy_id, token=None):
                 path = '/v1/acl/policy/%s' % policy_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
-
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params, )
+                                           path=path,
+                                           headers=headers)
 
             def update(self, policy_id, name, description=None,
                        rules=None, datacenters=None, token=None):
@@ -955,213 +959,210 @@ class Consul(object):
                     payload['Datacenters'] = datacenters
 
                 path = '/v1/acl/policy/%s' % policy_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
-
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def delete(self, policy_id, token=None):
                 path = '/v1/acl/policy/%s' % policy_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
-
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              headers=headers)
 
             def list(self, token=None):
                 path = '/v1/acl/policies'
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
-
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
         class Roles(object):
             def __init__(self, agent=None):
                 self.agent = agent
 
             def create(self, payload, token=None):
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
                                            '/v1/acl/role',
-                                           params,
-                                           json.dumps(payload))
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def get(self, role_id, token=None):
                 path = '/v1/acl/role/%s' % role_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
             def get_by_name(self, role_name, token=None):
                 path = '/v1/acl/role/name/%s' % role_name
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
             def update(self, payload, role_id, token=None):
                 path = '/v1/acl/role/%s' % role_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def delete(self, role_id, token=None):
                 path = '/v1/acl/role/%s' % role_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              headers=headers)
 
             def list(
                     self, policy=None, token=None):
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
                 return self.agent.http.get(CB.json(),
                                            '/v1/acl/roles',
-                                           params)
+                                           headers=headers)
 
         class AuthMethod(object):
             def __init__(self, agent=None):
                 self.agent = agent
 
             def create(self, payload, token=None):
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
                                            '/v1/acl/auth-method',
-                                           params,
-                                           json.dumps(payload))
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def get(self, auth_method_name, token=None):
                 path = '/v1/acl/auth-method/%s' % auth_method_name
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
             def update(self, payload, name, token=None):
                 path = '/v1/acl/auth-method/%s' % name
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def delete(self, name, token=None):
                 path = '/v1/acl/auth-method/%s' % name
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              headers=headers)
 
             def list(
                     self, token=None):
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
                                            '/v1/acl/auth-methods',
-                                           params)
+                                           headers=headers)
 
         class BindingRule(object):
             def __init__(self, agent=None):
                 self.agent = agent
 
             def create(self, payload, token=None):
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
                                            '/v1/acl/binding-rule',
-                                           params,
-                                           json.dumps(payload))
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def get(self, binding_rule_id, token=None):
                 path = '/v1/acl/binding-rule/%s' % binding_rule_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
             def update(self, payload, binding_rule_id, token=None):
                 path = '/v1/acl/binding-rule/%s' % binding_rule_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def delete(self, binding_rule_id, token=None):
                 path = '/v1/acl/binding-rule/%s' % binding_rule_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              headers=headers)
 
             def list(
                     self, token=None):
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
                                            '/v1/acl/binding-rules',
-                                           params)
+                                           headers=headers)
 
     class Agent(object):
         """
@@ -1181,11 +1182,11 @@ class Consul(object):
             """
             Returns configuration of the local agent and member information.
             """
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
-            return self.agent.http.get(CB.json(), '/v1/agent/self', params)
+                headers['X-Consul-Token'] = token
+            return self.agent.http.get(CB.json(), '/v1/agent/self', headers=headers)
 
         def services(self, token=None):
             """
@@ -1198,11 +1199,11 @@ class Consul(object):
             anti-entropy, so in most situations everything will be in sync
             within a few seconds.
             """
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
-            return self.agent.http.get(CB.json(), '/v1/agent/services', params)
+                headers['X-Consul-Token'] = token
+            return self.agent.http.get(CB.json(), '/v1/agent/services', headers=headers)
 
         def checks(self, token=None):
             """
@@ -1215,11 +1216,11 @@ class Consul(object):
             anti-entropy, so in most situations everything will be in sync
             within a few seconds.
             """
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
-            return self.agent.http.get(CB.json(), '/v1/agent/checks', params)
+                headers['X-Consul-Token'] = token
+            return self.agent.http.get(CB.json(), '/v1/agent/checks', headers=headers)
 
         def members(self, wan=False, token=None):
             """
@@ -1232,13 +1233,14 @@ class Consul(object):
             default.
             """
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if wan:
                 params.append(('wan', 1))
             return self.agent.http.get(
-                CB.json(), '/v1/agent/members', params=params)
+                CB.json(), '/v1/agent/members', params=params, headers=headers)
 
         def maintenance(self, enable, reason=None, token=None):
             """
@@ -1253,15 +1255,16 @@ class Consul(object):
             """
 
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             params.append(('enable', enable))
             if reason:
                 params.append(('reason', reason))
 
             return self.agent.http.put(
-                CB.bool(), '/v1/agent/maintenance', params=params)
+                CB.bool(), '/v1/agent/maintenance', params=params, headers=headers)
 
         def join(self, address, wan=False, token=None):
             """
@@ -1276,14 +1279,15 @@ class Consul(object):
             """
 
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if wan:
                 params.append(('wan', 1))
 
             return self.agent.http.put(
-                CB.bool(), '/v1/agent/join/%s' % address, params=params)
+                CB.bool(), '/v1/agent/join/%s' % address, params=params, headers=headers)
 
         def force_leave(self, node, token=None):
             """
@@ -1296,12 +1300,12 @@ class Consul(object):
 
             *node* is the node to change state for.
             """
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.put(
-                CB.bool(), '/v1/agent/force-leave/%s' % node, params)
+                CB.bool(), '/v1/agent/force-leave/%s' % node, headers=headers)
 
         class Service(object):
             def __init__(self, agent):
@@ -1387,15 +1391,15 @@ class Consul(object):
                         http=http,
                         timeout=timeout))
 
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/service/register',
-                    params=params,
+                    headers=headers,
                     data=json.dumps(payload))
 
             def deregister(self, service_id, token=None):
@@ -1404,14 +1408,14 @@ class Consul(object):
                 take care of deregistering the service with the Catalog. If
                 there is an associated check, that is also deregistered.
                 """
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/service/deregister/%s' % service_id,
-                    params=params
+                    headers=headers
                 )
 
             def maintenance(self, service_id, enable, reason=None, token=None):
@@ -1430,12 +1434,13 @@ class Consul(object):
                 """
 
                 params = [('enable', enable)]
-
+                headers = {}
+                
                 token = token or self.agent.token
                 if reason:
                     params.append(('reason', reason))
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/service/maintenance/{0}'.format(service_id),
@@ -1510,29 +1515,29 @@ class Consul(object):
                 if service_id:
                     payload['serviceid'] = service_id
 
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/register',
-                    params=params,
+                    headers=headers,
                     data=json.dumps(payload))
 
             def deregister(self, check_id, token=None):
                 """
                 Remove a check from the local agent.
                 """
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(
                     CB.bool(),
                     path='/v1/agent/check/deregister/%s' % check_id,
-                    params=params,
+                    headers=headers,
                 )
 
             def ttl_pass(self, check_id, notes=None, token=None):
@@ -1541,16 +1546,18 @@ class Consul(object):
                 attached to describe the status of the check.
                 """
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if notes:
                     params.append(('note', notes))
 
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/pass/%s' % check_id,
-                    params=params)
+                    params=params,
+                    headers=headers)
 
             def ttl_fail(self, check_id, notes=None, token=None):
                 """
@@ -1559,16 +1566,18 @@ class Consul(object):
                 check will be set to critical and the ttl clock will be reset.
                 """
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if notes:
                     params.append(('note', notes))
 
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/fail/%s' % check_id,
-                    params=params)
+                    params=params,
+                    headers=headers)
 
             def ttl_warn(self, check_id, notes=None, token=None):
                 """
@@ -1577,16 +1586,18 @@ class Consul(object):
                 check will be set to warn and the ttl clock will be reset.
                 """
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if notes:
                     params.append(('note', notes))
 
                 return self.agent.http.put(
                     CB.bool(),
                     '/v1/agent/check/warn/%s' % check_id,
-                    params=params)
+                    params=params,
+                    headers=headers)
 
         class Connect(object):
             def __init__(self, agent):
@@ -1602,15 +1613,15 @@ class Consul(object):
                     "ClientCertURI": client_cert_uri,
                     "ClientCertSerial": client_cert_serial
                 }
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
                 return self.agent.http.post(
                     CB.json(),
                     '/v1/agent/connect/authorize',
-                    params=params,
+                    headers=headers,
                     data=json.dumps(payload))
 
             def root_certificates(self, token=None):
@@ -1619,15 +1630,15 @@ class Consul(object):
                 :return: returns the trusted certificate authority (CA)
                 root certificates.
                 """
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
                 return self.agent.http.get(
                     CB.json(),
                     '/v1/agent/connect/ca/roots',
-                    params=params)
+                    headers=headers)
 
             def leaf_certificates(self, service, token=None):
                 """
@@ -1636,15 +1647,15 @@ class Consul(object):
                 a single service.
                 """
                 path = '/agent/connect/ca/leaf/%s' % service
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
                 return self.agent.http.get(
                     CB.json(),
-                    path,
-                    params=params)
+                    path=path,
+                    headers=headers)
 
     class Catalog(object):
         def __init__(self, agent):
@@ -1838,6 +1849,7 @@ class Consul(object):
                 ])
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
@@ -1849,7 +1861,7 @@ class Consul(object):
                 params.append(('near', near))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
@@ -1858,7 +1870,7 @@ class Consul(object):
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
             return self.agent.http.get(
-                CB.json(index=True), '/v1/catalog/nodes', params=params)
+                CB.json(index=True), '/v1/catalog/nodes', params=params, headers=headers)
 
         def services(self,
                      index=None,
@@ -1903,6 +1915,7 @@ class Consul(object):
             known tags for a given service.
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
@@ -1912,7 +1925,7 @@ class Consul(object):
                     params.append(('wait', wait))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
@@ -1921,7 +1934,7 @@ class Consul(object):
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
             return self.agent.http.get(
-                CB.json(index=True), '/v1/catalog/services', params=params)
+                CB.json(index=True), '/v1/catalog/services', params=params, headers=headers)
 
         def node(self,
                  node,
@@ -1976,6 +1989,7 @@ class Consul(object):
                 })
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
@@ -1985,14 +1999,15 @@ class Consul(object):
                     params.append(('wait', wait))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/catalog/node/%s' % node,
-                params=params)
+                params=params,
+                headers=headers)
 
         def service(
                 self,
@@ -2046,6 +2061,7 @@ class Consul(object):
                 ])
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
@@ -2059,7 +2075,7 @@ class Consul(object):
                 params.append(('near', near))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
@@ -2070,7 +2086,8 @@ class Consul(object):
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/catalog/service/%s' % service,
-                params=params)
+                params=params,
+                headers=headers)
 
     class Config(object):
         """
@@ -2097,13 +2114,14 @@ class Consul(object):
 
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if cas:
                 params.append(('cas', cas))
 
@@ -2113,8 +2131,9 @@ class Consul(object):
                 data = ''
             return self.agent.http.put(CB.json(),
                                        '/v1/config',
-                                       params,
-                                       data)
+                                       params=params,
+                                       headers=headers,
+                                       data=data)
 
         def get(self, kind, name, dc=None, token=None):
             """
@@ -2131,6 +2150,7 @@ class Consul(object):
              read. This is specified as part of the URL
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
             path = '/v1/config/%s/%s' % (kind, name)
@@ -2138,11 +2158,12 @@ class Consul(object):
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
 
             return self.agent.http.get(CB.json(),
-                                       path,
-                                       params)
+                                       path=path,
+                                       params=params,
+                                       headers=headers)
 
         def list(self, kind, dc=None, token=None):
             """
@@ -2156,6 +2177,7 @@ class Consul(object):
              read. This is specified as part of the URL.
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
             path = '/v1/config/%s' % kind
@@ -2163,11 +2185,12 @@ class Consul(object):
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
 
             return self.agent.http.get(CB.json(),
-                                       path,
-                                       params)
+                                       path=path,
+                                       params=params,
+                                       headers=headers)
 
         def delete(self, kind, name, dc=None, token=None):
             """
@@ -2185,6 +2208,7 @@ class Consul(object):
              read. This is specified as part of the URL
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
             path = '/v1/config/%s/%s' % (kind, name)
@@ -2192,11 +2216,12 @@ class Consul(object):
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
 
             return self.agent.http.delete(CB.bool(),
-                                          path,
-                                          params)
+                                          path=path,
+                                          params=params,
+                                          headers=headers)
 
     class Connect(object):
         """
@@ -2225,24 +2250,24 @@ class Consul(object):
 
             def list(self, token=None):
                 path = '/v1/connect/ca/roots'
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
-                return self.agent.http.get(CB.json(), path, params)
+                return self.agent.http.get(CB.json(), path=path, headers=headers)
 
             def current(self, token=None):
                 """
                 This endpoint returns the current CA configuration.
                 """
                 path = '/v1/connect/ca/configuration'
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
 
-                return self.agent.http.get(CB.json(), path, params)
+                return self.agent.http.get(CB.json(), path=path, headers=headers)
 
             def put(self, config, provider, token=None):
                 """
@@ -2267,14 +2292,14 @@ class Consul(object):
                     "Provider": provider,
                     "Config": config
                 }
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.bool(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
         class Intentions:
             """
@@ -2314,34 +2339,34 @@ class Consul(object):
                     payload['Description'] = description
                 if meta:
                     payload['Meta'] = meta
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.post(CB.json(),
-                                            path,
-                                            params,
-                                            json.dumps(payload))
+                                            path=path,
+                                            headers=headers,
+                                            data=json.dumps(payload))
 
             def get(self, intention_id, token=None):
                 path = '/v1/connect/intentions/%s' % intention_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
             def list(self, token=None):
                 path = '/v1/connect/intentions'
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
             def put(self, intention_id,
                     token=None,
@@ -2376,52 +2401,54 @@ class Consul(object):
                     payload['Description'] = description
                 if meta:
                     payload['Meta'] = meta
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if payload:
                     data = json.dumps(payload)
                 else:
                     data = ''
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.put(CB.bool(),
-                                           path,
-                                           params,
-                                           data)
+                                           path=path,
+                                           headers=headers,
+                                           data=data)
 
             def delete(self, intention_id, token=None):
                 path = '/v1/connect/intentions/%s' % intention_id
-                params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              headers=headers)
 
             def check(self, source, destination, token=None):
                 path = '/v1/connect/intentions/check'
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 params.append(('source', source))
                 params.append(('destination', destination))
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
             def list_match(self, by, name, token=None):
                 path = '/v1/connect/intentions/match'
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 params.append(('by', by))
                 params.append(('name', name))
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           headers=headers)
 
     class Coordinate(object):
         def __init__(self, agent):
@@ -2530,6 +2557,7 @@ class Consul(object):
             assert not name.startswith('/'), \
                 'keys should not start with a forward slash'
             params = []
+            headers = {}
             if node is not None:
                 params.append(('node', node))
             if service is not None:
@@ -2538,11 +2566,11 @@ class Consul(object):
                 params.append(('tag', tag))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
 
             return self.agent.http.put(
                 CB.json(),
-                '/v1/event/fire/%s' % name, params=params, data=body)
+                '/v1/event/fire/%s' % name, params=params, headers=headers, data=body)
 
         def list(
                 self,
@@ -2585,9 +2613,10 @@ class Consul(object):
                 }
             """
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if name is not None:
                 params.append(('name', name))
             if index:
@@ -2596,7 +2625,7 @@ class Consul(object):
                     params.append(('wait', wait))
             return self.agent.http.get(
                 CB.json(index=True, decode=True),
-                '/v1/event/list', params=params)
+                '/v1/event/list', params=params, headers=headers)
 
     class Health(object):
         # TODO: All of the health endpoints support all consistency modes
@@ -2642,6 +2671,7 @@ class Consul(object):
             dictionary formatted as {k1:v1, k2:v2}.
             """
             params = []
+            headers ={}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
@@ -2658,7 +2688,7 @@ class Consul(object):
             if near:
                 params.append(('near', near))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
@@ -2666,7 +2696,7 @@ class Consul(object):
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/service/%s' % service,
-                params=params)
+                params=params, headers=headers)
 
         def checks(
                 self,
@@ -2702,6 +2732,7 @@ class Consul(object):
             dictionary formatted as {k1:v1, k2:v2}.
             """
             params = []
+            headers = {}
             if index:
                 params.append(('index', index))
                 if wait:
@@ -2713,7 +2744,7 @@ class Consul(object):
                 params.append(('near', near))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
@@ -2721,7 +2752,7 @@ class Consul(object):
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/checks/%s' % service,
-                params=params)
+                params=params, headers=headers)
 
         def state(self,
                   name,
@@ -2762,6 +2793,7 @@ class Consul(object):
             """
             assert name in ['any', 'unknown', 'passing', 'warning', 'critical']
             params = []
+            headers = {}
             if index:
                 params.append(('index', index))
                 if wait:
@@ -2774,7 +2806,7 @@ class Consul(object):
             if near:
                 params.append(('near', near))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
@@ -2782,7 +2814,7 @@ class Consul(object):
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/state/%s' % name,
-                params=params)
+                params=params, headers=headers)
 
         def node(self, node, index=None, wait=None, dc=None, token=None):
             """
@@ -2803,6 +2835,7 @@ class Consul(object):
             *nodes* are the nodes providing the given service.
             """
             params = []
+            headers = {}
             if index:
                 params.append(('index', index))
                 if wait:
@@ -2812,12 +2845,12 @@ class Consul(object):
                 params.append(('dc', dc))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
 
             return self.agent.http.get(
                 CB.json(index=True),
                 '/v1/health/node/%s' % node,
-                params=params)
+                params=params, headers=headers)
 
     class KV(object):
         """
@@ -2882,6 +2915,7 @@ class Consul(object):
             assert not key.startswith('/'), \
                 'keys should not start with a forward slash'
             params = []
+            headers = {}
             if index:
                 params.append(('index', index))
                 if wait:
@@ -2890,7 +2924,7 @@ class Consul(object):
                 params.append(('recurse', '1'))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             dc = dc or self.agent.dc
             if dc:
                 params.append(('dc', dc))
@@ -2913,7 +2947,7 @@ class Consul(object):
                 CB.json(index=True, decode=decode, one=one,
                         map=lambda x: x if x else None),
                 '/v1/kv/%s' % key,
-                params=params)
+                params=params, headers=headers)
 
         def put(
                 self,
@@ -2966,6 +3000,7 @@ class Consul(object):
                 isinstance(value, (six.string_types, six.binary_type))
 
             params = []
+            headers = {}
             token = token or self.agent.token
             dc = dc or self.agent.dc
 
@@ -2978,11 +3013,11 @@ class Consul(object):
             if release:
                 params.append(('release', release))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.put(
-                CB.json(), '/v1/kv/%s' % key, params=params, data=value)
+                CB.json(), '/v1/kv/%s' % key, params=params, headers=headers, data=value)
 
         def delete(self, key, recurse=None, cas=None, token=None, dc=None):
             """
@@ -3007,6 +3042,7 @@ class Consul(object):
                 'keys should not start with a forward slash'
 
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
@@ -3015,12 +3051,12 @@ class Consul(object):
             if cas is not None:
                 params.append(('cas', cas))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
 
             return self.agent.http.delete(
-                CB.json(), '/v1/kv/%s' % key, params=params)
+                CB.json(), '/v1/kv/%s' % key, params=params, headers=headers)
 
     class Operator(object):
         def __init__(self, agent):
@@ -3036,14 +3072,14 @@ class Consul(object):
             """
             Returns raft configuration.
             """
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.get(
                 CB.json(),
                 '/v1/operator/raft/configuration',
-                params)
+                headers=headers)
 
         class Area:
             """
@@ -3059,93 +3095,105 @@ class Consul(object):
 
             def create(self, payload, dc=None, token=None):
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.post(CB.json(),
                                             '/v1/operator/area',
-                                            params,
-                                            json.dumps(payload))
+                                            params=params,
+                                            headers=headers,
+                                            data=json.dumps(payload))
 
             def get(self, area_id, dc=None, token=None):
                 path = '/v1/operator/area/%s' % area_id
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           params=params,
+                                           headers=headers)
 
             def update(self, payload, area_id, dc=None, token=None):
                 path = '/v1/operator/area/%s' % area_id
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           params=params,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def join(self, payload, area_id, dc=None, token=None):
                 path = '/v1/operator/area/%s/join' % area_id
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           params=params,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def members(self, area_id, dc=None, token=None):
                 path = '/v1/operator/area/%s/members' % area_id
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           params=params,
+                                           headers=headers)
 
             def delete(self, area_id, token=None):
+                headers = {}
                 path = '/v1/operator/area/%s' % area_id
-                params = []
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              headers=headers)
 
             def list(
                     self, dc=None, token=None):
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.get(CB.json(),
                                            '/v1/operator/area',
-                                           params)
+                                           params=params,
+                                           headers=headers)
 
         class Autopilot:
             """
@@ -3158,46 +3206,52 @@ class Consul(object):
             def configuration(self, stale=None, dc=None, token=None):
                 path = '/v1/operator/autopilot/configuration'
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 if stale:
                     params.append(('stale', stale))
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           params=params,
+                                           headers=headers)
 
             def update(self, payload, cas=None, dc=None, token=None):
                 path = '/v1/operator/autopilot/configuration'
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 if cas:
                     params.append(('cas', cas))
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           params=params,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def health(self, dc=None, token=None):
                 path = '/v1/operator/autopilot/health'
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           params=params,
+                                           headers=headers)
 
         class Keyring:
 
@@ -3207,55 +3261,61 @@ class Consul(object):
             def create(self, key, relay_factor=None, token=None):
                 path = '/v1/operator/keyring'
                 params = []
+                headers = {}
                 payload = {'Key': key}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if relay_factor:
                     params.append(('relay-factor', relay_factor))
                 return self.agent.http.post(CB.bool(),
-                                            path,
-                                            params,
-                                            json.dumps(payload))
+                                            path=path,
+                                            params=params,
+                                            headers=headers,
+                                            data=json.dumps(payload))
 
             def update(self, key, relay_factor=None, token=None):
                 path = '/v1/operator/keyring'
                 params = []
+                headers = {}
                 payload = {'Key': key}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if relay_factor:
                     params.append(('relay-factor', relay_factor))
                 return self.agent.http.put(CB.bool(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           params=params,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def delete(self, key, token=None):
                 path = '/v1/operator/keyring'
-                params = []
+                headers = {}
                 payload = {'Key': key}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params,
-                                              json.dumps(payload))
+                                              path=path,
+                                              headers=headers,
+                                              data=json.dumps(payload))
 
             def list(self, relay_factor=None, local_only=None, token=None):
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if relay_factor:
                     params.append(('relay-factor', relay_factor))
                 if local_only:
                     params.append(('local-only', local_only))
                 return self.agent.http.get(CB.json(),
-                                           '/v1/operator/keyring',
-                                           params)
+                                           path='/v1/operator/keyring',
+                                           params=params,
+                                           headers=headers)
 
         class License:
             """
@@ -3268,45 +3328,51 @@ class Consul(object):
             def get(self, dc=None, token=None):
                 path = '/v1/operator/license'
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
 
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           params=params,
+                                           headers=headers)
 
             def update(self, payload, cas=None, dc=None, token=None):
                 path = '/v1/operator/license'
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 if cas:
                     params.append(('cas', cas))
                 return self.agent.http.put(CB.json(),
-                                           path,
-                                           params,
-                                           json.dumps(payload))
+                                           path=path,
+                                           params=params,
+                                           headers=headers,
+                                           data=json.dumps(payload))
 
             def delete(self, dc=None, token=None):
                 path = '/v1/operator/license'
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              params=params,
+                                              headers=headers)
 
         class Raft:
             """
@@ -3319,22 +3385,25 @@ class Consul(object):
             def configuration(self, dc=None, stale=None, token=None):
                 path = '/v1/operator/raft/configuration'
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 if stale:
                     params.append(('stale', stale))
 
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           params=params,
+                                           headers=headers)
 
             def delete(self, raft_id=None, address=None, dc=None, token=None):
                 path = '/v1/operator/license'
                 params = []
+                headers = {}
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
                 assert (raft_id or address) and not \
@@ -3346,12 +3415,13 @@ class Consul(object):
                 else:
                     params.append(('address', address))
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.delete(CB.bool(),
-                                              path,
-                                              params)
+                                              path=path,
+                                              params=params,
+                                              headers=headers)
 
         class Segments:
             """
@@ -3364,15 +3434,17 @@ class Consul(object):
             def list(self, dc=None, token=None):
                 path = '/v1/operator/segment'
                 params = []
+                headers = {}
                 dc = dc or self.agent.dc
                 token = token or self.agent.token
                 if token:
-                    params.append(('token', token))
+                    headers['X-Consul-Token'] = token
                 if dc:
                     params.append(('dc', dc))
                 return self.agent.http.get(CB.json(),
-                                           path,
-                                           params)
+                                           path=path,
+                                           params=params,
+                                           headers=headers)
 
     class Query(object):
         def __init__(self, agent):
@@ -3390,13 +3462,15 @@ class Consul(object):
             *token* is an optional `ACL token`_ to apply to this request.
             """
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
 
-            return self.agent.http.get(CB.json(), '/v1/query', params=params)
+            return self.agent.http.get(CB.json(), path='/v1/query',
+                                       params=params, headers=headers)
 
         def _query_data(self, service=None,
                         name=None,
@@ -3517,16 +3591,17 @@ class Consul(object):
             """
             path = '/v1/query'
             params = [] if dc is None else [('dc', dc)]
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             data = self._query_data(
                 service, name, session, token, nearestn, datacenters,
                 onlypassing, tags, ttl, regexp, near, nodemeta,
                 servicemeta
             )
             return self.agent.http.post(
-                CB.json(), path, params=params, data=data)
+                CB.json(), path, params=params, headers=headers, data=data)
 
         def update(self, query_id,
                    service=None,
@@ -3552,18 +3627,19 @@ class Consul(object):
             """
             path = '/v1/query/%s' % query_id
             params = []
+            headers = {}
             if dc:
                 params.append(('dc', dc))
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             data = self._query_data(
                 service, name, session, token, nearestn, datacenters,
                 onlypassing, tags, ttl, regexp, near, nodemeta,
                 servicemeta
             )
             return self.agent.http.put(
-                CB.bool(), path, params=params, data=data)
+                CB.bool(), path, params=params, headers=headers, data=data)
 
         def get(self,
                 query_id,
@@ -3580,13 +3656,14 @@ class Consul(object):
             default the datacenter of the host is used.
             """
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.get(
-                CB.json(), '/v1/query/%s' % query_id, params=params)
+                CB.json(), path='/v1/query/%s' % query_id, params=params, headers=headers)
 
         def delete(self, query_id, token=None, dc=None):
             """
@@ -3600,13 +3677,15 @@ class Consul(object):
             default the datacenter of the host is used.
             """
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.delete(
-                CB.bool(), '/v1/query/%s' % query_id, params=params)
+                CB.bool(), path='/v1/query/%s' % query_id,
+                params=params, headers=headers)
 
         def execute(self,
                     query,
@@ -3631,9 +3710,10 @@ class Consul(object):
             of nodes. This is applied after any sorting or shuffling.
             """
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
             if near:
@@ -3641,7 +3721,8 @@ class Consul(object):
             if limit:
                 params.append(('limit', limit))
             return self.agent.http.get(
-                CB.json(), '/v1/query/%s/execute' % query, params=params)
+                CB.json(), path='/v1/query/%s/execute' % query,
+                params=params, headers=headers)
 
         def explain(self,
                     query,
@@ -3658,13 +3739,14 @@ class Consul(object):
             default the datacenter of the host is used.
             """
             params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.get(
-                CB.json(), '/v1/query/%s/explain' % query, params=params)
+                CB.json(), path='/v1/query/%s/explain' % query, params=params, headers=headers)
 
     class Session(object):
         def __init__(self, agent):
@@ -3713,13 +3795,14 @@ class Consul(object):
             Returns the string *session_id* for the session.
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             data = {}
             if name:
                 data['name'] = name
@@ -3743,8 +3826,9 @@ class Consul(object):
 
             return self.agent.http.put(
                 CB.json(is_id=True),
-                '/v1/session/create',
+                path='/v1/session/create',
                 params=params,
+                headers=headers,
                 data=data)
 
         def destroy(self, session_id, dc=None, token=None):
@@ -3754,17 +3838,19 @@ class Consul(object):
             Returns *True* on success.
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.put(
                 CB.bool(),
-                '/v1/session/destroy/%s' % session_id,
-                params=params)
+                path='/v1/session/destroy/%s' % session_id,
+                params=params,
+                headers=headers)
 
         def list(self,
                  index=None,
@@ -3804,13 +3890,14 @@ class Consul(object):
                ])
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
             if index:
@@ -3821,7 +3908,8 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
             return self.agent.http.get(
-                CB.json(index=True), '/v1/session/list', params=params)
+                CB.json(index=True), path='/v1/session/list',
+                params=params, headers=headers)
 
         def node(self,
                  node,
@@ -3846,13 +3934,14 @@ class Consul(object):
             was configured with.
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if index:
                 params.append(('index', index))
                 if wait:
@@ -3862,7 +3951,8 @@ class Consul(object):
                 params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True),
-                '/v1/session/node/%s' % node, params=params)
+                path='/v1/session/node/%s' % node,
+                params=params, headers=headers)
 
         def info(self,
                  session_id,
@@ -3888,13 +3978,14 @@ class Consul(object):
             was configured with.
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if index:
                 params.append(('index', index))
                 if wait:
@@ -3904,8 +3995,8 @@ class Consul(object):
                 params.append((consistency, '1'))
             return self.agent.http.get(
                 CB.json(index=True, one=True),
-                '/v1/session/info/%s' % session_id,
-                params=params)
+                path='/v1/session/info/%s' % session_id,
+                params=params, headers=headers)
 
         def renew(self, session_id, dc=None, token=None):
             """
@@ -3918,19 +4009,20 @@ class Consul(object):
             Returns the session.
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.put(
                 CB.json(one=True, allow_404=False),
-                '/v1/session/renew/%s' % session_id,
-                params=params)
+                data='/v1/session/renew/%s' % session_id,
+                params=params, headers=headers)
 
     class Snapshot(object):
         def __init__(self, agent):
@@ -3945,6 +4037,7 @@ class Consul(object):
             Returns gzipped snapshot of current consul cluster
             """
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
@@ -3953,21 +4046,25 @@ class Consul(object):
             if stale:
                 params.append(('stale', stale))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.get(
-                CB.binary(), '/v1/snapshot', params)
+                CB.binary(), data='/v1/snapshot',
+                params=params, headers=headers)
 
         def put(self, data_binary, dc=None, token=None):
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
             if dc:
                 params.append(('dc', dc))
             if token:
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             return self.agent.http.put(
-                CB.binary(), '/v1/snapshot', params, data_binary)
+                CB.binary(), data='/v1/snapshot',
+                params=params, headers=headers,
+                data_binary=data_binary)
 
         def save(self, file_path):
             """
@@ -4009,7 +4106,7 @@ class Consul(object):
             This endpoint retrieves the Raft peers for the datacenter in which
             the the agent is running.
             """
-            return self.agent.http.get(CB.json(), '/v1/status/peers')
+            return self.agent.http.get(CB.json(), path='/v1/status/peers')
 
     class Txn(object):
         """
@@ -4042,10 +4139,10 @@ class Consul(object):
                     }
                 }
             """
-            params = []
+            headers = {}
             token = token or self.agent.token
             if token:
-                params.append(('token', token))
-            return self.agent.http.put(CB.json(), "/v1/txn",
-                                       params=params,
+                headers['X-Consul-Token'] = token
+            return self.agent.http.put(CB.json(), path="/v1/txn",
+                                       headers=headers,
                                        data=json.dumps(payload))
