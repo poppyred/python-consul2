@@ -19,10 +19,10 @@ class HTTPClient(base.HTTPClient):
             response.text,
             response.content)
 
-    def get(self, callback, path, params=None):
+    def get(self, callback, path, params=None, headers=None):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.get(uri, verify=self.verify, cert=self.cert,
+            self.session.get(uri, headers=headers, verify=self.verify, cert=self.cert,
                              timeout=self.timeout)))
 
     def put(self, callback, path, params=None, data='', headers=None):
@@ -37,10 +37,10 @@ class HTTPClient(base.HTTPClient):
             self.session.delete(uri, data=data, verify=self.verify,
                                 cert=self.cert, timeout=self.timeout)))
 
-    def post(self, callback, path, params=None, data=''):
+    def post(self, callback, path, params=None, headers=None, data=''):
         uri = self.uri(path, params)
         return callback(self.response(
-            self.session.post(uri, data=data, verify=self.verify,
+            self.session.post(uri, data=data, headers=headers, verify=self.verify,
                               cert=self.cert, timeout=self.timeout)))
 
 
