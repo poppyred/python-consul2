@@ -283,11 +283,11 @@ class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
         return uri
 
     @abc.abstractmethod
-    def get(self, callback, path, params=None):
+    def get(self, callback, path, params=None, headers=None):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def put(self, callback, path, params=None, data=''):
+    def put(self, callback, path, params=None, data='', headers=None):
         raise NotImplementedError
 
     @abc.abstractmethod
