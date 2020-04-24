@@ -1718,6 +1718,7 @@ class Consul(object):
             """
             data = {'node': node, 'address': address}
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             if dc:
                 data['datacenter'] = dc
@@ -1727,8 +1728,7 @@ class Consul(object):
                 data['check'] = check
             token = token or self.agent.token
             if token:
-                data['WriteRequest'] = {'Token': token}
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
             if node_meta:
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
@@ -1737,7 +1737,8 @@ class Consul(object):
                 CB.bool(),
                 '/v1/catalog/register',
                 data=json.dumps(data),
-                params=params)
+                params=params,
+                headers=headers)
 
         def deregister(self,
                        node,
@@ -1763,6 +1764,7 @@ class Consul(object):
             assert not (service_id and check_id)
             data = {'node': node}
             params = []
+            headers = {}
             dc = dc or self.agent.dc
             token = token or self.agent.token
 
@@ -1773,13 +1775,13 @@ class Consul(object):
             if check_id:
                 data['checkid'] = check_id
             if token:
-                data['WriteRequest'] = {'Token': token}
-                params.append(('token', token))
+                headers['X-Consul-Token'] = token
 
             return self.agent.http.put(
                 CB.bool(),
                 '/v1/catalog/deregister',
                 params=params,
+                headers=headers,
                 data=json.dumps(data))
 
         def datacenters(self):
