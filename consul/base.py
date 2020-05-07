@@ -1444,6 +1444,7 @@ class Consul(object):
                 return self.agent.http.put(
                     CB.bool(),
                     path='/v1/agent/service/maintenance/{0}'.format(service_id),
+                    headers=headers,
                     params=params)
 
         class Check(object):
@@ -2500,7 +2501,7 @@ class Consul(object):
             warnings.warn('1.6.0+: The discovery '
                           'chain API is available '
                           'in Consul versions 1.6.0 '
-                          'and newer.', DeprecationWarning)
+                          'and newer.',  DeprecationWarning)
             self.agent = agent
 
         """

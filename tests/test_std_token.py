@@ -201,8 +201,8 @@ class TestConsulWithACL(object):
 
         # test setting notes on a check
         c.agent.check.register('check1', Check.ttl('1s'), notes='foo')
-        c.agent.check.register('check2', script='/usr/bin/true',
-                               interval=1, notes='foo2')
+        # c.agent.check.register('check2', script='/usr/bin/true',
+        #                        interval=1, notes='foo2')
         c.agent.check.register('check3', ttl=1, notes='foo3')
         c.agent.check.register('check4', http='http://localhost:8500',
                                interval=1, notes='foo4')
@@ -211,7 +211,7 @@ class TestConsulWithACL(object):
         # c.agent.check.register('check5', Check.ttl('1s'), notes='foo5')
         assert c.agent.checks()['check1']['Notes'] == 'foo'
         c.agent.check.deregister('check1')
-        c.agent.check.deregister('check2')
+        # c.agent.check.deregister('check2')
         c.agent.check.deregister('check3')
         c.agent.check.deregister('check4')
         c.agent.check.deregister('check5')
@@ -781,7 +781,7 @@ class TestConsulWithACL(object):
     def test_operator(self, acl_consul):
         c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
         config = c.operator.raft_config()
-        assert config["Index"] == 1
+        assert config["Index"] == 0
         leader = False
         voter = False
         for server in config["Servers"]:
@@ -815,7 +815,7 @@ class TestConsulWithACL(object):
 
         assert isdel
         config = c.config.get(kind=payload['Kind'], name=payload['Name'])
-        assert config == (None, None)
+        assert config[1] is None
 
     def test_connect(self, acl_consul):
 
