@@ -452,11 +452,19 @@ class TestConsul(object):
             '10.1.10.11',
             service={'service': 's1'},
             check={'name': 'c1'}) is True
+
         assert c.catalog.register(
             'n1', '10.1.10.11', service={'service': 's2'}) is True
+
         assert c.catalog.register(
             'n2', '10.1.10.12',
             service={'service': 's1', 'tags': ['master']}) is True
+
+        assert c.catalog.register(
+            'n2', '10.1.10.12',
+            service={'service': 's1', 'tags': ['master']},
+            node_meta={"a": "b", "c": "d"}
+        ) is True
 
         # test catalog.nodes
         pytest.raises(consul.ConsulException, c.catalog.nodes, dc='dc2')

@@ -47,3 +47,5 @@ Features
 * removes the WriteRequest in the json body where used. (https://www.consul.io/docs/upgrade-specific.html#stricter-json-decoding)
 * refactors the api token to use the `X-Consul-Token` header instead of a parameter, which is
 recommended and more secure.
+
+* fix catalog.register node_meta in data not in params (https://github.com/poppyred/python-consul2/issues/11)

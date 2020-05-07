@@ -11,22 +11,22 @@ CB = consul.base.CB
 Response = consul.base.Response
 
 Request = collections.namedtuple(
-    'Request', ['method', 'path', 'params', 'data'])
+    'Request', ['method', 'path', 'params', 'data', 'headers'])
 
 
 class HTTPClient(object):
     def __init__(self, host=None, port=None, scheme=None,
-                 verify=True, cert=None, timeout=None):
+                 verify=True, cert=None, timeout=None, headers=None):
         pass
 
-    def get(self, callback, path, params=None):
-        return Request('get', path, params, None)
+    def get(self, callback, path, params=None, headers=None):
+        return Request('get', path, params, None, headers)
 
-    def put(self, callback, path, params=None, data=''):
-        return Request('put', path, params, data)
+    def put(self, callback, path, params=None, data='', headers=None):
+        return Request('put', path, params, data, headers)
 
-    def delete(self, callback, path, params=None):
-        return Request('delete', path, params, None)
+    def delete(self, callback, path, params=None, headers=None):
+        return Request('delete', path, params, None, headers)
 
 
 class Consul(consul.base.Consul):

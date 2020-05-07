@@ -31,29 +31,33 @@ class HTTPClient(base.HTTPClient):
             response = e.response
         raise gen.Return(callback(self.response(response)))
 
-    def get(self, callback, path, params=None):
+    def get(self, callback, path, params=None, headers=None):
         uri = self.uri(path, params)
-        return self._request(callback, uri)
 
-    def put(self, callback, path, params=None, data=''):
+        request = httpclient.HTTPRequest(uri, method='PUT',
+                                         body='' if data is None else data,
+                                         validate_cert=self.verify, headers=headers)
+        return self._request(callback, request)
+
+    def put(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='PUT',
                                          body='' if data is None else data,
-                                         validate_cert=self.verify)
+                                         validate_cert=self.verify, headers=headers)
         return self._request(callback, request)
 
-    def delete(self, callback, path, params=None, data=''):
+    def delete(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='DELETE',
                                          body='' if data is None else data,
-                                         validate_cert=self.verify)
+                                         validate_cert=self.verify, headers=headers)
         request.allow_nonstandard_methods = True
         return self._request(callback, request)
 
-    def post(self, callback, path, params=None, data=''):
+    def post(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri, method='POST', body=data,
-                                         validate_cert=self.verify)
+                                         validate_cert=self.verify, headers=headers)
         return self._request(callback, request)
 
 
