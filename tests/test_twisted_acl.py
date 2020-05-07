@@ -1,13 +1,28 @@
 import pytest_twisted
+from twisted.internet import defer, reactor
 
 import consul
 import consul.twisted
+
+
+def sleep(seconds):
+    """
+    An asynchronous sleep function using twsited. Source:
+    http://twistedmatrix.com/pipermail/twisted-python/2009-October/020788.html
+
+    :type seconds: float
+    """
+    d = defer.Deferred()
+    reactor.callLater(seconds, d.callback, seconds)
+    return d
 
 
 class TestConsul(object):
 
     @pytest_twisted.inlineCallbacks
     def test_acl(self, acl_consul):
+        yield sleep(0.8)
+
         c = consul.twisted.Consul(
             port=acl_consul.port, token=acl_consul.token)
 
