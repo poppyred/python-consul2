@@ -1,3 +1,6 @@
+import sys
+
+import pytest
 import pytest_twisted
 from twisted.internet import defer, reactor
 
@@ -20,6 +23,8 @@ def sleep(seconds):
 class TestConsul(object):
 
     @pytest_twisted.inlineCallbacks
+    @pytest.mark.skipif(sys.version_info < (3, 6, 0),
+                        reason="Python <3.6.1 twisted have a bug! ")
     def test_acl(self, acl_consul):
         yield sleep(0.8)
 
