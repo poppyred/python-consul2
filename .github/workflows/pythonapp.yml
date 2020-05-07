@@ -144,7 +144,7 @@ jobs:
           python-version: "3.7"
       - name: test
         run: |
-          echo ok!
+          flake8 --exclude=".tox/*,xx/*,__*,docs/*,venv/*"
 
 
 
