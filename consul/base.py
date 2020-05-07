@@ -2438,6 +2438,7 @@ class Consul(object):
                     headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
                                            path=path,
+                                           params=params,
                                            headers=headers)
 
             def list_match(self, by, name, token=None):
@@ -2451,6 +2452,7 @@ class Consul(object):
                     headers['X-Consul-Token'] = token
                 return self.agent.http.get(CB.json(),
                                            path=path,
+                                           params=params,
                                            headers=headers)
 
     class Coordinate(object):
@@ -4067,7 +4069,7 @@ class Consul(object):
             return self.agent.http.put(
                 CB.binary(), path='/v1/snapshot',
                 params=params, headers=headers,
-                data_binary=data_binary)
+                data=data_binary)
 
         def save(self, file_path):
             """
