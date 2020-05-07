@@ -129,9 +129,13 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: "3.7"
-      - name: test
+      - name: Install dependencies
         run: |
-          echo ok!
+          python -m pip install --upgrade pip
+          pip install flake8
+      - name: flake8 test
+        run: |
+          flake8 --exclude=".tox/*,xx/*,__*,docs/*,venv/*"
 
   test:
     runs-on: ubuntu-latest
