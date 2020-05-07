@@ -100,28 +100,28 @@ class HTTPClient(base.HTTPClient):
                 'Request incomplete: {} {}'.format(method.upper(), url))
 
     @inlineCallbacks
-    def get(self, callback, path, params=None):
+    def get(self, callback, path, params=None, headers=None):
         uri = self.uri(path, params)
-        response = yield self.request(callback, 'get', uri, params=params)
+        response = yield self.request(callback, 'get', uri, params=params, headers=headers)
         returnValue(response)
 
     @inlineCallbacks
-    def put(self, callback, path, params=None, data=''):
+    def put(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        response = yield self.request(callback, 'put', uri, data=data)
+        response = yield self.request(callback, 'put', uri, data=data, headers=headers)
         returnValue(response)
 
     @inlineCallbacks
-    def post(self, callback, path, params=None, data=''):
+    def post(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        response = yield self.request(callback, 'post', uri, data=data)
+        response = yield self.request(callback, 'post', uri, data=data, headers=headers)
         returnValue(response)
 
     @inlineCallbacks
-    def delete(self, callback, path, params=None, data=''):
+    def delete(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
         response = yield self.request(callback, 'delete',
-                                      uri, params=params, data=data)
+                                      uri, params=params, data=data, headers=headers)
         returnValue(response)
 
 

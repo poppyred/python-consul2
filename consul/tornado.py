@@ -33,9 +33,7 @@ class HTTPClient(base.HTTPClient):
 
     def get(self, callback, path, params=None, headers=None):
         uri = self.uri(path, params)
-
-        request = httpclient.HTTPRequest(uri, method='PUT',
-                                         body='' if data is None else data,
+        request = httpclient.HTTPRequest(uri, method='GET',
                                          validate_cert=self.verify, headers=headers)
         return self._request(callback, request)
 
