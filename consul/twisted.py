@@ -102,26 +102,42 @@ class HTTPClient(base.HTTPClient):
     @inlineCallbacks
     def get(self, callback, path, params=None, headers=None):
         uri = self.uri(path, params)
-        response = yield self.request(callback, 'get', uri, params=params, headers=headers)
+        response = yield self.request(callback,
+                                      'get',
+                                      uri,
+                                      params=params,
+                                      headers=headers)
         returnValue(response)
 
     @inlineCallbacks
     def put(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        response = yield self.request(callback, 'put', uri, data=data, headers=headers)
+        response = yield self.request(callback,
+                                      'put',
+                                      uri,
+                                      data=data,
+                                      headers=headers)
         returnValue(response)
 
     @inlineCallbacks
     def post(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        response = yield self.request(callback, 'post', uri, data=data, headers=headers)
+        response = yield self.request(callback,
+                                      'post',
+                                      uri,
+                                      data=data,
+                                      headers=headers)
         returnValue(response)
 
     @inlineCallbacks
     def delete(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        response = yield self.request(callback, 'delete',
-                                      uri, params=params, data=data, headers=headers)
+        response = yield self.request(callback,
+                                      'delete',
+                                      uri,
+                                      params=params,
+                                      data=data,
+                                      headers=headers)
         returnValue(response)
 
 

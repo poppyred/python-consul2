@@ -33,29 +33,38 @@ class HTTPClient(base.HTTPClient):
 
     def get(self, callback, path, params=None, headers=None):
         uri = self.uri(path, params)
-        request = httpclient.HTTPRequest(uri, method='GET',
-                                         validate_cert=self.verify, headers=headers)
+        request = httpclient.HTTPRequest(uri,
+                                         method='GET',
+                                         validate_cert=self.verify,
+                                         headers=headers)
         return self._request(callback, request)
 
     def put(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        request = httpclient.HTTPRequest(uri, method='PUT',
+        request = httpclient.HTTPRequest(uri,
+                                         method='PUT',
                                          body='' if data is None else data,
-                                         validate_cert=self.verify, headers=headers)
+                                         validate_cert=self.verify,
+                                         headers=headers)
         return self._request(callback, request)
 
     def delete(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        request = httpclient.HTTPRequest(uri, method='DELETE',
+        request = httpclient.HTTPRequest(uri,
+                                         method='DELETE',
                                          body='' if data is None else data,
-                                         validate_cert=self.verify, headers=headers)
+                                         validate_cert=self.verify,
+                                         headers=headers)
         request.allow_nonstandard_methods = True
         return self._request(callback, request)
 
     def post(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        request = httpclient.HTTPRequest(uri, method='POST', body=data,
-                                         validate_cert=self.verify, headers=headers)
+        request = httpclient.HTTPRequest(uri,
+                                         method='POST',
+                                         body=data,
+                                         validate_cert=self.verify,
+                                         headers=headers)
         return self._request(callback, request)
 
 

@@ -426,7 +426,9 @@ class Consul(object):
             if token:
                 headers['X-Consul-Token'] = token
             return self.agent.http.get(
-                CB.json(one=True), path='/v1/acl/info/%s' % acl_id, headers=headers)
+                CB.json(one=True),
+                path='/v1/acl/info/%s' % acl_id,
+                headers=headers)
 
         def create(self,
                    name=None,
@@ -747,7 +749,6 @@ class Consul(object):
                     "Description": description,
                 }
                 path = '/v1/acl/token/%s/clone' % accessor_id
-                params = []
                 headers = {}
                 token = token or self.agent.token
                 if token:
@@ -1186,7 +1187,8 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 headers['X-Consul-Token'] = token
-            return self.agent.http.get(CB.json(), path='/v1/agent/self', headers=headers)
+            return self.agent.http.get(CB.json(),
+                                       path='/v1/agent/self', headers=headers)
 
         def services(self, token=None):
             """
@@ -1203,7 +1205,9 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 headers['X-Consul-Token'] = token
-            return self.agent.http.get(CB.json(), path='/v1/agent/services', headers=headers)
+            return self.agent.http.get(CB.json(),
+                                       path='/v1/agent/services',
+                                       headers=headers)
 
         def checks(self, token=None):
             """
@@ -1220,7 +1224,9 @@ class Consul(object):
             token = token or self.agent.token
             if token:
                 headers['X-Consul-Token'] = token
-            return self.agent.http.get(CB.json(), path='/v1/agent/checks', headers=headers)
+            return self.agent.http.get(CB.json(),
+                                       path='/v1/agent/checks',
+                                       headers=headers)
 
         def members(self, wan=False, token=None):
             """
@@ -1240,7 +1246,8 @@ class Consul(object):
             if wan:
                 params.append(('wan', 1))
             return self.agent.http.get(
-                CB.json(), path='/v1/agent/members', params=params, headers=headers)
+                CB.json(), path='/v1/agent/members',
+                params=params, headers=headers)
 
         def maintenance(self, enable, reason=None, token=None):
             """
@@ -1264,7 +1271,8 @@ class Consul(object):
                 params.append(('reason', reason))
 
             return self.agent.http.put(
-                CB.bool(), path='/v1/agent/maintenance', params=params, headers=headers)
+                CB.bool(), path='/v1/agent/maintenance',
+                params=params, headers=headers)
 
         def join(self, address, wan=False, token=None):
             """
@@ -1287,7 +1295,8 @@ class Consul(object):
                 params.append(('wan', 1))
 
             return self.agent.http.put(
-                CB.bool(), path='/v1/agent/join/%s' % address, params=params, headers=headers)
+                CB.bool(), path='/v1/agent/join/%s' % address,
+                params=params, headers=headers)
 
         def force_leave(self, node, token=None):
             """
@@ -1305,7 +1314,8 @@ class Consul(object):
             if token:
                 headers['X-Consul-Token'] = token
             return self.agent.http.put(
-                CB.bool(), path='/v1/agent/force-leave/%s' % node, headers=headers)
+                CB.bool(),
+                path='/v1/agent/force-leave/%s' % node, headers=headers)
 
         class Service(object):
             def __init__(self, agent):
@@ -1443,7 +1453,7 @@ class Consul(object):
                     headers['X-Consul-Token'] = token
                 return self.agent.http.put(
                     CB.bool(),
-                    path='/v1/agent/service/maintenance/{0}'.format(service_id),
+                    path='/v1/agent/service/maintenance/{}'.format(service_id),
                     headers=headers,
                     params=params)
 
@@ -1874,7 +1884,8 @@ class Consul(object):
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
             return self.agent.http.get(
-                CB.json(index=True), path='/v1/catalog/nodes', params=params, headers=headers)
+                CB.json(index=True), path='/v1/catalog/nodes',
+                params=params, headers=headers)
 
         def services(self,
                      index=None,
@@ -1938,7 +1949,8 @@ class Consul(object):
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
             return self.agent.http.get(
-                CB.json(index=True), path='/v1/catalog/services', params=params, headers=headers)
+                CB.json(index=True), path='/v1/catalog/services',
+                params=params, headers=headers)
 
         def node(self,
                  node,
@@ -2259,7 +2271,8 @@ class Consul(object):
                 if token:
                     headers['X-Consul-Token'] = token
 
-                return self.agent.http.get(CB.json(), path=path, headers=headers)
+                return self.agent.http.get(CB.json(),
+                                           path=path, headers=headers)
 
             def current(self, token=None):
                 """
@@ -2271,7 +2284,8 @@ class Consul(object):
                 if token:
                     headers['X-Consul-Token'] = token
 
-                return self.agent.http.get(CB.json(), path=path, headers=headers)
+                return self.agent.http.get(CB.json(),
+                                           path=path, headers=headers)
 
             def put(self, config, provider, token=None):
                 """
@@ -2465,7 +2479,8 @@ class Consul(object):
             Returns the WAN network coordinates for all Consul servers,
             organized by DCs.
             """
-            return self.agent.http.get(CB.json(), path='/v1/coordinate/datacenters')
+            return self.agent.http.get(CB.json(),
+                                       path='/v1/coordinate/datacenters')
 
         def nodes(self, dc=None, index=None, wait=None, consistency=None):
             """
@@ -2494,14 +2509,15 @@ class Consul(object):
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
             return self.agent.http.get(
-                CB.json(index=True), path='/v1/coordinate/nodes', params=params)
+                CB.json(index=True),
+                path='/v1/coordinate/nodes', params=params)
 
     class DiscoveryChain(object):
         def __init__(self, agent):
             warnings.warn('1.6.0+: The discovery '
                           'chain API is available '
                           'in Consul versions 1.6.0 '
-                          'and newer.',  DeprecationWarning)
+                          'and newer.', DeprecationWarning)
             self.agent = agent
 
         """
@@ -2576,7 +2592,8 @@ class Consul(object):
 
             return self.agent.http.put(
                 CB.json(),
-                path='/v1/event/fire/%s' % name, params=params, headers=headers, data=body)
+                path='/v1/event/fire/%s' % name,
+                params=params, headers=headers, data=body)
 
         def list(
                 self,
@@ -3023,7 +3040,8 @@ class Consul(object):
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.put(
-                CB.json(), path='/v1/kv/%s' % key, params=params, headers=headers, data=value)
+                CB.json(), path='/v1/kv/%s' % key,
+                params=params, headers=headers, data=value)
 
         def delete(self, key, recurse=None, cas=None, token=None, dc=None):
             """
@@ -3062,7 +3080,8 @@ class Consul(object):
                 params.append(('dc', dc))
 
             return self.agent.http.delete(
-                CB.json(), path='/v1/kv/%s' % key, params=params, headers=headers)
+                CB.json(), path='/v1/kv/%s' % key,
+                params=params, headers=headers)
 
     class Operator(object):
         def __init__(self, agent):
@@ -3669,7 +3688,10 @@ class Consul(object):
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.get(
-                CB.json(), path='/v1/query/%s' % query_id, params=params, headers=headers)
+                CB.json(),
+                path='/v1/query/%s' % query_id,
+                params=params,
+                headers=headers)
 
         def delete(self, query_id, token=None, dc=None):
             """
@@ -3752,7 +3774,10 @@ class Consul(object):
             if dc:
                 params.append(('dc', dc))
             return self.agent.http.get(
-                CB.json(), path='/v1/query/%s/explain' % query, params=params, headers=headers)
+                CB.json(),
+                path='/v1/query/%s/explain' % query,
+                params=params,
+                headers=headers)
 
     class Session(object):
         def __init__(self, agent):

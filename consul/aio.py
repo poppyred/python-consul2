@@ -24,7 +24,10 @@ class HTTPClient(base.HTTPClient):
                                          verify_ssl=self.verify)
         async with aiohttp.ClientSession(connector=connector) as session:
             self._session = session
-            resp = await session.request(method=method, url=uri, data=data, headers=headers)
+            resp = await session.request(method=method,
+                                         url=uri,
+                                         data=data,
+                                         headers=headers)
             body = await resp.text(encoding='utf-8')
             content = await resp.read()
             if resp.status == 599:
@@ -49,15 +52,27 @@ class HTTPClient(base.HTTPClient):
 
     async def put(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        return await self._request(callback, 'PUT', uri, data=data, headers=headers)
+        return await self._request(callback,
+                                   'PUT',
+                                   uri,
+                                   data=data,
+                                   headers=headers)
 
     async def delete(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        return await self._request(callback, 'DELETE', uri, data=data, headers=headers)
+        return await self._request(callback,
+                                   'DELETE',
+                                   uri,
+                                   data=data,
+                                   headers=headers)
 
     async def post(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)
-        return await self._request(callback, 'POST', uri, data=data, headers=headers)
+        return await self._request(callback,
+                                   'POST',
+                                   uri,
+                                   data=data,
+                                   headers=headers)
 
     # async def close(self):
     #     await self._session.close()
