@@ -174,17 +174,17 @@ jobs:
           pip install tox coverage codecov pytest pytest-cov pytest-rerunfailures pytest-twisted twisted treq pytest_httpserver pyOpenSSL tornado aiohttp flake8
 
       - name: Generate coverage report
-          run: |
+        run: |
             pytest --cov=./ --cov-report=xml
 
       - name: Upload coverage to Codecov
-          uses: codecov/codecov-action@v1
-          with:
-            token: ${{ secrets.CODECOV_TOKEN }}
-            file: ./coverage.xml
-            flags: unittests
-            env_vars: OS,PYTHON
-            name: codecov-umbrella
-            fail_ci_if_error: true
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: true
 
 
