@@ -1,4 +1,4 @@
-name: python-consul2 build
+name: python-consul2-x86
 
 on:
   push:
