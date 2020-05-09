@@ -1014,3 +1014,10 @@ JA==
                        [0] for l in c.operator.keyring.list()}
         pytest.raises(consul.ConsulException, c.operator.keyring.update, Key2)
         pytest.raises(consul.ConsulException, c.operator.keyring.delete, Key)
+
+    def test_raft_keyring(self, consul_port):
+        c = consul.Consul(port=consul_port)
+
+        config = c.operator.raft.configuration()
+        ...
+

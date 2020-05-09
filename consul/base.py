@@ -3086,12 +3086,9 @@ class Consul(object):
     class Operator(object):
         def __init__(self, agent):
             self.agent = agent
-            self.area = Consul.Operator.Area(agent)
             self.autopilot = Consul.Operator.Autopilot(agent)
             self.keyring = Consul.Operator.Keyring(agent)
-            self.license = Consul.Operator.License(agent)
             self.raft = Consul.Operator.Raft(agent)
-            self.segments = Consul.Operator.Segments(agent)
 
         def raft_config(self, token=None):
             """
