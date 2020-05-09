@@ -771,7 +771,8 @@ class TestConsul(object):
         pytest.raises(consul.ACLDisabled, c.acl.binding_rule.list)
         pytest.raises(consul.ACLDisabled, c.acl.binding_rule.delete, 'foo')
         pytest.raises(consul.ACLDisabled, c.acl.binding_rule.get, 'foo')
-        pytest.raises(consul.ACLDisabled, c.acl.binding_rule.update, None, None)
+        pytest.raises(consul.ACLDisabled,
+                      c.acl.binding_rule.update, None, None)
         pytest.raises(consul.ACLDisabled, c.acl.binding_rule.create, None)
 
     def test_status_leader(self, consul_port):
