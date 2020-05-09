@@ -754,6 +754,25 @@ class TestConsul(object):
         pytest.raises(consul.ACLDisabled, c.acl.update, 'foo')
         pytest.raises(consul.ACLDisabled, c.acl.clone, 'foo')
         pytest.raises(consul.ACLDisabled, c.acl.destroy, 'foo')
+        pytest.raises(consul.ACLDisabled, c.acl.login,
+                      "auth_method", "bearer_token")
+        pytest.raises(consul.ACLDisabled, c.acl.logout)
+
+    def test_acl_auth_method(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        pytest.raises(consul.ACLDisabled, c.acl.auth_method.list)
+        pytest.raises(consul.ACLDisabled, c.acl.auth_method.delete, 'foo')
+        pytest.raises(consul.ACLDisabled, c.acl.auth_method.get, 'foo')
+        pytest.raises(consul.ACLDisabled, c.acl.auth_method.update, None, None)
+        pytest.raises(consul.ACLDisabled, c.acl.auth_method.create, None)
+
+    def test_acl_binding_rule(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        pytest.raises(consul.ACLDisabled, c.acl.binding_rule.list)
+        pytest.raises(consul.ACLDisabled, c.acl.binding_rule.delete, 'foo')
+        pytest.raises(consul.ACLDisabled, c.acl.binding_rule.get, 'foo')
+        pytest.raises(consul.ACLDisabled, c.acl.binding_rule.update, None, None)
+        pytest.raises(consul.ACLDisabled, c.acl.binding_rule.create, None)
 
     def test_status_leader(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -1015,9 +1034,14 @@ JA==
         pytest.raises(consul.ConsulException, c.operator.keyring.update, Key2)
         pytest.raises(consul.ConsulException, c.operator.keyring.delete, Key)
 
-    def test_raft_keyring(self, consul_port):
+    def test_raft(self, consul_port):
         c = consul.Consul(port=consul_port)
 
         config = c.operator.raft.configuration()
-        ...
+        assert config['Servers'][0]['Leader']
 
+        raft_id = config['Servers'][0]['ID']
+
+        # Need at least one voter in configuration
+        pytest.raises(consul.base.ConsulException,
+                      c.operator.raft.delete, raft_id)

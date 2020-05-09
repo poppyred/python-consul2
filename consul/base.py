@@ -3252,13 +3252,26 @@ class Consul(object):
                                            headers=headers)
 
             def delete(self, raft_id=None, address=None, dc=None, token=None):
-                path = '/v1/operator/license'
+                """
+                This endpoint removes the Consul server with given address from
+                the Raft configuration.
+
+                There are rare cases where a peer may be left behind in the
+                Raft configuration even though the server is no longer
+                present and known to the cluster. This endpoint can be used
+                to remove the failed server so that it is no longer affects
+                the Raft quorum.
+
+                If ACLs are enabled, the client will need to supply an ACL
+                Token with operator write privileges.
+                """
+                path = '/v1/operator/raft/peer'
                 params = []
                 headers = {}
                 token = token or self.agent.token
                 dc = dc or self.agent.dc
                 assert (raft_id or address) and not \
-                    (raft_id and address), 'id or address there' \
+                    (raft_id and address), 'raft_id or address there' \
                                            ' just and must be one'
 
                 if raft_id:
