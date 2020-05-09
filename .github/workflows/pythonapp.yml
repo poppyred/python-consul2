@@ -50,7 +50,7 @@ jobs:
             os: ubuntu-latest
             tox_env: "py37"
             use_coverage: true
-            consul_version: "1.6.1"
+            consul_version: "1.7.2"
 
           - name: "py38"
             python: "3.8"
