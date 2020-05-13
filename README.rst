@@ -41,7 +41,7 @@ Installation
    :target: https://travis-ci.org/poppyred/python-consul2
 
 .. |Github-actions Build Status|
-   image:: https://github.com/poppyred/python-consul2/workflows/python-consul2%20build/badge.svg
+   image:: https://github.com/poppyred/python-consul2/workflows/python-consul2-x86/badge.svg
    :target: https://github.com/poppyred/python-consul2/actions
 
 .. |License Status|
