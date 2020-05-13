@@ -274,7 +274,8 @@ class TestConsulACL(object):
         }
 
         token_list1 = c.acl.tokens.list()
-        assert 'Master Token' in [token['Description'] for token in token_list1]
+        assert 'Master Token' in \
+               [token['Description'] for token in token_list1]
         token1 = c.acl.tokens.create(payload)
         assert token1['Description'] == payload['Description']
         token2 = c.acl.tokens.update(accessor_id=token1['AccessorID'],
