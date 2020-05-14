@@ -45,7 +45,7 @@ setup(
     name='python-consul2',
     version=metadata['version'],
     author='yan.gao',
-    author_email='yan.gao.a@17zuoye.com',
+    author_email='373251686@qq.com',
     url='https://github.com/poppyred/python-consul2',
     license='MIT',
     description=description,
