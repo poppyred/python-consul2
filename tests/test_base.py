@@ -58,7 +58,7 @@ def _should_support_node_meta(c):
         c.catalog.nodes,
         c.catalog.services,
         lambda **kw: c.catalog.service('foo', **kw),
-        lambda **kw: c.catalog.register('foo', 'bar', **kw),
+
         # health
         lambda **kw: c.health.service('foo', **kw),
         lambda **kw: c.health.checks('foo', **kw),
@@ -119,6 +119,12 @@ class TestNodemeta(object):
             assert r().params == []
             r1 = sorted(r(node_meta={'env': 'prod', 'net': 1}).params)
             r2 = sorted([('node-meta', 'net:1'), ('node-meta', 'env:prod')])
+            assert r1 == r2
+            data = c.catalog.register('foo', 'bar',
+                                      node_meta={'env': 'prod', 'net': 1}).data
+            r1 = json.loads(data)["NodeMeta"]
+            r2 = {'net': 1, 'env': 'prod'}
+
             assert r1 == r2
 
 
