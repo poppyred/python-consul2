@@ -4,9 +4,14 @@ import struct
 import pytest_twisted
 import six
 from twisted.internet import defer, reactor
+from twisted.web._newclient import (ResponseNeverReceived,
+                                    ResponseFailed,
+                                    RequestTransmissionFailed,
+                                    _WrapperException)
 
 import consul
 import consul.twisted
+from consul import ConsulException
 from consul.twisted import InsecureContextFactory
 
 Check = consul.Check
@@ -302,4 +307,27 @@ class TestConsul(object):
         yield c.agent.services()
         compat_string = "foo"
         assert compat_string == c.http.compat_string(compat_string)
-        c.http.request(lambda x: x, "head", "http://127.0.0.1:" + str(local_server.port))
+
+    @pytest_twisted.inlineCallbacks
+    def test_gen_exception(self, consul_port, local_server):
+        c = consul.twisted.Consul(port=consul_port, verify=False)
+        yield c.agent.services()
+
+        def function_response_never_received(args):
+            raise ResponseNeverReceived(ResponseFailed)
+
+        def function_request_transmission_failed(args):
+            raise RequestTransmissionFailed(_WrapperException)
+
+        try:
+            yield c.http.request(function_response_never_received,
+                                 "head",
+                                 "http://127.0.0.1:" + str(local_server.port))
+        except Exception as e:
+            assert isinstance(e, ConsulException)
+
+        try:
+            yield c.http.request(function_request_transmission_failed, "head",
+                                 "http://127.0.0.1:" + str(local_server.port))
+        except Exception as e:
+            assert isinstance(e, ConsulException)

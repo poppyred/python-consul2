@@ -229,7 +229,7 @@ def acl_consul_policy_allow(acl_consul_policy_allow_instance):
 def local_server(httpserver):
     handler = httpserver.expect_request('/v1/agent/services')
     assert isinstance(handler, RequestHandler)
-    handler.respond_with_data(b'', status=599)
+    handler.respond_with_data(json.dumps({"foo": "bar"}), status=599)
     port = httpserver.port
     LocalServer = collections.namedtuple('LocalServer', ['port'])
     yield LocalServer(port)
