@@ -13,7 +13,6 @@ import uuid
 import py
 import pytest
 import requests
-from pytest_httpserver import RequestHandler
 
 collect_ignore = []
 sys.path.insert(0,
@@ -223,16 +222,3 @@ def acl_consul_policy_allow(acl_consul_policy_allow_instance):
     port, token = acl_consul_policy_allow_instance
     yield ACLConsul(port, token)
     clean_consul(port)
-
-
-@pytest.mark.skipif(
-    sys.version_info < (3, 0, 0), reason="python2.X cannot support httpserver")
-@pytest.fixture
-def local_server(httpserver):
-    handler = httpserver.expect_request('/v1/agent/services')
-    assert isinstance(handler, RequestHandler)
-    handler.respond_with_data(json.dumps({"foo": "bar"}), status=599)
-    port = httpserver.port
-    LocalServer = collections.namedtuple('LocalServer', ['port'])
-    yield LocalServer(port)
-    httpserver.stop()

@@ -17,6 +17,19 @@ Check = consul.Check
 
 
 @pytest.fixture
+def local_server(httpserver):
+    from pytest_httpserver import RequestHandler
+
+    handler = httpserver.expect_request('/v1/agent/services')
+    assert isinstance(handler, RequestHandler)
+    handler.respond_with_data(json.dumps({"foo": "bar"}), status=599)
+    port = httpserver.port
+    LocalServer = collections.namedtuple('LocalServer', ['port'])
+    yield LocalServer(port)
+    httpserver.stop()
+
+
+@pytest.fixture
 async def local_timeout_server(httpserver):
     async def func():
         return json.dumps({"foo": "bar"})
