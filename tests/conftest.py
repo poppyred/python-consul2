@@ -225,7 +225,8 @@ def acl_consul_policy_allow(acl_consul_policy_allow_instance):
     clean_consul(port)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0, 0), reason="python2.X cannot support httpserver")
+@pytest.mark.skipif(
+    sys.version_info < (3, 0, 0), reason="python2.X cannot support httpserver")
 @pytest.fixture
 def local_server(httpserver):
     handler = httpserver.expect_request('/v1/agent/services')
