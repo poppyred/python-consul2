@@ -41,10 +41,10 @@ class HTTPClient(base.HTTPClient):
         def __del__(self):
             warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
                           ResourceWarning)
-            # if not self._session.closed:
-            #     warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
-            #                   ResourceWarning)
-            # self._session.close()
+            if not self._session.closed:
+                warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
+                              ResourceWarning)
+                self._loop.run_until_complete(self.close())
 
     async def get(self, callback, path, params=None, headers=None):
         uri = self.uri(path, params)
@@ -74,8 +74,8 @@ class HTTPClient(base.HTTPClient):
                                    data=data,
                                    headers=headers)
 
-    # async def close(self):
-    #     await self._session.close()
+    async def close(self):
+        await self._session.close()
 
 
 class Consul(base.Consul):
