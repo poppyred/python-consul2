@@ -295,3 +295,11 @@ class TestConsul(object):
                                   contextFactory=InsecureContextFactory)
         sess = yield c.agent.services()
         assert sess == {}
+
+    @pytest_twisted.inlineCallbacks
+    def test_http_compat_string(self, consul_port, local_server):
+        c = consul.twisted.Consul(port=consul_port, verify=False)
+        yield c.agent.services()
+        compat_string = "foo"
+        assert compat_string == c.http.compat_string(compat_string)
+        c.http.request(lambda x: x, "head", "http://127.0.0.1:" + str(local_server.port))

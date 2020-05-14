@@ -1,4 +1,3 @@
-import aiohttp
 import asyncio
 import base64
 import collections
@@ -6,6 +5,7 @@ import json
 import struct
 import sys
 
+import aiohttp
 import pytest
 import six
 from pytest_httpserver import RequestHandler
@@ -17,20 +17,10 @@ Check = consul.Check
 
 
 @pytest.fixture
-def local_server(httpserver):
-    handler = httpserver.expect_request('/v1/agent/services')
-    assert isinstance(handler, RequestHandler)
-    handler.respond_with_data('', status=599)
-    port = httpserver.port
-    LocalServer = collections.namedtuple('LocalServer', ['port'])
-    yield LocalServer(port)
-    httpserver.stop()
-
-
-@pytest.fixture
 async def local_timeout_server(httpserver):
     async def func():
         return json.dumps({"foo": "bar"})
+
     handler = httpserver.expect_request('/v1/agent/services')
     assert isinstance(handler, RequestHandler)
     handler.respond_with_data(await func(), status=200)
@@ -295,4 +285,5 @@ class TestAsyncioConsul(object):
             assert c.http._session.closed
             http_server.server.stop()
             ...
+
         loop.run_until_complete(test_session_close())
