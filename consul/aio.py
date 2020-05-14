@@ -44,7 +44,7 @@ class HTTPClient(base.HTTPClient):
             if not self._session.closed:
                 warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
                               ResourceWarning)
-                self._loop.run_until_complete(self.close())
+                asyncio.ensure_future(self.close())
 
     async def get(self, callback, path, params=None, headers=None):
         uri = self.uri(path, params)

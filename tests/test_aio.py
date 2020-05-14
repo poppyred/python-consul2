@@ -1,6 +1,8 @@
+import aiohttp
 import asyncio
 import base64
 import collections
+import json
 import struct
 import sys
 
@@ -22,6 +24,18 @@ def local_server(httpserver):
     port = httpserver.port
     LocalServer = collections.namedtuple('LocalServer', ['port'])
     yield LocalServer(port)
+    httpserver.stop()
+
+
+@pytest.fixture
+async def local_timeout_server(httpserver):
+    async def func():
+        return json.dumps({"foo": "bar"})
+    handler = httpserver.expect_request('/v1/agent/services')
+    assert isinstance(handler, RequestHandler)
+    handler.respond_with_data(await func(), status=200)
+    LocalServer = collections.namedtuple('LocalServer', ['port', 'server'])
+    return LocalServer(httpserver.port, httpserver)
 
 
 @pytest.fixture
@@ -266,3 +280,19 @@ class TestAsyncioConsul(object):
             assert time_out
 
         loop.run_until_complete(test_timeout())
+
+    def test_http_session(self, loop, local_timeout_server, consul_port):
+        async def test_session_close():
+            http_server = await local_timeout_server
+            c = consul.aio.Consul(port=http_server.port, loop=loop)
+            c.agent.services()
+
+            c.http._session = aiohttp.ClientSession()
+
+            assert not c.http._session.closed
+            c.http.__del__()
+            await c.http.close()
+            assert c.http._session.closed
+            http_server.server.stop()
+            ...
+        loop.run_until_complete(test_session_close())
