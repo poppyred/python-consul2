@@ -1755,7 +1755,7 @@ class Consul(object):
                 nm = {}
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     nm[nodemeta_name] = nodemeta_value
-                    data['NodeMeta'] = nm
+                data['NodeMeta'] = nm
             return self.agent.http.put(
                 CB.bool(),
                 path='/v1/catalog/register',
