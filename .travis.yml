@@ -39,13 +39,14 @@ matrix:
     - python: 3.8-dev
     - python: nightly
     - python: pypy3
+    - python: pypy
 
 
 install:
   - pip install tox
   - pip install tox-travis
 script:
-  - export LC_ALL=en_US.UTF-8 && tox
+  - tox
 
 jobs:
   include:
