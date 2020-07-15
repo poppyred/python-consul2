@@ -923,9 +923,9 @@ class Consul(object):
                 payload = {"Name": name}
                 if description:
                     payload['Description'] = description
-                if description:
+                if rules:
                     payload['Rules'] = rules
-                if description:
+                if datacenters:
                     payload['Datacenters'] = datacenters
 
                 headers = {}
@@ -954,9 +954,9 @@ class Consul(object):
                 payload = {"Name": name}
                 if description:
                     payload['Description'] = description
-                if description:
+                if rules:
                     payload['Rules'] = rules
-                if description:
+                if datacenters:
                     payload['Datacenters'] = datacenters
 
                 path = '/v1/acl/policy/%s' % policy_id
