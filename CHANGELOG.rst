@@ -57,3 +57,10 @@ Features
 Features
 ~~~~~~~~
 * `long_description` has syntax errors in markup and would not be rendered on PyPI.
+
+0.1.3
+-----
+
+Features
+~~~~~~~~
+* Support `SkipNodeUpdate` parameter
