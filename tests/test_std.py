@@ -466,27 +466,47 @@ class TestConsul(object):
             node_meta={"a": "b", "c": "d"}
         ) is True
 
+        assert c.catalog.register(
+            'n3', '10.1.10.13',
+            service={'service': 's3'},
+            skipnodeupdate=True
+        ) is True
+
+        assert c.catalog.register(
+            'n3', '10.1.10.14',
+            service={'service': 's3', 'tags': ['foobar']},
+            skipnodeupdate=True
+        ) is True
+
         # test catalog.nodes
         pytest.raises(consul.ConsulException, c.catalog.nodes, dc='dc2')
         _, nodes = c.catalog.nodes()
         nodes.remove(current)
-        assert [x['Node'] for x in nodes] == ['n1', 'n2']
+        assert [x['Node'] for x in nodes] == ['n1', 'n2', 'n3']
 
         # test catalog.services
         pytest.raises(consul.ConsulException, c.catalog.services, dc='dc2')
         _, services = c.catalog.services()
-        assert services == {'s1': [u'master'], 's2': [], 'consul': []}
+        assert services == {'s1': [u'master'],
+                            's2': [],
+                            's3': [u'foobar'],
+                            'consul': []}
 
         _, services = c.catalog.services(index=current['ModifyIndex'],
                                          wait='10s')
-        assert services == {'s1': [u'master'], 's2': [], 'consul': []}
+        assert services == {'s1': [u'master'],
+                            's2': [],
+                            's3': [u'foobar'],
+                            'consul': []}
 
         # test catalog.node
         pytest.raises(consul.ConsulException, c.catalog.node, 'n1', dc='dc2')
         _, node = c.catalog.node('n1')
         assert set(node['Services'].keys()) == {'s1', 's2'}
         _, node = c.catalog.node('n3')
-        _, node = c.catalog.node('n3',
+        assert node['Node']['Address'] == '10.1.10.13'
+        _, node = c.catalog.node('n4')
+        _, node = c.catalog.node('n4',
                                  index=current['ModifyIndex'],
                                  wait='10s')
         assert node is None
@@ -498,6 +518,8 @@ class TestConsul(object):
         assert set([x['Node'] for x in nodes]) == {'n1', 'n2'}
         _, nodes = c.catalog.service('s1', tag='master')
         assert set([x['Node'] for x in nodes]) == {'n2'}
+        _, nodes = c.catalog.service('s3', tag='foobar')
+        assert set([x['Node'] for x in nodes]) == {'n3'}
 
         # test catalog.deregister
         pytest.raises(
@@ -507,7 +529,7 @@ class TestConsul(object):
         # check the nodes weren't removed
         _, nodes = c.catalog.nodes()
         nodes.remove(current)
-        assert [x['Node'] for x in nodes] == ['n1', 'n2']
+        assert [x['Node'] for x in nodes] == ['n1', 'n2', 'n3']
         # check n2's s1 service was removed though
         _, nodes = c.catalog.service('s1')
         assert set([x['Node'] for x in nodes]) == {'n1'}
@@ -523,6 +545,7 @@ class TestConsul(object):
         # cleanup
         assert c.catalog.deregister('n1') is True
         assert c.catalog.deregister('n2') is True
+        assert c.catalog.deregister('n3') is True
         _, nodes = c.catalog.nodes()
         nodes.remove(current)
         assert [x['Node'] for x in nodes] == []

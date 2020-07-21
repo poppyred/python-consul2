@@ -1676,6 +1676,7 @@ class Consul(object):
                      node,
                      address,
                      service=None,
+                     skipnodeupdate=False,
                      check=None,
                      dc=None,
                      token=None,
@@ -1712,6 +1713,11 @@ class Consul(object):
 
                 *Tags* and *Port* are optional.
 
+            *skipnodeupdate* is an optional boolean which, when set to True,
+            skips updating the node's information during registration. By
+            default, it is set to False. For information on this parameter, see
+            `here <https://www.consul.io/api-docs/catalog#skipnodeupdate`_.
+
             *check* is an optional check to register. if supplied this is a
             dict::
 
@@ -1746,6 +1752,8 @@ class Consul(object):
                 data['datacenter'] = dc
             if service:
                 data['service'] = service
+            if skipnodeupdate:
+                data['skipnodeupdate'] = True
             if check:
                 data['check'] = check
             token = token or self.agent.token
