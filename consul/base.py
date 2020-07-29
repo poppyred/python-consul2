@@ -130,7 +130,7 @@ class Check(object):
         return ret
 
     @classmethod
-    def grpc(klass, grpc,interval, deregister=None):
+    def grpc(klass, grpc, interval, deregister=None):
         """
         grpc (string: "") - Specifies a gRPC check's endpoint that
         supports the standard gRPC health checking protocol.
