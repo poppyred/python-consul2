@@ -130,6 +130,25 @@ class Check(object):
         return ret
 
     @classmethod
+    def grpc(klass, grpc,interval, deregister=None):
+        """
+        grpc (string: "") - Specifies a gRPC check's endpoint that
+        supports the standard gRPC health checking protocol.
+        The state of the check will be updated at the given
+        Interval by probing the configured endpoint. Add the
+        service identifier after the gRPC check's endpoint in the
+        following format to check for a specific service instead of
+        the whole gRPC server /:service_identifier.
+        """
+        ret = {
+            'GRPC': grpc,
+            'interval': interval
+        }
+        if deregister:
+            ret['DeregisterCriticalServiceAfter'] = deregister
+        return ret
+
+    @classmethod
     def _compat(
             self,
             script=None,

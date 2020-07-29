@@ -706,6 +706,17 @@ class TestConsul(object):
         assert [check['ServiceID'] for check in checks] == ['foobar']
         assert [check['CheckID'] for check in checks] == ['service:foobar']
 
+        c.agent.service.register(
+            'foobar',
+            address='127.0.0.1',
+            port=50051,
+            service_id='foobar',
+            check=Check.grpc(grpc="127.0.0.1:50051/",
+                             interval="1s"))
+        time.sleep(1)
+
+        _, checks = c.health.checks('foobar')
+        assert checks[0]['Status'] == 'critical'
         c.agent.service.deregister('foobar')
 
         time.sleep(40 / 1000.0)
