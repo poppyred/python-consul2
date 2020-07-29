@@ -142,7 +142,7 @@ class Check(object):
         """
         ret = {
             'GRPC': grpc,
-            'interval': interval
+            'Interval': interval
         }
         if deregister:
             ret['DeregisterCriticalServiceAfter'] = deregister

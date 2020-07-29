@@ -711,7 +711,7 @@ class TestConsul(object):
             address='127.0.0.1',
             port=50051,
             service_id='foobar',
-            check=Check.grpc(grpc="127.0.0.1:50051/",
+            check=Check.grpc(grpc="127.0.0.1:50051/foobar",
                              interval="1s"))
         time.sleep(1)
 
