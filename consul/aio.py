@@ -17,6 +17,7 @@ class HTTPClient(base.HTTPClient):
 
     def __init__(self, *args, loop=None, **kwargs):
         super(HTTPClient, self).__init__(*args, **kwargs)
+        self._session = None
         self._loop = loop or asyncio.get_event_loop()
 
     async def _request(self, callback, method, uri, data=None, headers=None):
@@ -41,7 +42,7 @@ class HTTPClient(base.HTTPClient):
         def __del__(self):
             warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
                           ResourceWarning)
-            if not self._session.closed:
+            if self._session and not self._session.closed:
                 warnings.warn("Unclosed connector in aio.Consul.HTTPClient",
                               ResourceWarning)
                 asyncio.ensure_future(self.close())
