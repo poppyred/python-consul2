@@ -957,8 +957,8 @@ class Consul(object):
                                            headers=headers,
                                            data=json.dumps(payload))
 
-            def get(self, policy_id, token=None):
-                path = '/v1/acl/policy/%s' % policy_id
+            def get(self, policy_id=None, name=None, token=None):
+                path = '/v1/acl/policy/%s' % (policy_id or 'name/' + name)
                 headers = {}
                 token = token or self.agent.token
                 if token:
