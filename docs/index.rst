@@ -65,15 +65,14 @@ need to *yield* the result of each API call. This client is available in
             self.foo = None
             loop.add_callback(self.watch)
 
-        @coroutine
-        def watch(self):
+        async def watch(self):
             c = Consul()
 
             # asynchronously poll for updates
             index = None
             while True:
                 try:
-                    index, data = yield c.kv.get('foo', index=index)
+                    index, data = await c.kv.get('foo', index=index)
                     if data is not None:
                         self.foo = data['Value']
                 except Timeout:
@@ -96,32 +95,30 @@ result of each API call. This client is available in *consul.aio*.
 
 .. code:: python
 
-    import asyncio
-    import consul.aio
+   import asyncio
+   import consul.aio
 
+   loop = asyncio.get_event_loop()
 
-    loop = asyncio.get_event_loop()
+   async def go():
 
-    @asyncio.coroutine
-    def go():
+      # always better to pass ``loop`` explicitly, but this
+      # is not mandatory, you can relay on global event loop
+      c = consul.aio.Consul(loop=loop)
 
-        # always better to pass ``loop`` explicitly, but this
-        # is not mandatory, you can relay on global event loop
-        c = consul.aio.Consul(port=consul_port, loop=loop)
+      # set value, same as default api but with ``yield from``
+      response = await c.kv.put('foo', 'bar')
+      assert response is True
 
-        # set value, same as default api but with ``yield from``
-        response = yield from c.kv.put(b'foo', b'bar')
-        assert response is True
+      # get value
+      index, data = await c.kv.get('foo')
+      assert data['Value'] == b'bar'
 
-        # get value
-        index, data = yield from c.kv.get(b'foo')
-        assert data['Value'] == b'bar'
+      # delete value
+      response = await c.kv.delete('foo2')
+      assert response is True
 
-        # delete value
-        response = yield from c.kv.delete(b'foo2')
-        assert response is True
-
-    loop.run_until_complete(go())
+   loop.run_until_complete(go())
 
 
 Wanted
