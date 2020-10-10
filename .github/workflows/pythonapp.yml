@@ -15,34 +15,34 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        name: [
-          "py27",
-          "py35",
-          "py36",
-          "py37",
-          "pypy2",
-          "pypy3"]
+        name: 
+          - "py27"
+          - "py35"
+          - "py36"
+          - "py37"
+          - "pypy2"
+          - "pypy3"
 
         include:
           - name: "py27"
             python: "2.7"
             os: ubuntu-latest
             tox_env: "py27"
-            use_coverage: true
+            use_coverage: false
             consul_version: "1.6.1"
 
           - name: "py35"
             python: "3.5"
             os: ubuntu-latest
             tox_env: "py35"
-            use_coverage: true
+            use_coverage: false
             consul_version: "1.6.1"
 
           - name: "py36"
             python: "3.6"
             os: ubuntu-latest
             tox_env: "py36"
-            use_coverage: true
+            use_coverage: false
             consul_version: "1.6.1"
 
           - name: "py37"
@@ -56,21 +56,21 @@ jobs:
             python: "3.8"
             os: ubuntu-latest
             tox_env: "py38"
-            use_coverage: true
+            use_coverage: false
             consul_version: "1.6.1"
 
           - name: "pypy2"
             python: "pypy2"
             os: ubuntu-latest
             tox_env: "pypy"
-            use_coverage: true
+            use_coverage: false
             consul_version: "1.6.1"
 
           - name: "pypy3"
             python: "pypy3"
             os: ubuntu-latest
             tox_env: "pypy3"
-            use_coverage: true
+            use_coverage: false
             consul_version: "1.6.1"
 
     steps:
