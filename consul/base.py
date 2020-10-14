@@ -1065,13 +1065,25 @@ class Consul(object):
 
             def list(
                     self, policy=None, token=None):
+                """
+                This endpoint lists all the ACL roles.
+                :param *policy*: (string: "") - Filters the 
+                role list to those roles that are linked with 
+                the specific policy ID.
+                :header X-Consul-Token:
+                :return:
+                """
+                path = '/v1/acl/roles?policy=%s' % policy
                 headers = {}
                 token = token or self.agent.token
                 if token:
                     headers['X-Consul-Token'] = token
+                
+                if policy:
+                    headers['X-Consul-Token'] = policy
 
                 return self.agent.http.get(CB.json(),
-                                           path='/v1/acl/roles',
+                                           path=path,
                                            headers=headers)
 
         class AuthMethod(object):
