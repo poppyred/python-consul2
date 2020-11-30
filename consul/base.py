@@ -1074,10 +1074,10 @@ class Consul(object):
                     :return:
                 """
 
+                path = '/v1/acl/roles'
+                params = []
                 if policy:
-                    path = '/v1/acl/roles?policy=%s' % policy
-                else:
-                    path = '/v1/acl/roles'
+                    params.append(('policy', policy))
                 headers = {}
                 token = token or self.agent.token
                 if token:
@@ -1085,6 +1085,7 @@ class Consul(object):
 
                 return self.agent.http.get(CB.json(),
                                            path=path,
+                                           params=params,
                                            headers=headers)
 
         class AuthMethod(object):
