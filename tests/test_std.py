@@ -8,6 +8,7 @@ import six
 
 import consul
 import consul.std
+from consul.base import Weight
 
 Check = consul.Check
 
@@ -345,6 +346,26 @@ class TestConsul(object):
         c.agent.service.register('foo', enable_tag_override=True)
 
         assert c.agent.services()['foo']['EnableTagOverride']
+        # Cleanup tasks
+        c.agent.check.deregister('foo')
+
+    def test_agent_register_enable_weights(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, nodes = c.health.service("foo1")
+        assert nodes == []
+
+        c.agent.service.register('foo', weights=Weight.weights(10, 10))
+        assert c.agent.services()['foo']['Weights'] == {"Passing": 10, "Warning": 10}
+        # Cleanup tasks
+        c.agent.check.deregister('foo')
+
+    def test_agent_register_disable_weights(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, nodes = c.health.service("foo1")
+        assert nodes == []
+
+        c.agent.service.register('foo')
+        assert c.agent.services()['foo']['Weights'] == {"Passing": 1, "Warning": 1}
         # Cleanup tasks
         c.agent.check.deregister('foo')
 

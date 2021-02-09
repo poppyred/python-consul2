@@ -284,6 +284,20 @@ class CB(object):
         return cb
 
 
+#
+# Convenience to define weight
+
+class Weight(object):
+    """
+    There object for set weights parameters like this
+    {'passing': 100, 'warning': 100}
+    """
+
+    @classmethod
+    def weights(cls, passing, warning):
+        return {'passing': passing, 'warning': warning}
+
+
 class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
     def __init__(self, host='127.0.0.1', port=8500, scheme='http',
                  verify=True, cert=None, timeout=None):
@@ -1364,6 +1378,7 @@ class Consul(object):
                     check=None,
                     token=None,
                     meta=None,
+                    weights=None,
                     # *deprecated* use check parameter
                     script=None,
                     interval=None,
@@ -1396,6 +1411,10 @@ class Consul(object):
                 *meta* specifies arbitrary KV metadata linked to the service
                 formatted as {k1:v1, k2:v2}.
 
+                *weights* specifies weights for the service.
+                If this field is not provided weights
+                will default to {"Passing": 1, "Warning": 1}.
+
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.
 
@@ -1425,6 +1444,8 @@ class Consul(object):
                     payload['meta'] = meta
                 if check:
                     payload['check'] = check
+                if weights:
+                    payload['weights'] = weights
 
                 else:
                     payload.update(Check._compat(
