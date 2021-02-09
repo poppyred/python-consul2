@@ -31,12 +31,13 @@ class HTTPClient(base.HTTPClient):
             response = e.response
         raise gen.Return(callback(self.response(response)))
 
-    def get(self, callback, path, params=None, headers=None):
+    def get(self, callback, path, params=None, headers=None, total_timeout=None):
         uri = self.uri(path, params)
         request = httpclient.HTTPRequest(uri,
                                          method='GET',
                                          validate_cert=self.verify,
-                                         headers=headers)
+                                         headers=headers,
+                                         connect_timeout=total_timeout)
         return self._request(callback, request)
 
     def put(self, callback, path, params=None, data='', headers=None):

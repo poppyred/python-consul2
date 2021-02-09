@@ -100,13 +100,14 @@ class HTTPClient(base.HTTPClient):
                 'Request incomplete: {} {}'.format(method.upper(), url))
 
     @inlineCallbacks
-    def get(self, callback, path, params=None, headers=None):
+    def get(self, callback, path, params=None, headers=None, total_timeout=None):
         uri = self.uri(path, params)
         response = yield self.request(callback,
                                       'get',
                                       uri,
                                       params=params,
-                                      headers=headers)
+                                      headers=headers,
+                                      total_timeout=total_timeout)
         returnValue(response)
 
     @inlineCallbacks

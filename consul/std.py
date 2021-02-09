@@ -19,7 +19,7 @@ class HTTPClient(base.HTTPClient):
             response.text,
             response.content)
 
-    def get(self, callback, path, params=None, headers=None):
+    def get(self, callback, path, params=None, headers=None, total_timeout=None):
         uri = self.uri(path, params)
         return callback(self.response(
             self.session.get(uri,
