@@ -4,6 +4,7 @@ import collections
 import json
 import logging
 import os
+import re
 import warnings
 
 import six
@@ -316,7 +317,7 @@ class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
         return uri
 
     @abc.abstractmethod
-    def get(self, callback, path, params=None, headers=None):
+    def get(self, callback, path, params=None, headers=None, total_timeout=None):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -2955,7 +2956,8 @@ class Consul(object):
                 consistency=None,
                 keys=False,
                 separator=None,
-                dc=None):
+                dc=None,
+                total_timeout=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -3002,6 +3004,10 @@ class Consul(object):
             if index:
                 params.append(('index', index))
                 if wait:
+                    assert total_timeout, \
+                        'total_timeout should be setted'
+                    assert not self._convert_wait_to_seconds(wait) >= total_timeout, \
+                        f'wait: {wait} should be less than total_timeout: {total_timeout}s'
                     params.append(('wait', wait))
             if recurse:
                 params.append(('recurse', '1'))
@@ -3030,7 +3036,18 @@ class Consul(object):
                 CB.json(index=True, decode=decode, one=one,
                         map=lambda x: x if x else None),
                 path='/v1/kv/%s' % key,
-                params=params, headers=headers)
+                params=params, headers=headers, total_timeout=total_timeout)
+
+        def _convert_wait_to_seconds(self, wait):
+            unit_to_seconds_multiplier = {
+                'ms': 0.001,
+                's': 1,
+                'm': 60
+            }
+            wait_digit = int(re.search(r'\d+', wait).group())
+            multiplier = unit_to_seconds_multiplier[re.search(r'ms|s|m', wait).group()]
+
+            return wait_digit * multiplier
 
         def put(
                 self,
