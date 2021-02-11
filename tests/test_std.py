@@ -355,7 +355,8 @@ class TestConsul(object):
         assert nodes == []
 
         c.agent.service.register('foo', weights=Weight.weights(10, 10))
-        assert c.agent.services()['foo']['Weights'] == {"Passing": 10, "Warning": 10}
+        weight = {"Passing": 10, "Warning": 10}
+        assert c.agent.services()['foo']['Weights'] == weight
         # Cleanup tasks
         c.agent.check.deregister('foo')
 
@@ -365,7 +366,8 @@ class TestConsul(object):
         assert nodes == []
 
         c.agent.service.register('foo')
-        assert c.agent.services()['foo']['Weights'] == {"Passing": 1, "Warning": 1}
+        weight = {"Passing": 1, "Warning": 1}
+        assert c.agent.services()['foo']['Weights'] == weight
         # Cleanup tasks
         c.agent.check.deregister('foo')
 
