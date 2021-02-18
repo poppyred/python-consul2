@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        name: 
+        name:
           - "py27"
           - "py35"
           - "py36"
@@ -64,6 +64,13 @@ jobs:
             use_coverage: false
             consul_version: "1.6.1"
             allow_failure: true
+
+          - name: "py39"
+            python: "3.9"
+            os: ubuntu-latest
+            tox_env: "py39"
+            use_coverage: false
+            consul_version: "1.6.1"
 
           - name: "pypy2"
             python: "pypy2"
@@ -186,5 +193,3 @@ jobs:
           env_vars: OS,PYTHON
           name: codecov-umbrella
           fail_ci_if_error: true
-
-
