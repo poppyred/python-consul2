@@ -71,5 +71,6 @@ class HTTPClient(base.HTTPClient):
 
 class Consul(base.Consul):
     @staticmethod
-    def http_connect(host, port, scheme, verify=True, cert=None, timeout=None, **kwargs):
+    def http_connect(host, port, scheme, verify=True, cert=None, timeout=None,
+                     **kwargs):
         return HTTPClient(host, port, scheme, verify, cert, timeout, **kwargs)
