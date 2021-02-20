@@ -1,4 +1,6 @@
 import requests
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 from consul import base
 
@@ -7,8 +9,16 @@ __all__ = ['Consul']
 
 class HTTPClient(base.HTTPClient):
     def __init__(self, *args, **kwargs):
+        """
+        Connect using a default retry policy. This can be disabled by setting
+        retries=None.
+        """
+        retries = kwargs.pop('retries', Retry(total=5, backoff_factor=0.2))
         super(HTTPClient, self).__init__(*args, **kwargs)
-        self.session = requests.session()
+        self.session = requests.Session()
+        if retries:
+            self.session.mount('http://', HTTPAdapter(max_retries=retries))
+            self.session.mount('https://', HTTPAdapter(max_retries=retries))
 
     @staticmethod
     def response(response):
@@ -61,5 +71,5 @@ class HTTPClient(base.HTTPClient):
 
 class Consul(base.Consul):
     @staticmethod
-    def http_connect(host, port, scheme, verify=True, cert=None, timeout=None):
-        return HTTPClient(host, port, scheme, verify, cert, timeout)
+    def http_connect(host, port, scheme, verify=True, cert=None, timeout=None, **kwargs):
+        return HTTPClient(host, port, scheme, verify, cert, timeout, **kwargs)
