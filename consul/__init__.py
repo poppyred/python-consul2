@@ -1,4 +1,4 @@
-__version__ = '0.2.1-hh-dev'
+__version__ = '0.2.1-hh'
 
 from consul.base import ACLDisabled  # noqa
 from consul.base import ACLPermissionDenied  # noqa
