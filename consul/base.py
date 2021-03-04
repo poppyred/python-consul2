@@ -398,6 +398,16 @@ class Consul(object):
         self.snapshot = Consul.Snapshot(self)
         self.status = Consul.Status(self)
         self.token = os.getenv('CONSUL_HTTP_TOKEN', token)
+
+        # Token file preempts passed tokens any other way, if it exists
+        if 'CONSUL_HTTP_TOKEN_FILE' in os.environ:
+            token_file = os.environ['CONSUL_HTTP_TOKEN_FILE']
+            assert os.path.exists(token_file)
+            with open(token_file, 'r') as f:
+                tok = f.readline().strip()
+                if len(tok) != 0:
+                    self.token = tok
+
         self.txn = Consul.Txn(self)
 
     class ACL(object):
