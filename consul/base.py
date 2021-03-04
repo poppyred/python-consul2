@@ -41,6 +41,13 @@ class ClientError(ConsulException):
     pass
 
 
+class ConsulUnhealthy(ConsulException):
+    """
+    429 response code: Some healthchecks are passing, at least one is warning
+    """
+    pass
+
+
 #
 # Convenience to define checks
 
@@ -194,7 +201,7 @@ Response = collections.namedtuple(
 
 class CB(object):
     @classmethod
-    def _status(klass, response, allow_404=True):
+    def _status(klass, response, allow_404=True, allow_429=True):
         # status checking
         if 400 <= response.code < 500:
             if response.code == 400:
@@ -206,6 +213,9 @@ class CB(object):
             elif response.code == 404:
                 if not allow_404:
                     raise NotFound(response.body)
+            elif response.code == 429:
+                if not allow_429:
+                    raise ConsulUnhealthy(response.body)
             else:
                 raise ClientError("%d %s" % (response.code, response.body))
         elif 500 <= response.code < 600:
