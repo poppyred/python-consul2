@@ -393,11 +393,19 @@ class HealthCache(ConsulCacheBase):
                  health_client: Consul.Health,
                  watch_seconds: str,
                  service: str,
-                 passing: bool):
+                 passing: bool,
+                 dc: str):
         super().__init__(watch_seconds)
         self.service = service
         self.health_client = health_client
         self.passing = passing
+        self.dc = dc
+        self.index, service_health = health_client.service(
+            service=service,
+            passing=passing,
+            dc=dc,
+        )
+        self.cache = {self.service: service_health}
 
     def _update_cache(self):
         while self._running:
@@ -406,7 +414,8 @@ class HealthCache(ConsulCacheBase):
                     'service': self.service,
                     'passing': self.passing,
                     'index': self.index,
-                    'wait': self.watch_seconds
+                    'wait': self.watch_seconds,
+                    'dc': self.dc
                 }
                 log.debug(f'Param for health query: {params}')
                 self.index, values = self.health_client.service(**params)
@@ -443,18 +452,22 @@ class KVCache(ConsulCacheBase):
                  watch_seconds: str,
                  path: str,
                  total_timeout: int,
+                 recurse: bool,
                  consistency_mode: ConsistencyMode,
                  cache_initial_warmup_timeout=None):
         super().__init__(watch_seconds)
         self.kv_client = kv_client
         self.path = path
+        self.recurse = recurse
         self.consistency_mode = consistency_mode.value
         self.total_timeout = total_timeout
         self.cache_initial_warmup_timeout = cache_initial_warmup_timeout
-        self.cache = {self.path: kv_client.get(
+        self.index, kv = kv_client.get(
             key=path,
+            recurse=recurse,
             total_timeout=self._get_warmup_timeout()
-        )[1]}
+        )
+        self.cache = {self.path: kv}
 
     def _get_warmup_timeout(self):
         if self.cache_initial_warmup_timeout:
@@ -472,7 +485,8 @@ class KVCache(ConsulCacheBase):
                     'index': self.index,
                     'wait': self.watch_seconds,
                     'total_timeout': self.total_timeout,
-                    'consistency': self.consistency_mode
+                    'consistency': self.consistency_mode,
+                    'recurse': self.recurse
                 }
                 log.debug(f'Param for kv query: {params}')
                 self.index, values = self.kv_client.get(**params)
