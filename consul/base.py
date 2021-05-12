@@ -399,11 +399,11 @@ class HealthCache(ConsulCacheBase):
         self.service = service
         self.health_client = health_client
         self.passing = passing
-        self.dc = dc
+        self.dc = dc.lower()
         self.index, service_health = health_client.service(
-            service=service,
-            passing=passing,
-            dc=dc,
+            service=self.service,
+            passing=self.passing,
+            dc=self.dc,
         )
         self.cache = {self.service: service_health}
 
