@@ -42,7 +42,7 @@ class PyTest(testcommand):
 
 
 setup(
-    name='python-consul2',
+    name='python-consul2-hh',
     version=metadata['version'],
     author='yan.gao',
     author_email='373251686@qq.com',
