@@ -9,6 +9,7 @@ import logging
 import os
 import re
 import threading
+import time
 import warnings
 
 import six
@@ -349,10 +350,11 @@ class ConsulCacheBase(metaclass=abc.ABCMeta):
     calls to wait for changes since this query was last run.
     """
 
-    def __init__(self, watch_seconds: str):
+    def __init__(self, watch_seconds: str, backoff_delay_seconds: int):
         self.cache = dict()
         self.callbacks = []
         self.watch_seconds = watch_seconds
+        self.backoff_delay_seconds = backoff_delay_seconds
         self.index = None
         self._running = True
         self._cache_thread = threading.Thread(
@@ -392,10 +394,11 @@ class HealthCache(ConsulCacheBase):
     def __init__(self,
                  health_client: Consul.Health,
                  watch_seconds: str,
+                 backoff_delay_seconds: int,
                  service: str,
                  passing: bool,
                  dc: str):
-        super().__init__(watch_seconds)
+        super().__init__(watch_seconds, backoff_delay_seconds)
         self.service = service
         self.health_client = health_client
         self.passing = passing
@@ -426,8 +429,9 @@ class HealthCache(ConsulCacheBase):
                         new_value = self.cache.get(key, None)
                         for callback in self.callbacks:
                             callback(key, new_value)
-            except ConsulException as e:
-                log.error(f'Some problem with update consul cache: {e}')
+            except Exception as e:
+                log.error(f'Some problem with update consul cache: {e}. Will retry in {self.backoff_delay_seconds}s')
+                time.sleep(self.backoff_delay_seconds)
 
 
 class KVCache(ConsulCacheBase):
@@ -450,12 +454,13 @@ class KVCache(ConsulCacheBase):
     def __init__(self,
                  kv_client: Consul.KV,
                  watch_seconds: str,
+                 backoff_delay_seconds: int,
                  path: str,
                  total_timeout: int,
                  recurse: bool,
                  consistency_mode: ConsistencyMode,
                  cache_initial_warmup_timeout=None):
-        super().__init__(watch_seconds)
+        super().__init__(watch_seconds, backoff_delay_seconds)
         self.kv_client = kv_client
         self.path = path
         self.recurse = recurse
@@ -499,8 +504,9 @@ class KVCache(ConsulCacheBase):
                             log.debug(f'Value was changed for key={key}. old: {old_value} new: {new_value}')
                             for callback in self.callbacks:
                                 callback(key, new_value)
-            except ConsulException as e:
-                log.error(f'Some problem with update consul cache: {e}')
+            except Exception as e:
+                log.error(f'Some problem with update consul cache: {e}. Will retry in {self.backoff_delay_seconds}s')
+                time.sleep(self.backoff_delay_seconds)
 
 
 class HTTPClient(six.with_metaclass(abc.ABCMeta, object)):
