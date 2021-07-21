@@ -4003,7 +4003,7 @@ class Consul(object):
         def __init__(self, agent):
             self.agent = agent
 
-        def put(self, payload, token=None):
+        def put(self, payload, token=None, dc=None):
             """
             Create a transaction by submitting a list of operations to apply to
             the KV store inside of a transaction. If any operation fails, the
@@ -4026,9 +4026,16 @@ class Consul(object):
                 }
             """
             headers = {}
+            params = []
             token = token or self.agent.token
             if token:
                 headers['X-Consul-Token'] = token
+                
+            dc = dc or self.agent.dc
+            if dc:
+                params.append(('dc', dc))
+                
             return self.agent.http.put(CB.json(), path="/v1/txn",
                                        headers=headers,
+                                       params=params,
                                        data=json.dumps(payload))
