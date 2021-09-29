@@ -12,6 +12,7 @@ on:
 
 jobs:
   build:
+    continue-on-error: ${{ matrix.allow_failure }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -30,6 +31,7 @@ jobs:
             tox_env: "py27"
             use_coverage: false
             consul_version: "1.6.1"
+            allow_failure: false
 
           - name: "py35"
             python: "3.5"
@@ -37,6 +39,7 @@ jobs:
             tox_env: "py35"
             use_coverage: false
             consul_version: "1.6.1"
+            allow_failure: true
 
           - name: "py36"
             python: "3.6"
@@ -44,6 +47,7 @@ jobs:
             tox_env: "py36"
             use_coverage: false
             consul_version: "1.6.1"
+            allow_failure: true
 
           - name: "py37"
             python: "3.7"
@@ -51,6 +55,7 @@ jobs:
             tox_env: "py37"
             use_coverage: true
             consul_version: "1.7.2"
+            allow_failure: true
 
           - name: "py38"
             python: "3.8"
@@ -58,6 +63,7 @@ jobs:
             tox_env: "py38"
             use_coverage: false
             consul_version: "1.6.1"
+            allow_failure: true
 
           - name: "pypy2"
             python: "pypy2"
@@ -65,6 +71,7 @@ jobs:
             tox_env: "pypy"
             use_coverage: false
             consul_version: "1.6.1"
+            allow_failure: true
 
           - name: "pypy3"
             python: "pypy3"
@@ -72,6 +79,7 @@ jobs:
             tox_env: "pypy3"
             use_coverage: false
             consul_version: "1.6.1"
+            allow_failure: true
 
     steps:
       - uses: actions/checkout@v2
