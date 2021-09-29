@@ -350,9 +350,10 @@ class ConsulCacheBase(metaclass=abc.ABCMeta):
     calls to wait for changes since this query was last run.
     """
 
-    def __init__(self, watch_seconds: str, backoff_delay_seconds: int):
+    def __init__(self, watch_seconds: str, backoff_delay_seconds: int, caller: str):
         self.cache = dict()
         self.callbacks = []
+        self.caller = caller
         self.watch_seconds = watch_seconds
         self.backoff_delay_seconds = backoff_delay_seconds
         self.index = None
@@ -397,8 +398,9 @@ class HealthCache(ConsulCacheBase):
                  backoff_delay_seconds: int,
                  service: str,
                  passing: bool,
-                 dc: str):
-        super().__init__(watch_seconds, backoff_delay_seconds)
+                 dc: str,
+                 caller: str):
+        super().__init__(watch_seconds, backoff_delay_seconds, caller)
         self.service = service
         self.health_client = health_client
         self.passing = passing
@@ -407,6 +409,7 @@ class HealthCache(ConsulCacheBase):
             service=self.service,
             passing=self.passing,
             dc=self.dc,
+            caller=self.caller
         )
         self.cache = {self.service: service_health}
 
@@ -418,7 +421,8 @@ class HealthCache(ConsulCacheBase):
                     'passing': self.passing,
                     'index': self.index,
                     'wait': self.watch_seconds,
-                    'dc': self.dc
+                    'dc': self.dc,
+                    'caller': self.caller
                 }
                 log.debug(f'Param for health query: {params}')
                 self.index, values = self.health_client.service(**params)
@@ -459,8 +463,9 @@ class KVCache(ConsulCacheBase):
                  total_timeout: int,
                  recurse: bool,
                  consistency_mode: ConsistencyMode,
+                 caller: str,
                  cache_initial_warmup_timeout=None):
-        super().__init__(watch_seconds, backoff_delay_seconds)
+        super().__init__(watch_seconds, backoff_delay_seconds, caller)
         self.kv_client = kv_client
         self.path = path
         self.recurse = recurse
@@ -470,7 +475,8 @@ class KVCache(ConsulCacheBase):
         self.index, kv = kv_client.get(
             key=path,
             recurse=recurse,
-            total_timeout=self._get_warmup_timeout()
+            total_timeout=self._get_warmup_timeout(),
+            caller=self.caller
         )
         self.cache = {self.path: kv}
 
@@ -491,7 +497,8 @@ class KVCache(ConsulCacheBase):
                     'wait': self.watch_seconds,
                     'total_timeout': self.total_timeout,
                     'consistency': self.consistency_mode,
-                    'recurse': self.recurse
+                    'recurse': self.recurse,
+                    'caller': self.caller
                 }
                 log.debug(f'Param for kv query: {params}')
                 self.index, values = self.kv_client.get(**params)
@@ -1596,6 +1603,7 @@ class Consul(object):
                     ttl=None,
                     http=None,
                     timeout=None,
+                    caller=None,
                     enable_tag_override=False):
                 """
                 Add a new service to the local agent. There is more
@@ -1629,6 +1637,8 @@ class Consul(object):
                 *script*, *interval*, *ttl*, *http*, and *timeout* arguments
                 are deprecated. use *check* instead.
 
+                *caller* is a name of caller service.
+
                 *enable_tag_override* is an optional bool that enable you
                 to modify a service tags from servers(consul agent role server)
                 Default is set to False.
@@ -1637,7 +1647,7 @@ class Consul(object):
                 for more information
                 https://www.consul.io/docs/agent/services.html
                 """
-
+                params = []
                 payload = {}
 
                 payload['name'] = name
@@ -1658,6 +1668,9 @@ class Consul(object):
                 if weights:
                     payload['weights'] = weights
 
+                if caller:
+                    params.append(('caller', caller))
+
                 else:
                     payload.update(Check._compat(
                         script=script,
@@ -1675,22 +1688,28 @@ class Consul(object):
                     CB.bool(),
                     path='/v1/agent/service/register',
                     headers=headers,
+                    params=params,
                     data=json.dumps(payload))
 
-            def deregister(self, service_id, token=None):
+            def deregister(self, service_id, caller=None, token=None):
                 """
                 Used to remove a service from the local agent. The agent will
                 take care of deregistering the service with the Catalog. If
                 there is an associated check, that is also deregistered.
                 """
+
+                params = []
                 headers = {}
                 token = token or self.agent.token
                 if token:
                     headers['X-Consul-Token'] = token
+                if caller:
+                    params.append(('caller', caller))
                 return self.agent.http.put(
                     CB.bool(),
                     path='/v1/agent/service/deregister/%s' % service_id,
-                    headers=headers
+                    headers=headers,
+                    params=params
                 )
 
             def maintenance(self, service_id, enable, reason=None, token=None):
@@ -2935,7 +2954,8 @@ class Consul(object):
                     dc=None,
                     near=None,
                     token=None,
-                    node_meta=None):
+                    node_meta=None,
+                    caller=None):
             """
             Returns a tuple of (*index*, *nodes*)
 
@@ -2963,6 +2983,8 @@ class Consul(object):
 
             *node_meta* is an optional meta data used for filtering, a
             dictionary formatted as {k1:v1, k2:v2}.
+
+            *caller* is a name of caller service.
             """
             params = []
             headers = {}
@@ -2987,6 +3009,8 @@ class Consul(object):
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
+            if caller:
+                params.append(('caller', caller))
             return self.agent.http.get(
                 CB.json(index=True),
                 path='/v1/health/service/%s' % service,
@@ -3167,7 +3191,8 @@ class Consul(object):
                 keys=False,
                 separator=None,
                 dc=None,
-                total_timeout=None):
+                total_timeout=None,
+                caller=None):
             """
             Returns a tuple of (*index*, *value[s]*)
 
@@ -3203,6 +3228,8 @@ class Consul(object):
                     "Session": "adf4238a-882b-9ddc-4a9d-5b6758e4159e"
                 }
 
+            *caller* is a name of caller service.
+
             Note, if the requested key does not exists *(index, None)* is
             returned. It's then possible to long poll on the index for when the
             key is created.
@@ -3234,6 +3261,8 @@ class Consul(object):
             consistency = consistency or self.agent.consistency
             if consistency in ('consistent', 'stale'):
                 params.append((consistency, '1'))
+            if caller:
+                params.append(('caller', caller))
 
             one = False
             decode = False
