@@ -1930,6 +1930,7 @@ class Consul(object):
                      index=None,
                      wait=None,
                      consistency=None,
+                     tag=None,
                      dc=None,
                      token=None,
                      node_meta=None):
@@ -1948,6 +1949,9 @@ class Consul(object):
             *consistency* can be either 'default', 'consistent' or 'stale'. if
             not specified *consistency* will the consistency level this client
             was configured with.
+
+            If *tag* is provided, the list of services returned will be filtered
+            by that tag.
 
             *token* is an optional `ACL token`_ to apply to this request.
 
@@ -1969,6 +1973,7 @@ class Consul(object):
             known tags for a given service.
             """
             params = []
+            results = {}
             headers = {}
             dc = dc or self.agent.dc
             if dc:
@@ -1987,9 +1992,16 @@ class Consul(object):
                 for nodemeta_name, nodemeta_value in node_meta.items():
                     params.append(('node-meta', '{0}:{1}'.
                                    format(nodemeta_name, nodemeta_value)))
-            return self.agent.http.get(
+            index, consul_services = self.agent.http.get(
                 CB.json(index=True), path='/v1/catalog/services',
                 params=params, headers=headers)
+            if tag:
+                for key in consul_services:
+                    for consul_tag in consul_services[key]:
+                        if consul_tag == tag:
+                            results[key] = consul_services[key]
+                return (index, results)
+            return (index, consul_services)
 
         def node(self,
                  node,
