@@ -391,7 +391,7 @@ class HealthCache(ConsulCacheBase):
     """
 
     def __init__(self,
-                 health_client: Consul.Health,
+                 health_client,
                  watch_seconds: str,
                  backoff_delay_seconds: int,
                  service: str,
@@ -454,7 +454,7 @@ class KVCache(ConsulCacheBase):
     """
 
     def __init__(self,
-                 kv_client: Consul.KV,
+                 kv_client,
                  watch_seconds: str,
                  backoff_delay_seconds: int,
                  path: str,
