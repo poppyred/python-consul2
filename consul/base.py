@@ -1,8 +1,3 @@
-try:
-    from __future__ import annotations
-except ImportError:
-    pass
-
 import abc
 import base64
 import collections
