@@ -1,4 +1,7 @@
-from __future__ import annotations
+try:
+    from __future__ import annotations
+except ImportError:
+    pass
 
 import abc
 import base64
