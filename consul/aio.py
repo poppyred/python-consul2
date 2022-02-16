@@ -5,6 +5,7 @@ import sys
 import warnings
 
 import aiohttp
+from aiohttp import ClientTimeout
 
 from consul import base
 
@@ -20,10 +21,10 @@ class HTTPClient(base.HTTPClient):
         self._session = None
         self._loop = loop or asyncio.get_event_loop()
 
-    async def _request(self, callback, method, uri, data=None, headers=None):
+    async def _request(self, callback, method, uri, data=None, headers=None, total_timeout=None):
         connector = aiohttp.TCPConnector(loop=self._loop,
                                          verify_ssl=self.verify)
-        async with aiohttp.ClientSession(connector=connector) as session:
+        async with aiohttp.ClientSession(connector=connector, timeout=ClientTimeout(total=total_timeout)) as session:
             self._session = session
             resp = await session.request(method=method,
                                          url=uri,
@@ -47,9 +48,9 @@ class HTTPClient(base.HTTPClient):
                               ResourceWarning)
                 asyncio.ensure_future(self.close())
 
-    async def get(self, callback, path, params=None, headers=None):
+    async def get(self, callback, path, params=None, headers=None, total_timeout=None):
         uri = self.uri(path, params)
-        return await self._request(callback, 'GET', uri, headers=headers)
+        return await self._request(callback, 'GET', uri, headers=headers, total_timeout=total_timeout)
 
     async def put(self, callback, path, params=None, data='', headers=None):
         uri = self.uri(path, params)

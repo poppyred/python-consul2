@@ -24,7 +24,7 @@ class TestConsulWithACL(object):
         c = consul.Consul(port=acl_consul.port, token=acl_consul.token)
         assert c.kv.put('foo', 'bar') is True
         index, data = c.kv.get('foo')
-        check, data = c.kv.get('foo', index=index, wait='20ms')
+        check, data = c.kv.get('foo', index=index, wait='20ms', total_timeout=30)
         assert index == check
 
     def test_kv_encoding(self, acl_consul):

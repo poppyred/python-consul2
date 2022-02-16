@@ -8,6 +8,7 @@ import six
 
 import consul
 import consul.std
+from consul.base import Weight
 
 Check = consul.Check
 
@@ -30,12 +31,56 @@ class TestConsul(object):
         index, data = c.kv.get('foo')
         assert data['Value'] == six.b('bar')
 
-    def test_kv_wait(self, consul_port):
+    def test_kv_wait_ms(self, consul_port):
         c = consul.Consul(port=consul_port)
         assert c.kv.put('foo', 'bar') is True
         index, data = c.kv.get('foo')
-        check, data = c.kv.get('foo', index=index, wait='20ms')
+        check, data = c.kv.get('foo', index=index, wait='20ms', total_timeout=30)
         assert index == check
+
+    def test_kv_wait_s(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        assert c.kv.put('foo', 'bar') is True
+        index, data = c.kv.get('foo')
+        check, data = c.kv.get('foo', index=index, wait='20s', total_timeout=30)
+        assert index == check
+
+    def test_kv_wait_m(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        assert c.kv.put('foo', 'bar') is True
+        index, data = c.kv.get('foo')
+        check, data = c.kv.get('foo', index=index, wait='1m', total_timeout=61)
+        assert index == check
+
+    def test_kv_wait_more_timeout_ms(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        assert c.kv.put('foo', 'bar') is True
+        index, data = c.kv.get('foo')
+        pytest.raises(
+            AssertionError,
+            c.kv.get,
+            'foo', index=index, wait='20ms', total_timeout=0
+        )
+
+    def test_kv_wait_more_timeout_s(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        assert c.kv.put('foo', 'bar') is True
+        index, data = c.kv.get('foo')
+        pytest.raises(
+            AssertionError,
+            c.kv.get,
+            'foo', index=index, wait='20s', total_timeout=19
+        )
+
+    def test_kv_wait_more_timeout_m(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        assert c.kv.put('foo', 'bar') is True
+        index, data = c.kv.get('foo')
+        pytest.raises(
+            AssertionError,
+            c.kv.get,
+            'foo', index=index, wait='1m', total_timeout=59
+        )
 
     def test_kv_encoding(self, consul_port):
         c = consul.Consul(port=consul_port)
@@ -345,6 +390,26 @@ class TestConsul(object):
         c.agent.service.register('foo', enable_tag_override=True)
 
         assert c.agent.services()['foo']['EnableTagOverride']
+        # Cleanup tasks
+        c.agent.check.deregister('foo')
+
+    def test_agent_register_enable_weights(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, nodes = c.health.service("foo1")
+        assert nodes == []
+
+        c.agent.service.register('foo', weights=Weight.weights(10, 10))
+        assert c.agent.services()['foo']['Weights'] == {"Passing": 10, "Warning": 10}
+        # Cleanup tasks
+        c.agent.check.deregister('foo')
+
+    def test_agent_register_disable_weights(self, consul_port):
+        c = consul.Consul(port=consul_port)
+        index, nodes = c.health.service("foo1")
+        assert nodes == []
+
+        c.agent.service.register('foo')
+        assert c.agent.services()['foo']['Weights'] == {"Passing": 1, "Warning": 1}
         # Cleanup tasks
         c.agent.check.deregister('foo')
 
